@@ -15,6 +15,7 @@ namespace CureTracker.DataAccess.Configurations
             builder.Property(k => k.StorageConditions).IsRequired().HasMaxLength(100);
             builder.Property(k => k.DosagePerTake).IsRequired();
             builder.Property(k => k.TimesADay).IsRequired();
+            builder.Property(k => k.TimeOfTaking).IsRequired();
             builder.Property(k => k.StartDate).IsRequired();
             builder.Property(k => k.EndDate).IsRequired();
             builder.Property(k => k.Status).IsRequired().HasConversion<string>();

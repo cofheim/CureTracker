@@ -21,7 +21,8 @@ namespace CureTracker.DataAccess.Repositories
                 z.Description, 
                 z.DosagePerTake, 
                 z.StorageConditions, 
-                z.TimesADay, 
+                z.TimesADay,
+                z.TimeOfTaking,
                 z.StartDate, 
                 z.EndDate, 
                 z.Type,
@@ -41,6 +42,7 @@ namespace CureTracker.DataAccess.Repositories
                 DosagePerTake = medicine.DosagePerTake,
                 StorageConditions = medicine.StorageConditions,
                 TimesADay = medicine.TimesADay,
+                TimeOfTaking = medicine.TimeOfTaking,
                 StartDate = medicine.StartDate,
                 EndDate = medicine.EndDate,
                 Type = medicine.Type,
@@ -60,6 +62,7 @@ namespace CureTracker.DataAccess.Repositories
             int dosagePerTake,
             string storageConditions,
             int timesADay,
+            DateTime timeOfTaking,
             DateTime startDate,
             DateTime endDate,
             MedicineType type,
@@ -74,6 +77,7 @@ namespace CureTracker.DataAccess.Repositories
                 .SetProperty(m => m.StorageConditions, m => storageConditions)
                 .SetProperty(m => m.DosagePerTake, m => dosagePerTake)
                 .SetProperty(m => m.TimesADay, m => timesADay)
+                .SetProperty(m => m.TimeOfTaking, m => timeOfTaking)
                 .SetProperty(m => m.StartDate, m => startDate)
                 .SetProperty(m => m.EndDate, m => endDate)
                 .SetProperty(m => m.Type, m => type)

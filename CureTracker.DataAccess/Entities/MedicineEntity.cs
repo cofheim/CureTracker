@@ -10,6 +10,7 @@ namespace CureTracker.DataAccess.Entities
         public int DosagePerTake { get; set; } = 0;
         public string StorageConditions { get; set; } = string.Empty;
         public int TimesADay { get; set; } = 0;
+        public DateTime TimeOfTaking { get; set; } = DateTime.UtcNow;
         public DateTime StartDate { get; set; } = DateTime.UtcNow;
         public DateTime EndDate { get; set; } = DateTime.UtcNow.AddDays(1);
         public MedicineType Type { get; set; } = MedicineType.Other;

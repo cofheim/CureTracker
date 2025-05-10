@@ -45,6 +45,7 @@ namespace CureTracker.Core.Models
             int dosagePerTake,
             string storageConditions,
             int timesADay,
+            DateTime timeOfTaking,
             DateTime startDate,
             DateTime endDate,
             MedicineType type,
@@ -57,6 +58,7 @@ namespace CureTracker.Core.Models
             DosagePerTake = dosagePerTake;
             StorageConditions = storageConditions;
             TimesADay = timesADay;
+            TimeOfTaking = timeOfTaking;
             EndDate = endDate;
             Type = type;
             Status = status;
@@ -66,23 +68,27 @@ namespace CureTracker.Core.Models
         #region Props
         public Guid Id { get; }
         public string Name { get; private set; } = string.Empty;
-        public string Description { get; private set; } = string.Empty;
-        public int DosagePerTake { get; private set; } = 0;
-        public string StorageConditions { get; private set; } = string.Empty;
-        public int TimesADay { get; private set; } = 0;
-        public DateTime StartDate { get; private set; } = DateTime.UtcNow;
-        public DateTime EndDate { get; private set; } = DateTime.UtcNow.AddDays(1);
-        public MedicineType Type { get; private set; } = MedicineType.Other;
-        public Status Status { get; private set; } = Status.Planned;
-        public IntakeFrequency IntakeFrequency { get; private set; } = IntakeFrequency.Daily;
+        public string Description { get; private set; } = string.Empty; 
+        public int DosagePerTake { get; private set; } = 0; // доза за 1 приём
+        public string StorageConditions { get; private set; } = string.Empty; // условия хранения
+        public int TimesADay { get; private set; } = 0; // сколько раз в день
+        public DateTime TimeOfTaking { get; set; } = DateTime.UtcNow; // во сколько принимать лекарство
+        public DateTime StartDate { get; private set; } = DateTime.UtcNow; // время начала приёма
+        public DateTime EndDate { get; private set; } = DateTime.UtcNow.AddDays(1); // время конца приёма
+        public MedicineType Type { get; private set; } = MedicineType.Other; // форма лекарства
+        public Status Status { get; private set; } = Status.Planned; // статус приёма: запланирован, в процессе и т.д.
+        public IntakeFrequency IntakeFrequency { get; private set; } = IntakeFrequency.Daily; // как часто принимать лекарство
         #endregion
 
+
+        // создание лекарства с валидацией
         public static (Medicine Medicine, string Error) Create(Guid id,
             string name,
             string description,
             int dosagePerTake,
             string storageConditions,
             int timesADay,
+            DateTime timeOfTaking,
             DateTime startDate,
             DateTime endDate,
             MedicineType type,
@@ -110,6 +116,7 @@ namespace CureTracker.Core.Models
                 dosagePerTake,
                 storageConditions,
                 timesADay,
+                timeOfTaking,
                 startDate,
                 endDate,
                 type,

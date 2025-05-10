@@ -7,6 +7,7 @@ namespace CureTracker.Contracts
             int dosagePerTake,
             string storageConditions,
             int timesADay,
+            DateTime timeOfTaking,
             DateTime startDate,
             DateTime endDate,
             MedicineType type,
