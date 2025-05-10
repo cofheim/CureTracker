@@ -42,6 +42,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+app.UseAuthentication();
+
 app.MapUserEndpoints();
 
 app.MapControllers();

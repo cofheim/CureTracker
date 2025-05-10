@@ -18,7 +18,7 @@ namespace CureTracker.DataAccess.Configurations
             builder.Property(x => x.Name).IsRequired().HasMaxLength(50);
             builder.Property(x => x.Email).IsRequired().HasMaxLength(50);
             builder.Property(x => x.PasswordHash).IsRequired();
-            builder.Property(x => x.TelegramId); // Может быть null
+            builder.Property(x => x.TelegramId);
 
             // Связь с лекарствами
             builder.HasMany(u => u.Medicines)
