@@ -13,6 +13,5 @@ namespace CureTracker.Contracts
             DateTime endDate,
             MedicineType type,
             Status status,
-            IntakeFrequency intakeFrequency, 
-            Guid userId);
+            IntakeFrequency intakeFrequency);
 }

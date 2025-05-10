@@ -1,6 +1,7 @@
 ﻿using CureTracker.DataAccess.Entities;
 using CureTracker.Core.Models;
 using Microsoft.EntityFrameworkCore;
+using CureTracker.Core.Interfaces;
 
 namespace CureTracker.DataAccess.Repositories
 {
@@ -16,20 +17,29 @@ namespace CureTracker.DataAccess.Repositories
         public async Task<List<Medicine>> Get()
         {
             var medicineEntities = await _context.Medicines.AsNoTracking().ToListAsync();
-            var medicines = medicineEntities.Select(z => Medicine.Create(z.Id, 
-                z.Name, 
-                z.Description, 
-                z.DosagePerTake, 
-                z.StorageConditions, 
-                z.TimesADay,
-                z.TimeOfTaking,
-                z.StartDate, 
-                z.EndDate, 
-                z.Type,
-                z.Status,
-                z.IntakeFrequency,
-                z.UserId).Medicine).ToList();
+            var medicines = medicineEntities.Select(MapEntityToDomain).ToList();
 
+            return medicines;
+        }
+        
+        public async Task<Medicine> GetById(Guid id)
+        {
+            var medicineEntity = await _context.Medicines
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.Id == id);
+                
+            return medicineEntity != null ? MapEntityToDomain(medicineEntity) : null;
+        }
+        
+        public async Task<List<Medicine>> GetByUserId(Guid userId)
+        {
+            var medicineEntities = await _context.Medicines
+                .Where(m => m.UserId == userId)
+                .AsNoTracking()
+                .ToListAsync();
+                
+            var medicines = medicineEntities.Select(MapEntityToDomain).ToList();
+            
             return medicines;
         }
 
@@ -96,6 +106,26 @@ namespace CureTracker.DataAccess.Repositories
             await _context.Medicines.Where(m => m.Id == id).ExecuteDeleteAsync();
 
             return id;
+        }
+        
+        private Medicine MapEntityToDomain(MedicineEntity entity)
+        {
+            var (medicine, _) = Medicine.Create(
+                entity.Id,
+                entity.Name,
+                entity.Description,
+                entity.DosagePerTake,
+                entity.StorageConditions,
+                entity.TimesADay,
+                entity.TimeOfTaking,
+                entity.StartDate,
+                entity.EndDate,
+                entity.Type,
+                entity.Status,
+                entity.IntakeFrequency,
+                entity.UserId);
+                
+            return medicine;
         }
     }
 }

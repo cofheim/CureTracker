@@ -11,6 +11,10 @@
             {
                 throw new Exception($"Name cannot be empty/null or longer than {MAX_NAME_LENGTH}");
             }
+            else if (email.Length > MAX_EMAIL_LENGTH)
+            {
+                throw new Exception($"Email cannot be longer than {MAX_EMAIL_LENGTH}");
+            }
             Name = name;
             Email = email;
             PasswordHash = passwordHash;

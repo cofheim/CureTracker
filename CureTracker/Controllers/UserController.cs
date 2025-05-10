@@ -1,4 +1,4 @@
-﻿using CureTracker.Application.Services;
+﻿using CureTracker.Core.Interfaces;
 using CureTracker.Contracts;
 using CureTracker.Core.Models;
 using Microsoft.AspNetCore.Mvc;

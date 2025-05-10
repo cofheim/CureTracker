@@ -1,6 +1,6 @@
 ﻿using CureTracker.Core.Models;
-using CureTracker.DataAccess;
-using CureTracker.DataAccess.Repositories;
+using CureTracker.Core.Interfaces;
+
 
 namespace CureTracker.Application.Services
 {
@@ -15,6 +15,16 @@ namespace CureTracker.Application.Services
         public async Task<List<Medicine>> GetAllMedicines()
         {
             return await _medicineRepository.Get();
+        }
+
+        public async Task<List<Medicine>> GetMedicinesByUserId(Guid userId)
+        {
+            return await _medicineRepository.GetByUserId(userId);
+        }
+
+        public async Task<Medicine> GetMedicineById(Guid id)
+        {
+            return await _medicineRepository.GetById(id);
         }
 
         public async Task<Guid> CreateMedicine(Medicine medicine)
@@ -36,6 +46,17 @@ namespace CureTracker.Application.Services
             IntakeFrequency intakeFrequency,
             Guid userId)
         {
+            var existingMedicine = await _medicineRepository.GetById(id);
+            if (existingMedicine == null)
+            {
+                throw new KeyNotFoundException($"Medicine with ID {id} not found");
+            }
+            
+            if (existingMedicine.UserId != userId)
+            {
+                throw new UnauthorizedAccessException("Not authorized to update this medicine");
+            }
+            
             return await _medicineRepository.Update(id,
                 name,
                 description,
