@@ -27,7 +27,8 @@ namespace CureTracker.DataAccess.Repositories
                 z.EndDate, 
                 z.Type,
                 z.Status,
-                z.IntakeFrequency).Medicine).ToList();
+                z.IntakeFrequency,
+                z.UserId).Medicine).ToList();
 
             return medicines;
         }
@@ -47,7 +48,8 @@ namespace CureTracker.DataAccess.Repositories
                 EndDate = medicine.EndDate,
                 Type = medicine.Type,
                 Status = medicine.Status,
-                IntakeFrequency = medicine.IntakeFrequency
+                IntakeFrequency = medicine.IntakeFrequency,
+                UserId = medicine.UserId
             };
 
             await _context.Medicines.AddAsync(medicineEntity);
@@ -67,7 +69,8 @@ namespace CureTracker.DataAccess.Repositories
             DateTime endDate,
             MedicineType type,
             Status status,
-            IntakeFrequency intakeFrequency)
+            IntakeFrequency intakeFrequency,
+            Guid userId)
         {
             await _context.Medicines
                 .Where(m => m.Id == id)
@@ -82,7 +85,8 @@ namespace CureTracker.DataAccess.Repositories
                 .SetProperty(m => m.EndDate, m => endDate)
                 .SetProperty(m => m.Type, m => type)
                 .SetProperty(m => m.Status, m => status)
-                .SetProperty(m => m.IntakeFrequency, m => intakeFrequency));
+                .SetProperty(m => m.IntakeFrequency, m => intakeFrequency)
+                .SetProperty(m => m.UserId, m => userId));
 
             return id;
         }

@@ -14,10 +14,12 @@ namespace CureTracker.DataAccess
         }
 
         public DbSet<MedicineEntity> Medicines { get; set; }
+        public DbSet<UserEntity> Users { get; set; } 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<MedicineEntity>();
+            modelBuilder.ApplyConfiguration(new UserConfiguration());
+            modelBuilder.ApplyConfiguration(new MedicineConfiguration());
         }
     }
 }

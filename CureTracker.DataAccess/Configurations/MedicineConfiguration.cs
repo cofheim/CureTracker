@@ -22,6 +22,12 @@ namespace CureTracker.DataAccess.Configurations
             builder.Property(k => k.Type).IsRequired().HasConversion<string>();
             builder.Property(k => k.IntakeFrequency).IsRequired().HasConversion<string>();
 
+            // Связь с пользователем
+            builder.HasOne(m => m.User)
+                  .WithMany(u => u.Medicines)
+                  .HasForeignKey(m => m.UserId)
+                  .IsRequired();
+
         }
     }
 }

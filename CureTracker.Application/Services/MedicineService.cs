@@ -33,7 +33,8 @@ namespace CureTracker.Application.Services
             DateTime endDate,
             MedicineType type,
             Status status,
-            IntakeFrequency intakeFrequency)
+            IntakeFrequency intakeFrequency,
+            Guid userId)
         {
             return await _medicineRepository.Update(id,
                 name,
@@ -46,7 +47,8 @@ namespace CureTracker.Application.Services
                 endDate,
                 type,
                 status,
-                intakeFrequency);
+                intakeFrequency,
+                userId);
         }
 
         public async Task<Guid> DeleteMedicine(Guid id)

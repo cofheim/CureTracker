@@ -16,5 +16,9 @@ namespace CureTracker.DataAccess.Entities
         public MedicineType Type { get; set; } = MedicineType.Other;
         public Status Status { get; set; } = Status.Planned;
         public IntakeFrequency IntakeFrequency { get; set; } = IntakeFrequency.Daily;
+
+        // связь с пользователем
+        public Guid UserId { get; set; } // ID пользователя
+        public UserEntity? User { get; set; }  // Навигационное свойство
     }
 }

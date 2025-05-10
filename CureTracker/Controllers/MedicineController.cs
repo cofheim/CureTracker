@@ -33,7 +33,8 @@ namespace CureTracker.Controllers
                 z.EndDate,
                 z.Type,
                 z.Status,
-                z.IntakeFrequency));
+                z.IntakeFrequency,
+                z.UserId));
 
             return Ok(response);
         }
@@ -52,7 +53,8 @@ namespace CureTracker.Controllers
                 request.endDate,
                 request.type,
                 request.status,
-                request.intakeFrequency);
+                request.intakeFrequency,
+                request.userId);
 
             if (!string.IsNullOrEmpty(error))
             {
@@ -77,7 +79,8 @@ namespace CureTracker.Controllers
                 request.endDate,
                 request.type,
                 request.status,
-                request.intakeFrequency);
+                request.intakeFrequency,
+                request.userId);
 
             return Ok(medicineId);
         }

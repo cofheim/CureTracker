@@ -18,6 +18,7 @@ namespace CureTracker.DataAccess.Repositories
             DateTime endDate, 
             MedicineType type, 
             Status status, 
-            IntakeFrequency intakeFrequency);
+            IntakeFrequency intakeFrequency,
+            Guid userId);
     }
 }

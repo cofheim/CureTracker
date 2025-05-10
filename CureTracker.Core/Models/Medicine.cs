@@ -50,7 +50,8 @@ namespace CureTracker.Core.Models
             DateTime endDate,
             MedicineType type,
             Status status,
-            IntakeFrequency intakeFrequency)
+            IntakeFrequency intakeFrequency,
+            Guid userId)
         {
             Id = id;
             Name = name;
@@ -63,6 +64,7 @@ namespace CureTracker.Core.Models
             Type = type;
             Status = status;
             IntakeFrequency = intakeFrequency;
+            UserId = userId;
         }
 
         #region Props
@@ -78,6 +80,12 @@ namespace CureTracker.Core.Models
         public MedicineType Type { get; private set; } = MedicineType.Other; // форма лекарства
         public Status Status { get; private set; } = Status.Planned; // статус приёма: запланирован, в процессе и т.д.
         public IntakeFrequency IntakeFrequency { get; private set; } = IntakeFrequency.Daily; // как часто принимать лекарство
+
+        // связь с пользователем
+        public Guid UserId { get; private set; } // ID пользователя
+        public User? User { get; private set; }  // Навигационное свойство
+
+
         #endregion
 
 
@@ -93,7 +101,8 @@ namespace CureTracker.Core.Models
             DateTime endDate,
             MedicineType type,
             Status status,
-            IntakeFrequency intakeFrequency)
+            IntakeFrequency intakeFrequency,
+            Guid userId)
         {
             var error = string.Empty;
 
@@ -109,6 +118,8 @@ namespace CureTracker.Core.Models
                 error = "Dosage Per Take cannot be less than 0";
             else if (timesADay < 0)
                 error = "Time A Day field cannot be less than 0";
+            else if (userId == Guid.Empty)
+                error = "User ID cannot be empty";
 
             var medicine = new Medicine(id,
                 name,
@@ -121,7 +132,8 @@ namespace CureTracker.Core.Models
                 endDate,
                 type,
                 status,
-                intakeFrequency);
+                intakeFrequency,
+                userId);
 
             return (medicine, error);
         }
