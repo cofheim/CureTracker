@@ -1,0 +1,6 @@
+@CureTracker_HostAddress = http://localhost:5106
+
+GET {{CureTracker_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
