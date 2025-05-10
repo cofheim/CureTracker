@@ -16,6 +16,20 @@ namespace CureTracker.Controllers
             _userService = userService;
         }
 
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterUserRequest request)
+        {
+            await _userService.Register(request.UserName, request.Email, request.Password);
+            return Ok();
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginUserRequest request)
+        {
+            var token = await _userService.Login(request.Email, request.Password);
+            return Ok(token);
+        }
+
         [HttpGet]
         public async Task<ActionResult<List<UserResponse>>> GetUsers()
         {

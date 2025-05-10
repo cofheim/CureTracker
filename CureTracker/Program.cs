@@ -4,7 +4,6 @@ using CureTracker.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using CureTracker.Core.Interfaces;
 using CureTracker.Infrastructure;
-using CureTracker.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -43,8 +42,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.UseAuthentication();
-
-app.MapUserEndpoints();
 
 app.MapControllers();
 
