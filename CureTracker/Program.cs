@@ -4,6 +4,7 @@ using CureTracker.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using CureTracker.Core.Interfaces;
 using CureTracker.Infrastructure;
+using CureTracker.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -27,6 +28,8 @@ services.AddScoped<IUserService, UserService>();
 services.AddScoped<IJwtProvider, JwtProvider>();
 services.AddScoped<IPasswordHasher, PasswordHasher>();
 
+services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -38,6 +41,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.MapUserEndpoints();
 
 app.MapControllers();
 

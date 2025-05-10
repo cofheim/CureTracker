@@ -10,6 +10,8 @@ public interface IUserService
     Task<User?> GetUserByEmail(string email);
     Task<User?> GetUserById(Guid id);
     Task<User?> GetUserByTelegramId(long telegramId);
+    Task<string> Login(string email, string password);
+    Task Register(string userName, string email, string password);
     Task<Guid> UpdateUser(User user);
     Task<Guid> UpdateUserTelegramId(Guid userId, long telegramId);
 }

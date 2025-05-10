@@ -1,5 +1,7 @@
 ﻿using CureTracker.Application.Services;
 using CureTracker.Contracts;
+using CureTracker.Core.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CureTracker.Endpoints
 {
@@ -14,17 +16,15 @@ namespace CureTracker.Endpoints
             return app;
         }
 
-        private static async Task<IResult> Register(RegisterUserRequest request, UserService userService)
+        private static async Task<IResult> Register(RegisterUserRequest request, [FromServices] IUserService userService)
         {
             await userService.Register(request.UserName, request.Email, request.Password);
-
             return Results.Ok();
         }
 
-        private static async Task<IResult> Login(LoginUserRequest request, UserService userService)
+        private static async Task<IResult> Login(LoginUserRequest request, [FromServices] IUserService userService)
         {
             var token = await userService.Login(request.Email, request.Password);
-
             return Results.Ok(token);
         }
     }
