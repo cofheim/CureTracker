@@ -3,6 +3,7 @@ using CureTracker.DataAccess.Repositories;
 using CureTracker.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using CureTracker.Core.Interfaces;
+using CureTracker.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -22,6 +23,9 @@ services.AddScoped<IMedicineRepository, MedicineRepository>();
 
 services.AddScoped<IUserRepository, UserRepository>();
 services.AddScoped<IUserService, UserService>();
+
+services.AddScoped<IJwtProvider, JwtProvider>();
+services.AddScoped<IPasswordHasher, PasswordHasher>();
 
 var app = builder.Build();
 

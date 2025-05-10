@@ -32,7 +32,7 @@ namespace CureTracker.DataAccess.Repositories
         {
             var userEntity = await _context.Users
                 .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Email == email);
+                .FirstOrDefaultAsync(u => u.Email == email) ?? throw new Exception();
 
             return userEntity != null ? MapEntityToDomain(userEntity) : null;
         }

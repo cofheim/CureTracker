@@ -31,5 +31,10 @@
         public string PasswordHash { get; set; }
         public long? TelegramId { get; set; } // ID пользователя в Telegram
         public List<Medicine> Medicines { get; private set; } = new List<Medicine>(); // лекарства, которые использует пользователь
+
+        public static User Create(Guid id, string userName, string email, string passwordHash)
+        {
+            return new User(id, userName, email, passwordHash);
+        }
     }
 }

@@ -9,6 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.15" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4">
       <PrivateAssets>all</PrivateAssets>
@@ -29,6 +31,12 @@
     <ProjectReference Include="..\CureTracker.Application\CureTracker.Application.csproj" />
     <ProjectReference Include="..\CureTracker.Core\CureTracker.Core.csproj" />
     <ProjectReference Include="..\CureTracker.DataAccess\CureTracker.DataAccess.csproj" />
+    <ProjectReference Include="..\CureTracker.Infrastructure\CureTracker.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+    <Folder Include="Middlewares\" />
   </ItemGroup>
 
 </Project>
