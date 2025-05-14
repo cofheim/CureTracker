@@ -1,35 +1,9 @@
-﻿using System.Text.Json.Serialization;
+﻿using static CureTracker.Core.Enums.MedicineTypeEnum;
+using static CureTracker.Core.Enums.MedicineStatusEnum;
+using static CureTracker.Core.Enums.MedicineIntakeFrequencyEnum;
 
 namespace CureTracker.Core.Models
 {
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum MedicineType
-    {
-        Capsule,
-        Tablet,
-        Liquid,
-        Injection,
-        Powder,
-        Other
-    }
-
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum Status
-    {
-        Planned,
-        InProgress,
-        Taken,
-        Missed,
-        Skipped
-    }
-
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum IntakeFrequency
-    {
-        Daily,
-        Weekly,
-        Monthly
-    }
 
     public class Medicine
     {

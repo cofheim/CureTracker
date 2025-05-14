@@ -2,6 +2,9 @@
 using CureTracker.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using CureTracker.Core.Interfaces;
+using static CureTracker.Core.Enums.MedicineTypeEnum;
+using static CureTracker.Core.Enums.MedicineStatusEnum;
+using static CureTracker.Core.Enums.MedicineIntakeFrequencyEnum;
 
 namespace CureTracker.DataAccess.Repositories
 {

@@ -1,4 +1,7 @@
 ﻿using CureTracker.Core.Models;
+using static CureTracker.Core.Enums.MedicineTypeEnum;
+using static CureTracker.Core.Enums.MedicineStatusEnum;
+using static CureTracker.Core.Enums.MedicineIntakeFrequencyEnum;
 
 namespace CureTracker.Contracts
 {

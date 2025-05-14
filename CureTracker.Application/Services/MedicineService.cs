@@ -1,5 +1,8 @@
 ﻿using CureTracker.Core.Models;
 using CureTracker.Core.Interfaces;
+using static CureTracker.Core.Enums.MedicineTypeEnum;
+using static CureTracker.Core.Enums.MedicineStatusEnum;
+using static CureTracker.Core.Enums.MedicineIntakeFrequencyEnum;
 
 
 namespace CureTracker.Application.Services
