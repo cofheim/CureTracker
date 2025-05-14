@@ -27,6 +27,14 @@ namespace CureTracker.Controllers
         public async Task<IActionResult> Login([FromBody] LoginUserRequest request)
         {
             var token = await _userService.Login(request.Email, request.Password);
+
+            HttpContext.Response.Cookies.Append("cookies", token, new CookieOptions
+            {
+                HttpOnly = true,
+                SameSite = SameSiteMode.None,
+                Secure = true 
+            });
+
             return Ok(token);
         }
 
