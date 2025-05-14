@@ -32,6 +32,7 @@
     <ProjectReference Include="..\CureTracker.Core\CureTracker.Core.csproj" />
     <ProjectReference Include="..\CureTracker.DataAccess\CureTracker.DataAccess.csproj" />
     <ProjectReference Include="..\CureTracker.Infrastructure\CureTracker.Infrastructure.csproj" />
+    <ProjectReference Include="..\TelegramBot\TelegramBot.csproj" />
   </ItemGroup>
 
   <ItemGroup>

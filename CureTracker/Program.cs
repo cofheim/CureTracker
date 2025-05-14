@@ -4,9 +4,6 @@ using CureTracker.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using CureTracker.Core.Interfaces;
 using CureTracker.Infrastructure;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using CureTracker.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +31,7 @@ services.AddScoped<IPasswordHasher, PasswordHasher>();
 services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
 
 services.AddApiAuthentification(builder.Configuration, services.BuildServiceProvider().GetRequiredService<Microsoft.Extensions.Options.IOptions<JwtOptions>>());
+
 
 var app = builder.Build();
 
