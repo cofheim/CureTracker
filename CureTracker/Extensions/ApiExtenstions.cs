@@ -25,6 +25,16 @@ namespace CureTracker.Extensions
                         IssuerSigningKey = new SymmetricSecurityKey(
                             Encoding.UTF8.GetBytes(jwtOptions.Value.SecretKey))
                     };
+
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            context.Token = context.Request.Cookies["cookies"];
+
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
             services.AddAuthorization();
         }
