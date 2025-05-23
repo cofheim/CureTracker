@@ -13,7 +13,7 @@ export default function Home() {
       textAlign: 'center'
     }}>
       <Title level={1}>
-        Добро пожаловать в CureTracker
+        Добро пожаловать!
       </Title>
     </div>
   );

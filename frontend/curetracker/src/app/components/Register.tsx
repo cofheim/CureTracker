@@ -92,8 +92,21 @@ export default function Register({ onRegister }: { onRegister: () => void }) {
         onCancel={handleSpecialMessageOk}
         cancelButtonProps={{ style: { display: 'none' } }}
         okText="OK"
+        width={800}
       >
-        <p>{SPECIAL_MESSAGE}</p>
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ marginBottom: '20px' }}>{SPECIAL_MESSAGE}</p>
+          <img 
+            src="/special_message.jpg" 
+            alt="Special message" 
+            style={{ 
+              maxWidth: '100%', 
+              height: 'auto',
+              borderRadius: '8px',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+            }} 
+          />
+        </div>
       </Modal>
     </>
   );
