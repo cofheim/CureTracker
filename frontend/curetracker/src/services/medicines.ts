@@ -39,33 +39,45 @@ export interface MedicineRequest {
 }
 
 export const getAllMedicines = async () => {
-    const response = await fetch("https://localhost:7210/Medicine");
-
+    const token = localStorage.getItem("token");
+    const response = await fetch("https://localhost:7210/Medicine", {
+        headers: {
+            "Authorization": "Bearer " + token,
+        },
+    });
     return response.json();
 };
 
 export const createMedicine = async(medicineRequest: MedicineRequest) => {
+    const token = localStorage.getItem("token");
     await fetch("https://localhost:7210/Medicine", {
         method: "POST",
         headers: {
             "content-type": "application/json",
+            "Authorization": "Bearer " + token,
         },
         body: JSON.stringify(medicineRequest),
     });
 };
 
 export const updateMedicine = async (id: string, medicineRequest: MedicineRequest) => {
+    const token = localStorage.getItem("token");
     await fetch(`https://localhost:7210/Medicine/${id}`, {
         method: "PUT",
         headers: {
             "content-type": "application/json",
+            "Authorization": "Bearer " + token,
         },
         body: JSON.stringify(medicineRequest),
     });
 };
 
 export const deleteMedicine = async (id: string) => {
+    const token = localStorage.getItem("token");
     await fetch(`https://localhost:7210/Medicine/${id}`, {
         method: "DELETE",
+        headers: {
+            "Authorization": "Bearer " + token,
+        },
     });
 };

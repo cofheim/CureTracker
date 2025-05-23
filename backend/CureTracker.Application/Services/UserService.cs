@@ -1,5 +1,6 @@
 ﻿using CureTracker.Core.Interfaces;
 using CureTracker.Core.Models;
+using CureTracker.Core.Exceptions;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace CureTracker.Application.Services
@@ -17,24 +18,32 @@ namespace CureTracker.Application.Services
             _jwtProvider = jwtProvider;
         }
 
-        public async Task Register (string userName, string email, string password)
+        public async Task Register(string userName, string email, string password)
         {
+            var existingUser = await _userRepository.GetUserByEmail(email);
+            if (existingUser != null)
+            {
+                throw new DuplicateEmailException(email);
+            }
+
             var hashedPassword = _passwordHasher.Generate(password);
-
             var user = User.Create(Guid.NewGuid(), userName, email, hashedPassword);
-
             await _userRepository.CreateUser(user);
         }
 
         public async Task<string> Login(string email, string password)
         {
             var user = await _userRepository.GetUserByEmail(email);
+            if (user == null)
+            {
+                throw new Exception("Пользователь не найден");
+            }
 
             var result = _passwordHasher.Verify(password, user.PasswordHash);
 
             if(result == false)
             {
-                throw new Exception("Failed to login");
+                throw new Exception("Неверный пароль");
             }
 
             var token = _jwtProvider.GenerateToken(user);

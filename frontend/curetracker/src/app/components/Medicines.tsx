@@ -16,14 +16,13 @@ export const Medicines = ({medicines, handleDelete, handleOpen} : Props) => {
                 <Card 
                     key={medicine.id} 
                     title={<MedicineName name={medicine.name}/>} 
-                    bordered={false}
+                    variant="borderless"
                 >
                     <p>{medicine.description}</p>
                     <div className="card_buttons">
                         <Button 
                         onClick={() => handleOpen(medicine)}
                         style={{flex: 1}}
-
                         >
                             Edit
                         </Button>
@@ -31,10 +30,9 @@ export const Medicines = ({medicines, handleDelete, handleOpen} : Props) => {
                         onClick={() => handleDelete(medicine.id)}
                         danger
                         style={{flex:1}}
-                        
                         >
                             Delete
-                            </Button>
+                        </Button>
                     </div>
                 </Card>
             ))}

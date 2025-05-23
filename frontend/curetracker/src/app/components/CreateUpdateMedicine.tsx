@@ -92,10 +92,11 @@ export const CreateUpdateMedicine = ({
                     maxLength={250}
                 />
 
+                <Typography.Text>Дозировка на один прием (например, 500 для 500мг)</Typography.Text>
                 <InputNumber
                     value={dosagePerTake}
                     onChange={(value) => setDosagePerTake(value || 0)}
-                    placeholder="Dosage per take"
+                    placeholder="Введите дозировку"
                     min={0}
                 />
 
@@ -106,17 +107,20 @@ export const CreateUpdateMedicine = ({
                     maxLength={100}
                 />
 
+                <Typography.Text>Сколько раз в день принимать</Typography.Text>
                 <InputNumber
                     value={timesADay}
                     onChange={(value) => setTimesADay(value || 0)}
-                    placeholder="Times a day"
+                    placeholder="Введите число раз"
                     min={0}
                 />
 
                 <DatePicker
                     onChange={(date) => setTimeOfTaking(date?.toDate())}
                     placeholder="Time of taking"
-                    showTime
+                    mode="time"
+                    format="HH:mm"
+                    showTime={{ format: 'HH:mm' }}
                 />
 
                 <DatePicker

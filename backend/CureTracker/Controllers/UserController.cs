@@ -1,7 +1,9 @@
 ﻿using CureTracker.Core.Interfaces;
 using CureTracker.Contracts;
 using CureTracker.Core.Models;
+using CureTracker.Core.Exceptions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace CureTracker.Controllers
 {
@@ -10,17 +12,34 @@ namespace CureTracker.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly ILogger<UserController> _logger;
 
-        public UserController(IUserService userService)
+        public UserController(IUserService userService, ILogger<UserController> logger)
         {
             _userService = userService;
+            _logger = logger;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterUserRequest request)
         {
-            await _userService.Register(request.UserName, request.Email, request.Password);
-            return Ok();
+            try
+            {
+                _logger.LogInformation($"Attempting to register user with email: {request.Email}");
+                await _userService.Register(request.UserName, request.Email, request.Password);
+                _logger.LogInformation($"Successfully registered user with email: {request.Email}");
+                return Ok();
+            }
+            catch (DuplicateEmailException ex)
+            {
+                _logger.LogWarning($"Duplicate email registration attempt: {ex.Email}");
+                return Conflict(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Registration failed for email {request.Email}. Error: {ex.Message}\nStack trace: {ex.StackTrace}");
+                return BadRequest(new { message = $"Произошла ошибка при регистрации: {ex.Message}", details = ex.StackTrace });
+            }
         }
 
         [HttpPost("login")]
