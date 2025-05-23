@@ -32,7 +32,6 @@ services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
 
 services.AddApiAuthentification(builder.Configuration, services.BuildServiceProvider().GetRequiredService<Microsoft.Extensions.Options.IOptions<JwtOptions>>());
 
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -43,11 +42,17 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
-
 app.MapControllers();
+
+app.UseCors(x =>
+{
+    x.WithOrigins("http://localhost:3000")
+     .AllowAnyHeader()
+     .AllowAnyMethod();
+});
 
 app.Run();

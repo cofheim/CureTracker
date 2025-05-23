@@ -1,0 +1,56 @@
+:root {
+  --primary-color: #1890ff;
+  --background-color: #f0f2f5;
+  --card-background: #ffffff;
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+  background-color: var(--background-color);
+  min-height: 100vh;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.card_name {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--primary-color);
+}
+
+.card_buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.medicine__modal {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Custom scrollbar for the modal */
+.medicine__modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.medicine__modal::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.medicine__modal::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.medicine__modal::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
