@@ -30,6 +30,6 @@ export const register = async (username: string, email: string, password: string
   }
 
   if (!response.ok) {
-    throw new Error("Ошибка регистрации"); // Общее сообщение для других ошибок
+    throw new Error("Ошибка регистрации"); 
   }
 };

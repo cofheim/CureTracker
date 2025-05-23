@@ -2,6 +2,7 @@ import { MedicineRequest, MedicineType, Status, IntakeFrequency } from "@/servic
 import { Medicine } from "@/app/models/Medicine";
 import { Input, Modal, Typography, DatePicker, InputNumber, Select } from "antd";
 import { useEffect, useState } from "react";
+import { getMedicineTypeLabel, getStatusLabel, getIntakeFrequencyLabel } from "@/utils/enumLocalization";
 
 interface Props {
     mode: Mode;
@@ -71,24 +72,25 @@ export const CreateUpdateMedicine = ({
 
     return (
         <Modal 
-            title={mode === Mode.Create ? "Add medicine" : "Edit medicine"} 
+            title={mode === Mode.Create ? "Добавить лекарство" : "Редактировать лекарство"} 
             open={isModalOpen} 
             onCancel={handleCancel}
             onOk={handleOnOk}
-            cancelText={"Cancel"}
+            cancelText={"Отменить"}
+            okText={"Сохранить"}
         >
             <div className="medicine__modal" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <Input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Name"
+                    placeholder="Название"
                     maxLength={50}
                 />
                 
                 <Input.TextArea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Description"
+                    placeholder="Описание"
                     maxLength={250}
                 />
 
@@ -96,14 +98,14 @@ export const CreateUpdateMedicine = ({
                 <InputNumber
                     value={dosagePerTake}
                     onChange={(value) => setDosagePerTake(value || 0)}
-                    placeholder="Введите дозировку"
+                    placeholder="Дозировка"
                     min={0}
                 />
 
                 <Input
                     value={storageConditions}
                     onChange={(e) => setStorageConditions(e.target.value)}
-                    placeholder="Storage conditions"
+                    placeholder="Условия хранения"
                     maxLength={100}
                 />
 
@@ -111,13 +113,13 @@ export const CreateUpdateMedicine = ({
                 <InputNumber
                     value={timesADay}
                     onChange={(value) => setTimesADay(value || 0)}
-                    placeholder="Введите число раз"
+                    placeholder="Сколько раз в день"
                     min={0}
                 />
 
                 <DatePicker
                     onChange={(date) => setTimeOfTaking(date?.toDate())}
-                    placeholder="Time of taking"
+                    placeholder="Время приема"
                     mode="time"
                     format="HH:mm"
                     showTime={{ format: 'HH:mm' }}
@@ -125,41 +127,41 @@ export const CreateUpdateMedicine = ({
 
                 <DatePicker
                     onChange={(date) => setStartDate(date?.toDate())}
-                    placeholder="Start date"
+                    placeholder="Дата начала"
                 />
 
                 <DatePicker
                     onChange={(date) => setEndDate(date?.toDate())}
-                    placeholder="End date"
+                    placeholder="Дата окончания"
                 />
 
                 <Select
                     value={type}
                     onChange={setType}
-                    placeholder="Type"
+                    placeholder="Тип"
                     options={Object.values(MedicineType).map(type => ({
                         value: type,
-                        label: type
+                        label: getMedicineTypeLabel(type)
                     }))}
                 />
 
                 <Select
                     value={status}
                     onChange={setStatus}
-                    placeholder="Status"
+                    placeholder="Статус"
                     options={Object.values(Status).map(status => ({
                         value: status,
-                        label: status
+                        label: getStatusLabel(status)
                     }))}
                 />
 
                 <Select
                     value={intakeFrequency}
                     onChange={setIntakeFrequency}
-                    placeholder="Intake Frequency"
+                    placeholder="Частота приема"
                     options={Object.values(IntakeFrequency).map(frequency => ({
                         value: frequency,
-                        label: frequency
+                        label: getIntakeFrequencyLabel(frequency)
                     }))}
                 />
             </div>

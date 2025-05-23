@@ -96,25 +96,83 @@ export default function MedicinesPage() {
     }
 
     return (
-        <div>
-            <Button onClick={handleLogout} style={{ float: "right", marginBottom: 16 }}>
+        <div style={{ 
+            position: 'relative', 
+            minHeight: '100vh',
+            padding: '16px'
+        }}>
+            <Button 
+                onClick={handleLogout} 
+                style={{ 
+                    position: 'absolute',
+                    top: '16px',
+                    right: '16px'
+                }}
+            >
                 Выйти
             </Button>
             
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
-                <Button 
-                    onClick={openModal} 
-                    type="primary" 
-                    size="large"
-                    style={{ 
-                        padding: '0 40px',
-                        height: '48px',
-                        fontSize: '16px'
-                    }}
-                >
-                    Add medicine
-                </Button>
-            </div>
+            {medicines.length === 0 && !loading ? (
+                <div style={{ 
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    textAlign: 'center'
+                }}>
+                    <Button 
+                        onClick={openModal} 
+                        type="primary" 
+                        size="large"
+                        style={{ 
+                            padding: '0 40px',
+                            height: '64px',
+                            fontSize: '16px'
+                        }}
+                    >
+                        Добавить лекарство
+                    </Button>
+                </div>
+            ) : (
+                <div>
+                    <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'center', 
+                        marginBottom: 24 
+                    }}>
+                        <Button 
+                            onClick={openModal} 
+                            type="primary" 
+                            size="large"
+                            style={{ 
+                                padding: '0 40px',
+                                height: '48px',
+                                fontSize: '16px'
+                            }}
+                        >
+                            Добавить лекарство
+                        </Button>
+                    </div>
+
+                    {loading ? (
+                        <div style={{ 
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            textAlign: 'center'
+                        }}>
+                            <Title>Загрузка...</Title>
+                        </div>
+                    ) : (
+                        <Medicines
+                            medicines={medicines}
+                            handleOpen={openEditModal}
+                            handleDelete={handleDeleteMedicine}
+                        />
+                    )}
+                </div>
+            )}
 
             <CreateUpdateMedicine
                 mode={mode}
@@ -124,16 +182,6 @@ export default function MedicinesPage() {
                 handleUpdate={handleUpdateMedicine}
                 handleCancel={closeModal}
             />
-
-            {loading ? (
-                <Title>Loading...</Title>
-            ) : (
-                <Medicines
-                    medicines={medicines}
-                    handleOpen={openEditModal}
-                    handleDelete={handleDeleteMedicine}
-                />
-            )}
         </div>
     );
 }

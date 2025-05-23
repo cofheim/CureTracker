@@ -1,8 +1,20 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import { Typography } from "antd";
+const { Title } = Typography;
 
 export default function Home() {
   return (
-    <h1>Welcome to CureTracker</h1>
+    <div style={{
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      textAlign: 'center'
+    }}>
+      <Title level={1}>
+        Добро пожаловать в CureTracker
+      </Title>
+    </div>
   );
 }
