@@ -19,7 +19,7 @@ namespace CureTracker.Core.Models
             int dosagePerTake,
             string storageConditions,
             int timesADay,
-            DateTime timeOfTaking,
+            List<DateTime> timesOfTaking,
             DateTime startDate,
             DateTime endDate,
             MedicineType type,
@@ -33,7 +33,8 @@ namespace CureTracker.Core.Models
             DosagePerTake = dosagePerTake;
             StorageConditions = storageConditions;
             TimesADay = timesADay;
-            TimeOfTaking = timeOfTaking;
+            TimesOfTaking = timesOfTaking;
+            StartDate = startDate;
             EndDate = endDate;
             Type = type;
             Status = status;
@@ -48,7 +49,7 @@ namespace CureTracker.Core.Models
         public int DosagePerTake { get; private set; } = 0; // доза за 1 приём
         public string StorageConditions { get; private set; } = string.Empty; // условия хранения
         public int TimesADay { get; private set; } = 0; // сколько раз в день
-        public DateTime TimeOfTaking { get; set; } = DateTime.UtcNow; // во сколько принимать лекарство
+        public List<DateTime> TimesOfTaking { get; private set; } = new List<DateTime>(); // времена приёма лекарства
         public DateTime StartDate { get; private set; } = DateTime.UtcNow; // время начала приёма
         public DateTime EndDate { get; private set; } = DateTime.UtcNow.AddDays(1); // время конца приёма
         public MedicineType Type { get; private set; } = MedicineType.Other; // форма лекарства
@@ -70,7 +71,7 @@ namespace CureTracker.Core.Models
             int dosagePerTake,
             string storageConditions,
             int timesADay,
-            DateTime timeOfTaking,
+            List<DateTime> timesOfTaking,
             DateTime startDate,
             DateTime endDate,
             MedicineType type,
@@ -92,6 +93,8 @@ namespace CureTracker.Core.Models
                 error = "Dosage Per Take cannot be less than 0";
             else if (timesADay < 0)
                 error = "Time A Day field cannot be less than 0";
+            else if (timesOfTaking.Count != timesADay)
+                error = "Number of taking times must match Times A Day value";
             else if (userId == Guid.Empty)
                 error = "User ID cannot be empty";
 
@@ -101,7 +104,7 @@ namespace CureTracker.Core.Models
                 dosagePerTake,
                 storageConditions,
                 timesADay,
-                timeOfTaking,
+                timesOfTaking,
                 startDate,
                 endDate,
                 type,

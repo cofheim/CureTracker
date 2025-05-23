@@ -82,7 +82,7 @@ export const Medicines = ({medicines, handleDelete, handleOpen} : Props) => {
                                 <strong>Приемов в день:</strong> {medicine.timesADay}
                             </Text>
                             <Text type="secondary">
-                                <strong>Время приема:</strong> {formatTime(medicine.timeOfTaking)}
+                                <strong>Времена приёма:</strong> {medicine.timesOfTaking.map(time => formatTime(time)).join(', ')}
                             </Text>
                             <Text type="secondary">
                                 <strong>Дата начала:</strong> {formatDate(medicine.startDate)}

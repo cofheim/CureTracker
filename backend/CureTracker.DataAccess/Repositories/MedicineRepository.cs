@@ -56,7 +56,7 @@ namespace CureTracker.DataAccess.Repositories
                 DosagePerTake = medicine.DosagePerTake,
                 StorageConditions = medicine.StorageConditions,
                 TimesADay = medicine.TimesADay,
-                TimeOfTaking = medicine.TimeOfTaking,
+                TimesOfTaking = medicine.TimesOfTaking,
                 StartDate = medicine.StartDate,
                 EndDate = medicine.EndDate,
                 Type = medicine.Type,
@@ -77,7 +77,7 @@ namespace CureTracker.DataAccess.Repositories
             int dosagePerTake,
             string storageConditions,
             int timesADay,
-            DateTime timeOfTaking,
+            List<DateTime> timesOfTaking,
             DateTime startDate,
             DateTime endDate,
             MedicineType type,
@@ -93,7 +93,7 @@ namespace CureTracker.DataAccess.Repositories
                 .SetProperty(m => m.StorageConditions, m => storageConditions)
                 .SetProperty(m => m.DosagePerTake, m => dosagePerTake)
                 .SetProperty(m => m.TimesADay, m => timesADay)
-                .SetProperty(m => m.TimeOfTaking, m => timeOfTaking)
+                .SetProperty(m => m.TimesOfTaking, m => timesOfTaking)
                 .SetProperty(m => m.StartDate, m => startDate)
                 .SetProperty(m => m.EndDate, m => endDate)
                 .SetProperty(m => m.Type, m => type)
@@ -107,7 +107,6 @@ namespace CureTracker.DataAccess.Repositories
         public async Task<Guid> Delete(Guid id)
         {
             await _context.Medicines.Where(m => m.Id == id).ExecuteDeleteAsync();
-
             return id;
         }
         
@@ -120,7 +119,7 @@ namespace CureTracker.DataAccess.Repositories
                 entity.DosagePerTake,
                 entity.StorageConditions,
                 entity.TimesADay,
-                entity.TimeOfTaking,
+                entity.TimesOfTaking,
                 entity.StartDate,
                 entity.EndDate,
                 entity.Type,

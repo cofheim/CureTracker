@@ -39,7 +39,7 @@ public interface IMedicineRepository
         int dosagePerTake, 
         string storageConditions, 
         int timesADay,
-        DateTime timeOfTaking,
+        List<DateTime> timesOfTaking,
         DateTime startDate, 
         DateTime endDate, 
         MedicineType type, 

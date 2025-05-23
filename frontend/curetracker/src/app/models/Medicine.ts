@@ -7,7 +7,7 @@ export interface Medicine {
     dosagePerTake: number;
     storageConditions: string;
     timesADay: number;
-    timeOfTaking: Date;
+    timesOfTaking: Date[];
     startDate: Date;
     endDate: Date;
     type: MedicineType;

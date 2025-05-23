@@ -1,8 +1,9 @@
 import { MedicineRequest, MedicineType, Status, IntakeFrequency } from "@/services/medicines";
 import { Medicine } from "@/app/models/Medicine";
-import { Input, Modal, Typography, DatePicker, InputNumber, Select } from "antd";
+import { Input, Modal, Typography, DatePicker, InputNumber, Select, Space, TimePicker } from "antd";
 import { useEffect, useState } from "react";
 import { getMedicineTypeLabel, getStatusLabel, getIntakeFrequencyLabel } from "@/utils/enumLocalization";
+import dayjs from 'dayjs';
 
 interface Props {
     mode: Mode;
@@ -31,7 +32,7 @@ export const CreateUpdateMedicine = ({
     const [dosagePerTake, setDosagePerTake] = useState<number>(0);
     const [storageConditions, setStorageConditions] = useState<string>("");
     const [timesADay, setTimesADay] = useState<number>(0);
-    const [timeOfTaking, setTimeOfTaking] = useState<Date>();
+    const [timesOfTaking, setTimesOfTaking] = useState<Date[]>([]);
     const [startDate, setStartDate] = useState<Date>();
     const [endDate, setEndDate] = useState<Date>();
     const [type, setType] = useState<MedicineType>(MedicineType.Other);
@@ -44,7 +45,7 @@ export const CreateUpdateMedicine = ({
         setDosagePerTake(values.dosagePerTake)
         setStorageConditions(values.storageConditions)
         setTimesADay(values.timesADay)
-        setTimeOfTaking(values.timeOfTaking)
+        setTimesOfTaking(values.timesOfTaking || [])
         setStartDate(values.startDate)
         setEndDate(values.endDate)
         setType(values.type as MedicineType)
@@ -52,14 +53,47 @@ export const CreateUpdateMedicine = ({
         setIntakeFrequency(values.intakeFrequency as IntakeFrequency)
     }, [values])
 
+    // Обработчик изменения количества приёмов в день
+    const handleTimesADayChange = (value: number | null) => {
+        const newTimesADay = value || 0;
+        setTimesADay(newTimesADay);
+        
+        // Обновляем массив времён приёма
+        if (newTimesADay > timesOfTaking.length) {
+            // Добавляем новые слоты для времени
+            setTimesOfTaking([
+                ...timesOfTaking,
+                ...Array(newTimesADay - timesOfTaking.length).fill(new Date())
+            ]);
+        } else {
+            // Удаляем лишние слоты
+            setTimesOfTaking(timesOfTaking.slice(0, newTimesADay));
+        }
+    };
+
+    // Обработчик изменения времени приёма
+    const handleTimeChange = (index: number, date: dayjs.Dayjs | null) => {
+        if (date) {
+            const newTimes = [...timesOfTaking];
+            newTimes[index] = date.toDate();
+            setTimesOfTaking(newTimes);
+        }
+    };
+
     const handleOnOk = async () => {
+        // Проверяем, что все времена приёма установлены
+        if (timesOfTaking.length !== timesADay) {
+            alert("Пожалуйста, установите все времена приёма");
+            return;
+        }
+
         const medicineRequest = {
             name,
             description,
             dosagePerTake,
             storageConditions,
             timesADay,
-            timeOfTaking: timeOfTaking || new Date(),
+            timesOfTaking,
             startDate: startDate || new Date(),
             endDate: endDate || new Date(),
             type,
@@ -112,27 +146,39 @@ export const CreateUpdateMedicine = ({
                 <Typography.Text>Сколько раз в день принимать</Typography.Text>
                 <InputNumber
                     value={timesADay}
-                    onChange={(value) => setTimesADay(value || 0)}
+                    onChange={handleTimesADayChange}
                     placeholder="Сколько раз в день"
                     min={0}
                 />
 
-                <DatePicker
-                    onChange={(date) => setTimeOfTaking(date?.toDate())}
-                    placeholder="Время приема"
-                    mode="time"
-                    format="HH:mm"
-                    showTime={{ format: 'HH:mm' }}
-                />
+                {timesADay > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <Typography.Text>Времена приёма:</Typography.Text>
+                        {Array.from({ length: timesADay }).map((_, index) => (
+                            <TimePicker
+                                key={index}
+                                value={timesOfTaking[index] ? dayjs(timesOfTaking[index]) : null}
+                                onChange={(time) => handleTimeChange(index, time)}
+                                placeholder={`Время приёма ${index + 1}`}
+                                format="HH:mm"
+                                minuteStep={5}
+                                hideDisabledOptions
+                                use12Hours={false}
+                            />
+                        ))}
+                    </div>
+                )}
 
                 <DatePicker
                     onChange={(date) => setStartDate(date?.toDate())}
                     placeholder="Дата начала"
+                    value={startDate ? dayjs(startDate) : null}
                 />
 
                 <DatePicker
                     onChange={(date) => setEndDate(date?.toDate())}
                     placeholder="Дата окончания"
+                    value={endDate ? dayjs(endDate) : null}
                 />
 
                 <Select

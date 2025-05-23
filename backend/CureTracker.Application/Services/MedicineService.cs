@@ -4,7 +4,6 @@ using static CureTracker.Core.Enums.MedicineTypeEnum;
 using static CureTracker.Core.Enums.MedicineStatusEnum;
 using static CureTracker.Core.Enums.MedicineIntakeFrequencyEnum;
 
-
 namespace CureTracker.Application.Services
 {
     public class MedicineService : IMedicineService
@@ -41,7 +40,7 @@ namespace CureTracker.Application.Services
             int dosagePerTake,
             string storageConditions,
             int timesADay,
-            DateTime timeOfTaking,
+            List<DateTime> timesOfTaking,
             DateTime startDate,
             DateTime endDate,
             MedicineType type,
@@ -66,7 +65,7 @@ namespace CureTracker.Application.Services
                 dosagePerTake,
                 storageConditions,
                 timesADay,
-                timeOfTaking,
+                timesOfTaking,
                 startDate,
                 endDate,
                 type,

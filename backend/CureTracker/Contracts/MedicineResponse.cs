@@ -5,16 +5,17 @@ using static CureTracker.Core.Enums.MedicineIntakeFrequencyEnum;
 
 namespace CureTracker.Contracts
 {
-    public record MedicineResponse(Guid id,
-            string name,
-            string description,
-            int dosagePerTake,
-            string storageConditions,
-            int timesADay,
-            DateTime timeOfTaking,
-            DateTime startDate,
-            DateTime endDate,
-            MedicineType type,
-            Status status,
-            IntakeFrequency intakeFrequency);
+    public record MedicineResponse(
+        Guid Id,
+        string Name,
+        string Description,
+        int DosagePerTake,
+        string StorageConditions,
+        int TimesADay,
+        List<DateTime> TimesOfTaking,
+        DateTime StartDate,
+        DateTime EndDate,
+        MedicineType Type,
+        Status Status,
+        IntakeFrequency IntakeFrequency);
 }
