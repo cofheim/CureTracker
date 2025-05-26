@@ -54,3 +54,8 @@ body {
 .medicine__modal::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+[data-dnd-kit-dragged] {
+  opacity: 1 !important;
+  display: block !important;
+}

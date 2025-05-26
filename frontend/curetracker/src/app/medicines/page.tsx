@@ -1,7 +1,6 @@
 "use client";
 
 import { Button, Typography } from "antd";
-import { Medicines } from "../components/Medicines";
 import { useEffect, useState } from "react";
 import { createMedicine, deleteMedicine, getAllMedicines, MedicineRequest, updateMedicine } from "@/services/medicines";
 import Title from "antd/es/typography/Title";
@@ -9,23 +8,25 @@ import { Medicine } from "../models/Medicine";
 import { CreateUpdateMedicine, Mode } from "../components/CreateUpdateMedicine";
 import { MedicineType, Status, IntakeFrequency } from "@/services/medicines";
 import AuthFormSwitcher from "../components/AuthFormSwitcher";
+import { MedicineKanban } from "../components/MedicineKanban";
 
 export default function MedicinesPage() {
     const [isAuth, setIsAuth] = useState(false);
 
-    const defaulValues = {
+    const defaulValues: Medicine = {
+        id: "",
         name: "",
         description: "",
         dosagePerTake: 0,
         storageConditions: "",
         timesADay: 0,
-        timeOfTaking: new Date(),
+        timesOfTaking: [],
         startDate: new Date(),
         endDate: new Date(),
         type: MedicineType.Other,
         status: Status.Planned,
         intakeFrequency: IntakeFrequency.Daily
-    } as Medicine;
+    };
 
     const [values, setValues] = useState<Medicine>(defaulValues);
     const [loading, setLoading] = useState(true);
@@ -68,6 +69,35 @@ export default function MedicinesPage() {
         closeModal();
         const medicines = await getAllMedicines();
         setMedicines(medicines);
+    };
+
+    const handleStatusChange = async (id: string, newStatus: Status) => {
+        
+        setMedicines(prev =>
+            prev.map(med =>
+                med.id === id ? { ...med, status: newStatus } : med
+            )
+        );
+
+        
+        const medicine = medicines.find(m => m.id === id);
+        if (!medicine) return;
+
+        const request: MedicineRequest = {
+            name: medicine.name,
+            description: medicine.description,
+            dosagePerTake: medicine.dosagePerTake,
+            storageConditions: medicine.storageConditions,
+            timesADay: medicine.timesADay,
+            timesOfTaking: medicine.timesOfTaking,
+            startDate: medicine.startDate,
+            endDate: medicine.endDate,
+            type: medicine.type,
+            status: newStatus,
+            intakeFrequency: medicine.intakeFrequency
+        };
+
+        await handleUpdateMedicine(id, request);
     };
 
     const openEditModal = (medicine: Medicine) => {
@@ -165,10 +195,11 @@ export default function MedicinesPage() {
                             <Title>Загрузка...</Title>
                         </div>
                     ) : (
-                        <Medicines
+                        <MedicineKanban
                             medicines={medicines}
                             handleOpen={openEditModal}
                             handleDelete={handleDeleteMedicine}
+                            handleStatusChange={handleStatusChange}
                         />
                     )}
                 </div>
