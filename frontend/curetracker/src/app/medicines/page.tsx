@@ -1,14 +1,14 @@
 "use client";
 
 import { Button, Typography, Segmented } from "antd";
-import { AppstoreOutlined, BarsOutlined } from "@ant-design/icons";
+import { AppstoreOutlined, BarsOutlined, CalendarOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { createMedicine, deleteMedicine, getAllMedicines, MedicineRequest, updateMedicine, takeDose, Status, IntakeFrequency } from "@/services/medicines";
 import Title from "antd/es/typography/Title";
 import { Medicine as MedicineModel } from "../models/Medicine";
 import { CreateUpdateMedicine, Mode } from "../components/CreateUpdateMedicine";
 import { MedicineType } from "@/services/medicines";
-import { MedicineKanban } from "../components/MedicineKanban";
+import { MedicineCalendar } from "../components/MedicineCalendar";
 import { Medicines } from "../components/Medicines";
 import { calculateCourseDetails } from "@/utils/courseUtils";
 
@@ -19,7 +19,7 @@ interface EnrichedMedicine extends MedicineModel {
 }
 
 export default function MedicinesPage() {
-    const [view, setView] = useState<'list' | 'kanban'>('list');
+    const [view, setView] = useState<'list' | 'calendar'>('list');
 
     const defaulValues: MedicineModel = {
         id: "",
@@ -116,35 +116,6 @@ export default function MedicinesPage() {
         }
     };
 
-    const handleStatusChange = async (id: string, newStatus: Status) => {
-        
-        setMedicines(prev =>
-            prev.map(med =>
-                med.id === id ? { ...med, status: newStatus } : med
-            )
-        );
-
-        
-        const medicine = medicines.find(m => m.id === id);
-        if (!medicine) return;
-
-        const request: MedicineRequest = {
-            name: medicine.name,
-            description: medicine.description,
-            dosagePerTake: medicine.dosagePerTake,
-            storageConditions: medicine.storageConditions,
-            timesADay: medicine.timesADay,
-            timesOfTaking: medicine.timesOfTaking,
-            startDate: medicine.startDate,
-            endDate: medicine.endDate,
-            type: medicine.type,
-            status: newStatus,
-            intakeFrequency: medicine.intakeFrequency
-        };
-
-        await handleUpdateMedicine(id, request);
-    };
-
     const openEditModal = (medicine: MedicineModel) => {
         setMode(Mode.Edit);
         setValues(medicine);
@@ -227,10 +198,10 @@ export default function MedicinesPage() {
                         <Segmented
                             options={[
                                 { label: 'Список', value: 'list', icon: <BarsOutlined /> },
-                                { label: 'Канбан', value: 'kanban', icon: <AppstoreOutlined /> },
+                                { label: 'Календарь', value: 'calendar', icon: <CalendarOutlined /> },
                             ]}
                             value={view}
-                            onChange={(value) => setView(value as 'list' | 'kanban')}
+                            onChange={(value) => setView(value as 'list' | 'calendar')}
                         />
                     </div>
 
@@ -254,12 +225,11 @@ export default function MedicinesPage() {
                                     handleTakeDose={handleTakeDose}
                                 />
                             )}
-                            {view === 'kanban' && (
-                                <MedicineKanban
+                            {view === 'calendar' && (
+                                <MedicineCalendar
                                     medicines={medicines}
                                     handleOpen={openEditModal}
-                                    handleDelete={handleDeleteMedicine}
-                                    handleStatusChange={handleStatusChange}
+                                    handleTakeDose={handleTakeDose}
                                 />
                             )}
                         </>
