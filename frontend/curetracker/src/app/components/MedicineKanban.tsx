@@ -3,8 +3,8 @@
 import { Medicine } from "../models/Medicine";
 import { Status } from "@/services/medicines";
 import { Typography } from "antd";
-import { DndContext, useDraggable, useDroppable, DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors, DragOverlay } from "@dnd-kit/core";
-import { useState } from "react";
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import MedicineCard from "./MedicineCard";
 
 const { Title } = Typography;
@@ -24,78 +24,67 @@ const columns = [
     { status: Status.Skipped, title: "Пропущено" },
 ];
 
-export const MedicineKanban = ({ medicines, handleDelete, handleOpen, handleStatusChange }: Props) => {
-    const [activeId, setActiveId] = useState<string | null>(null);
-    const sensors = useSensors(
-        useSensor(MouseSensor, { activationConstraint: { distance: 10 } }),
-        useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
-    );
-
-    const handleDragStart = (event: any) => {
-        setActiveId(event.active.id as string);
-    };
-
-    const handleDragEnd = (event: DragEndEvent) => {
-        setActiveId(null);
-        const { active, over } = event;
-        if (!over) return;
-        const newStatus = over.id as Status;
-        const med = medicines.find(m => m.id === active.id);
-        if (med && med.status !== newStatus && Object.values(Status).includes(newStatus)) {
-            handleStatusChange(med.id, newStatus);
-        }
-    };
-
-    const activeMedicine = medicines.find(m => m.id === activeId);
+const DraggableCard = ({ medicine, handleDelete, handleOpen }: { 
+    medicine: Medicine; 
+    handleDelete: (id: string) => void; 
+    handleOpen: (medicine: Medicine) => void;
+}) => {
+    const [{ isDragging }, drag] = useDrag(() => ({
+        type: 'MEDICINE',
+        item: { id: medicine.id, status: medicine.status },
+        collect: (monitor) => ({
+            isDragging: monitor.isDragging(),
+        }),
+    }));
 
     return (
-        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-            <div style={{
-                display: 'flex',
-                gap: '32px',
-                padding: '32px 16px',
-                overflowX: 'auto',
-                minHeight: 'calc(100vh - 200px)',
-                background: '#f7f8fa',
-            }}>
-                {columns.map((column) => (
-                    <KanbanColumn
-                        key={column.status}
-                        id={column.status}
-                        title={column.title}
-                    >
-                        {medicines
-                            .filter((medicine) => medicine.status === column.status)
-                            .map((medicine) => (
-                                <KanbanCard
-                                    key={medicine.id}
-                                    id={medicine.id}
-                                    medicine={medicine}
-                                    handleDelete={handleDelete}
-                                    handleOpen={handleOpen}
-                                />
-                            ))}
-                    </KanbanColumn>
-                ))}
-            </div>
-            <DragOverlay>
-                {activeMedicine ? (
-                    <MedicineCard
-                        medicine={activeMedicine}
-                        handleDelete={handleDelete}
-                        handleOpen={handleOpen}
-                    />
-                ) : null}
-            </DragOverlay>
-        </DndContext>
+        <div
+            ref={node => { drag(node); }}
+            style={{
+                opacity: isDragging ? 0.5 : 1,
+                cursor: 'grab',
+                marginBottom: 8,
+            }}
+        >
+            <MedicineCard
+                medicine={medicine}
+                handleDelete={handleDelete}
+                handleOpen={handleOpen}
+            />
+        </div>
     );
 };
 
-function KanbanColumn({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
-    const { setNodeRef, isOver } = useDroppable({ id });
+const DroppableColumn = ({ 
+    status, 
+    title, 
+    medicines, 
+    handleDelete, 
+    handleOpen, 
+    handleStatusChange 
+}: { 
+    status: Status; 
+    title: string; 
+    medicines: Medicine[]; 
+    handleDelete: (id: string) => void; 
+    handleOpen: (medicine: Medicine) => void;
+    handleStatusChange: (id: string, newStatus: Status) => void;
+}) => {
+    const [{ isOver }, drop] = useDrop(() => ({
+        accept: 'MEDICINE',
+        drop: (item: { id: string, status: Status }) => {
+            if (item.status !== status) {
+                handleStatusChange(item.id, status);
+            }
+        },
+        collect: (monitor) => ({
+            isOver: monitor.isOver(),
+        }),
+    }));
+
     return (
         <div
-            ref={setNodeRef}
+            ref={node => { drop(node); }}
             style={{
                 minWidth: 320,
                 minHeight: 300,
@@ -111,29 +100,57 @@ function KanbanColumn({ id, title, children }: { id: string; title: string; chil
                 transition: 'box-shadow 0.2s, border 0.2s, background 0.2s',
             }}
         >
-            <Title level={4} style={{ margin: 0, padding: '8px', textAlign: 'center', letterSpacing: 1 }}>{title}</Title>
-            {children}
+            <div style={{
+                position: 'relative',
+                zIndex: 999,
+                background: '#fff',
+                padding: '8px',
+                borderRadius: '8px 8px 0 0',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            }}>
+                <Title level={4} style={{ 
+                    margin: 0, 
+                    textAlign: 'center', 
+                    letterSpacing: 1,
+                }}>{title}</Title>
+            </div>
+            {medicines
+                .filter((medicine) => medicine.status === status)
+                .map((medicine) => (
+                    <DraggableCard
+                        key={medicine.id}
+                        medicine={medicine}
+                        handleDelete={handleDelete}
+                        handleOpen={handleOpen}
+                    />
+                ))}
         </div>
     );
-}
+};
 
-function KanbanCard({ id, medicine, handleDelete, handleOpen }: { id: string; medicine: Medicine; handleDelete: (id: string) => void; handleOpen: (medicine: Medicine) => void; }) {
-    const { setNodeRef, listeners, attributes } = useDraggable({ id });
+export const MedicineKanban = ({ medicines, handleDelete, handleOpen, handleStatusChange }: Props) => {
     return (
-        <div
-            ref={setNodeRef}
-            {...listeners}
-            {...attributes}
-            style={{
-                cursor: 'grab',
-                marginBottom: 8,
-            }}
-        >
-            <MedicineCard
-                medicine={medicine}
-                handleDelete={handleDelete}
-                handleOpen={handleOpen}
-            />
-        </div>
+        <DndProvider backend={HTML5Backend}>
+            <div style={{
+                display: 'flex',
+                gap: '32px',
+                padding: '32px 16px',
+                overflowX: 'auto',
+                minHeight: 'calc(100vh - 200px)',
+                background: '#f7f8fa',
+            }}>
+                {columns.map((column) => (
+                    <DroppableColumn
+                        key={column.status}
+                        status={column.status}
+                        title={column.title}
+                        medicines={medicines}
+                        handleDelete={handleDelete}
+                        handleOpen={handleOpen}
+                        handleStatusChange={handleStatusChange}
+                    />
+                ))}
+            </div>
+        </DndProvider>
     );
-} 
+}; 
