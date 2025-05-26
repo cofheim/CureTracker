@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Badge, Modal, Card, Typography, Button, Tooltip, Row, Col, Select, DatePicker, Space } from 'antd';
+import { Badge, Modal, Card, Typography, Button, Tooltip, Row, Col, Select, DatePicker, Space, Empty } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { Medicine } from '@/app/models/Medicine';
@@ -201,40 +201,57 @@ export const MedicineCalendar: React.FC<MedicineCalendarProps> = ({
 
   return (
     <div>
-      <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-        <div>
-          <Button onClick={goToToday}>Сегодня</Button>
-          <Button onClick={navigatePrevious} style={{ marginLeft: '8px' }}>← Назад</Button>
-          <Button onClick={navigateNext} style={{ marginLeft: '8px' }}>Вперед →</Button>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Text strong style={{ marginRight: '8px' }}>Перейти к:</Text>
-          <DatePicker 
-            value={startDay}
-            onChange={handleDateChange}
-            allowClear={false}
-            format="DD MMMM YYYY"
-            style={{ width: '180px' }}
+      {medicines.length === 0 ? (
+        <div style={{ 
+          textAlign: 'center',
+          padding: '50px 0',
+          width: '100%',
+          backgroundColor: 'white',
+          borderRadius: '8px'
+        }}>
+          <Empty 
+            description="Нет лекарств, соответствующих заданным фильтрам" 
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
         </div>
-      </div>
-      
-      <div style={{ 
-        backgroundColor: 'white', 
-        padding: '20px', 
-        borderRadius: '8px'
-      }}>
-        <div style={{ marginBottom: '16px', textAlign: 'center' }}>
-          <Title level={4}>{startDay.format('MMMM YYYY')}</Title>
-        </div>
-        <Row gutter={[8, 8]}>
-          {calendarDays.map((day, index) => (
-            <Col span={6} key={index}>
-              {renderDay(day)}
-            </Col>
-          ))}
-        </Row>
-      </div>
+      ) : (
+        <>
+          <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <div>
+              <Button onClick={goToToday}>Сегодня</Button>
+              <Button onClick={navigatePrevious} style={{ marginLeft: '8px' }}>← Назад</Button>
+              <Button onClick={navigateNext} style={{ marginLeft: '8px' }}>Вперед →</Button>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Text strong style={{ marginRight: '8px' }}>Перейти к:</Text>
+              <DatePicker 
+                value={startDay}
+                onChange={handleDateChange}
+                allowClear={false}
+                format="DD MMMM YYYY"
+                style={{ width: '180px' }}
+              />
+            </div>
+          </div>
+          
+          <div style={{ 
+            backgroundColor: 'white', 
+            padding: '20px', 
+            borderRadius: '8px'
+          }}>
+            <div style={{ marginBottom: '16px', textAlign: 'center' }}>
+              <Title level={4}>{startDay.format('MMMM YYYY')}</Title>
+            </div>
+            <Row gutter={[8, 8]}>
+              {calendarDays.map((day, index) => (
+                <Col span={6} key={index}>
+                  {renderDay(day)}
+                </Col>
+              ))}
+            </Row>
+          </div>
+        </>
+      )}
       
       <Modal
         title={`Приемы лекарств на ${selectedDate.format('DD MMMM YYYY')}`}

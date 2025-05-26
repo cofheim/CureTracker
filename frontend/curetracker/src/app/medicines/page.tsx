@@ -2,7 +2,7 @@
 
 import { Button, Typography, Segmented } from "antd";
 import { AppstoreOutlined, BarsOutlined, CalendarOutlined } from "@ant-design/icons";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { createMedicine, deleteMedicine, getAllMedicines, MedicineRequest, updateMedicine, takeDose, skipDose, Status, IntakeFrequency } from "@/services/medicines";
 import Title from "antd/es/typography/Title";
 import { Medicine as MedicineModel } from "../models/Medicine";
@@ -11,6 +11,8 @@ import { MedicineType } from "@/services/medicines";
 import { MedicineCalendar } from "../components/MedicineCalendar";
 import { Medicines } from "../components/Medicines";
 import { calculateCourseDetails } from "@/utils/courseUtils";
+import { MedicineFilters, MedicineFilters as MedicineFiltersType } from "../components/MedicineFilters";
+import dayjs from "dayjs";
 
 interface EnrichedMedicine extends MedicineModel {
     totalDosesInCourse: number;
@@ -20,6 +22,11 @@ interface EnrichedMedicine extends MedicineModel {
 
 export default function MedicinesPage() {
     const [view, setView] = useState<'list' | 'calendar'>('list');
+    const [filters, setFilters] = useState<MedicineFiltersType>({
+        searchQuery: '',
+        status: null,
+        dateRange: null
+    });
 
     const defaulValues: MedicineModel = {
         id: "",
@@ -199,6 +206,44 @@ export default function MedicinesPage() {
         window.location.href = "/";
     };
 
+    const filteredMedicines = useMemo(() => {
+        return medicines.filter(medicine => {
+            if (filters.searchQuery && !medicine.name.toLowerCase().includes(filters.searchQuery.toLowerCase()) &&
+                !medicine.description.toLowerCase().includes(filters.searchQuery.toLowerCase())) {
+                return false;
+            }
+            
+            if (filters.status && medicine.status !== filters.status) {
+                return false;
+            }
+            
+            if (filters.dateRange && filters.dateRange[0] && filters.dateRange[1]) {
+                const startDate = dayjs(medicine.startDate);
+                const endDate = dayjs(medicine.endDate);
+                const filterStartDate = filters.dateRange[0];
+                const filterEndDate = filters.dateRange[1];
+                
+                const periodsOverlap = 
+                    (startDate.isBefore(filterEndDate) || startDate.isSame(filterEndDate, 'day')) &&
+                    (endDate.isAfter(filterStartDate) || endDate.isSame(filterStartDate, 'day'));
+                
+                if (!periodsOverlap) {
+                    return false;
+                }
+            }
+            
+            return true;
+        });
+    }, [medicines, filters]);
+
+    const handleResetFilters = () => {
+        setFilters({
+            searchQuery: '',
+            status: null,
+            dateRange: null
+        });
+    };
+
     return (
         <div style={{ 
             position: 'relative', 
@@ -267,6 +312,23 @@ export default function MedicinesPage() {
                         />
                     </div>
 
+                    {medicines.length > 0 && (
+                        <>
+                            <MedicineFilters 
+                                filters={filters}
+                                onFiltersChange={setFilters}
+                                onResetFilters={handleResetFilters}
+                            />
+                            {(filters.searchQuery || filters.status || (filters.dateRange && filters.dateRange[0] && filters.dateRange[1])) && (
+                                <div style={{ marginBottom: '16px', textAlign: 'right' }}>
+                                    <Typography.Text>
+                                        Найдено лекарств: <strong>{filteredMedicines.length}</strong> из {medicines.length}
+                                    </Typography.Text>
+                                </div>
+                            )}
+                        </>
+                    )}
+
                     {loading ? (
                         <div style={{ 
                             position: 'absolute',
@@ -281,7 +343,7 @@ export default function MedicinesPage() {
                         <>
                             {view === 'list' && (
                                 <Medicines
-                                    medicines={medicines}
+                                    medicines={filteredMedicines}
                                     handleDelete={handleDeleteMedicine}
                                     handleOpen={openEditModal}
                                     handleTakeDose={handleTakeDose}
@@ -290,7 +352,7 @@ export default function MedicinesPage() {
                             )}
                             {view === 'calendar' && (
                                 <MedicineCalendar
-                                    medicines={medicines}
+                                    medicines={filteredMedicines}
                                     handleOpen={openEditModal}
                                     handleTakeDose={handleTakeDose}
                                     handleSkipDose={handleSkipDose}
