@@ -40,7 +40,8 @@ namespace CureTracker.Controllers
                 z.EndDate,
                 z.Type,
                 z.Status,
-                z.IntakeFrequency));
+                z.IntakeFrequency,
+                z.TakenDosesCount));
 
             return Ok(response);
         }
@@ -74,7 +75,8 @@ namespace CureTracker.Controllers
                 medicine.EndDate,
                 medicine.Type,
                 medicine.Status,
-                medicine.IntakeFrequency);
+                medicine.IntakeFrequency,
+                medicine.TakenDosesCount);
                 
             return Ok(response);
         }
@@ -160,6 +162,33 @@ namespace CureTracker.Controllers
             }
 
             return Ok(await _medicineService.DeleteMedicine(id));
+        }
+        
+        [HttpPost("{id:guid}/TakeDose")]
+        public async Task<ActionResult<Guid>> TakeDose(Guid id, [FromBody] TakeDoseRequest request)
+        {
+            var currentUserId = GetCurrentUserId();
+            
+            var existingMedicine = await _medicineService.GetMedicineById(id);
+            if (existingMedicine == null)
+            {
+                return NotFound();
+            }
+            
+            if (existingMedicine.UserId != currentUserId)
+            {
+                return Forbid();
+            }
+            
+            try
+            {
+                var medicineId = await _medicineService.TakeDose(id, request.IntakeTime, currentUserId);
+                return Ok(medicineId);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         private Guid GetCurrentUserId()

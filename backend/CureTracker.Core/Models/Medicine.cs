@@ -25,7 +25,8 @@ namespace CureTracker.Core.Models
             MedicineType type,
             Status status,
             IntakeFrequency intakeFrequency,
-            Guid userId)
+            Guid userId,
+            int takenDosesCount = 0)
         {
             Id = id;
             Name = name;
@@ -40,6 +41,7 @@ namespace CureTracker.Core.Models
             Status = status;
             IntakeFrequency = intakeFrequency;
             UserId = userId;
+            TakenDosesCount = takenDosesCount;
         }
 
         #region Props
@@ -55,6 +57,7 @@ namespace CureTracker.Core.Models
         public MedicineType Type { get; private set; } = MedicineType.Other; // форма лекарства
         public Status Status { get; private set; } = Status.Planned; // статус приёма: запланирован, в процессе и т.д.
         public IntakeFrequency IntakeFrequency { get; private set; } = IntakeFrequency.Daily; // как часто принимать лекарство
+        public int TakenDosesCount { get; private set; } = 0; // количество принятых доз
 
         // связь с пользователем
         public Guid UserId { get; private set; } // ID пользователя
@@ -77,7 +80,8 @@ namespace CureTracker.Core.Models
             MedicineType type,
             Status status,
             IntakeFrequency intakeFrequency,
-            Guid userId)
+            Guid userId,
+            int takenDosesCount = 0)
         {
             var error = string.Empty;
 
@@ -97,6 +101,8 @@ namespace CureTracker.Core.Models
                 error = "Number of taking times must match Times A Day value";
             else if (userId == Guid.Empty)
                 error = "User ID cannot be empty";
+            else if (takenDosesCount < 0)
+                error = "Taken doses count cannot be less than 0";
 
             var medicine = new Medicine(id,
                 name,
@@ -110,7 +116,8 @@ namespace CureTracker.Core.Models
                 type,
                 status,
                 intakeFrequency,
-                userId);
+                userId,
+                takenDosesCount);
 
             return (medicine, error);
         }

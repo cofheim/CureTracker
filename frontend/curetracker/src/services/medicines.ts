@@ -38,6 +38,10 @@ export interface MedicineRequest {
     intakeFrequency: IntakeFrequency;
 }
 
+export interface TakeDoseRequest {
+    intakeTime: Date;
+}
+
 export const getAllMedicines = async () => {
     const token = localStorage.getItem("token");
     const response = await fetch("https://localhost:7210/Medicine", {
@@ -80,4 +84,17 @@ export const deleteMedicine = async (id: string) => {
             "Authorization": "Bearer " + token,
         },
     });
+};
+
+export const takeDose = async (medicineId: string, intakeTime: Date) => {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`https://localhost:7210/Medicine/${medicineId}/TakeDose`, {
+        method: "POST",
+        headers: {
+            "content-type": "application/json",
+            "Authorization": "Bearer " + token,
+        },
+        body: JSON.stringify({ intakeTime }),
+    });
+    return response.ok;
 };

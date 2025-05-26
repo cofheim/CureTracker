@@ -36,4 +36,7 @@ public interface IMedicineService
     
     // Удаление лекарства
     Task<Guid> DeleteMedicine(Guid id);
+    
+    // Регистрация приема дозы лекарства
+    Task<Guid> TakeDose(Guid medicineId, DateTime intakeTime, Guid userId);
 }

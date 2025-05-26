@@ -78,5 +78,28 @@ namespace CureTracker.Application.Services
         {
             return await _medicineRepository.Delete(id);
         }
+        
+        public async Task<Guid> TakeDose(Guid medicineId, DateTime intakeTime, Guid userId)
+        {
+            var medicine = await _medicineRepository.GetById(medicineId);
+            if (medicine == null)
+            {
+                throw new KeyNotFoundException($"Medicine with ID {medicineId} not found");
+            }
+            
+            if (medicine.UserId != userId)
+            {
+                throw new UnauthorizedAccessException("Not authorized to take a dose of this medicine");
+            }
+            
+            // Проверяем, что лекарство в активном периоде
+            var today = DateTime.UtcNow.Date;
+            if (today < medicine.StartDate.Date || today > medicine.EndDate.Date)
+            {
+                throw new InvalidOperationException("Cannot take a dose of medicine outside its active period");
+            }
+            
+            return await _medicineRepository.IncrementTakenDoses(medicineId);
+        }
     }
 }

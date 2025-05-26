@@ -52,4 +52,11 @@ public interface IMedicineRepository
     /// </summary>
     /// <param name="id">Идентификатор лекарства</param>
     Task<Guid> Delete(Guid id);
+    
+    /// <summary>
+    /// Увеличивает счетчик принятых доз лекарства на 1
+    /// </summary>
+    /// <param name="medicineId">Идентификатор лекарства</param>
+    /// <returns>Идентификатор обновленного лекарства</returns>
+    Task<Guid> IncrementTakenDoses(Guid medicineId);
 }

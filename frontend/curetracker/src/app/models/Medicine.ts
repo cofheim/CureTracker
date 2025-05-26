@@ -15,5 +15,6 @@ export interface Medicine {
     intakeFrequency: IntakeFrequency;
     totalDosesInCourse?: number;
     takenDosesInCourse?: number;
+    takenDosesCount?: number;
     todaysIntakes?: Array<{ time: Date, plannedTime: string, status: 'planned' | 'taken' | 'missed' }>;
 }

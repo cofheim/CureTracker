@@ -3,11 +3,11 @@
 import { Button, Typography, Segmented } from "antd";
 import { AppstoreOutlined, BarsOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { createMedicine, deleteMedicine, getAllMedicines, MedicineRequest, updateMedicine } from "@/services/medicines";
+import { createMedicine, deleteMedicine, getAllMedicines, MedicineRequest, updateMedicine, takeDose, Status, IntakeFrequency } from "@/services/medicines";
 import Title from "antd/es/typography/Title";
 import { Medicine as MedicineModel } from "../models/Medicine";
 import { CreateUpdateMedicine, Mode } from "../components/CreateUpdateMedicine";
-import { MedicineType, Status, IntakeFrequency } from "@/services/medicines";
+import { MedicineType } from "@/services/medicines";
 import { MedicineKanban } from "../components/MedicineKanban";
 import { Medicines } from "../components/Medicines";
 import { calculateCourseDetails } from "@/utils/courseUtils";
@@ -43,13 +43,14 @@ export default function MedicinesPage() {
     const [mode, setMode] = useState(Mode.Create);
 
     const processMedicines = (medicinesToProcess: MedicineModel[]): EnrichedMedicine[] => {
+        console.log('Raw medicines from API:', medicinesToProcess);
         return medicinesToProcess.map(med => {
             const details = calculateCourseDetails(med);
             return {
                 ...med,
                 totalDosesInCourse: details.totalDosesInCourse,
                 todaysIntakes: details.todaysIntakes,
-                takenDosesInCourse: med.takenDosesInCourse || 0 
+                takenDosesInCourse: med.takenDosesCount || 0 
             };
         });
     };
@@ -89,27 +90,30 @@ export default function MedicinesPage() {
         refreshMedicines();
     };
 
-    const handleTakeDose = (medicineId: string, intakeTimeToMark: Date) => {
-        setMedicines(prevMedicines => 
-            prevMedicines.map(med => {
-                if (med.id === medicineId) {
-                    let newTakenDoses = med.takenDosesInCourse;
-                    const newTodaysIntakes = med.todaysIntakes.map(intake => {
-                        if (intake.time.getTime() === intakeTimeToMark.getTime() && intake.status === 'planned') {
-                            newTakenDoses++;
-                            return { ...intake, status: 'taken' as 'taken' };
-                        }
-                        return intake;
-                    });
-                    return { 
-                        ...med, 
-                        todaysIntakes: newTodaysIntakes, 
-                        takenDosesInCourse: newTakenDoses 
-                    };
-                }
-                return med;
-            })
-        );
+    const handleTakeDose = async (medicineId: string, intakeTimeToMark: Date) => {
+        const success = await takeDose(medicineId, intakeTimeToMark);
+        
+        if (success) {
+            setMedicines(prevMedicines => 
+                prevMedicines.map(med => {
+                    if (med.id === medicineId) {
+                        const newTodaysIntakes = med.todaysIntakes.map(intake => {
+                            if (intake.time.getTime() === intakeTimeToMark.getTime() && intake.status === 'planned') {
+                                return { ...intake, status: 'taken' as 'taken' };
+                            }
+                            return intake;
+                        });
+                        return { 
+                            ...med, 
+                            todaysIntakes: newTodaysIntakes,
+                        };
+                    }
+                    return med;
+                })
+            );
+            
+            await refreshMedicines();
+        }
     };
 
     const handleStatusChange = async (id: string, newStatus: Status) => {

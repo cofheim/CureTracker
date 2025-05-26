@@ -17,5 +17,6 @@ namespace CureTracker.Contracts
         DateTime EndDate,
         MedicineType Type,
         Status Status,
-        IntakeFrequency IntakeFrequency);
+        IntakeFrequency IntakeFrequency,
+        int TakenDosesCount);
 }
