@@ -21,7 +21,7 @@ const columns = [
     { status: Status.InProgress, title: "В процессе" },
     { status: Status.Taken, title: "Принято" },
     { status: Status.Missed, title: "Пропущено" },
-    { status: Status.Skipped, title: "Пропущено" },
+    { status: Status.Skipped, title: "Пропущено (намеренно)" },
 ];
 
 const DraggableCard = ({ medicine, handleDelete, handleOpen }: { 
