@@ -1,17 +1,18 @@
 "use client";
 
-import { Button, Typography } from "antd";
+import { Button, Typography, Segmented } from "antd";
+import { AppstoreOutlined, BarsOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { createMedicine, deleteMedicine, getAllMedicines, MedicineRequest, updateMedicine } from "@/services/medicines";
 import Title from "antd/es/typography/Title";
 import { Medicine } from "../models/Medicine";
 import { CreateUpdateMedicine, Mode } from "../components/CreateUpdateMedicine";
 import { MedicineType, Status, IntakeFrequency } from "@/services/medicines";
-import AuthFormSwitcher from "../components/AuthFormSwitcher";
 import { MedicineKanban } from "../components/MedicineKanban";
+import { Medicines } from "../components/Medicines";
 
 export default function MedicinesPage() {
-    const [isAuth, setIsAuth] = useState(false);
+    const [view, setView] = useState<'list' | 'kanban'>('kanban');
 
     const defaulValues: Medicine = {
         id: "",
@@ -35,12 +36,6 @@ export default function MedicinesPage() {
     const [mode, setMode] = useState(Mode.Create);
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        setIsAuth(!!token);
-    }, []);
-
-    useEffect(() => {
-        if (!isAuth) return;
         const getMedicinesList = async () => {
             setLoading(true);
             const medicines = await getAllMedicines();
@@ -48,7 +43,7 @@ export default function MedicinesPage() {
             setLoading(false);
         };
         getMedicinesList();
-    }, [isAuth]);
+    }, []);
 
     const handleCreateMedicine = async (request: MedicineRequest) => {
         await createMedicine(request);
@@ -118,12 +113,8 @@ export default function MedicinesPage() {
 
     const handleLogout = () => {
         localStorage.removeItem("token");
-        setIsAuth(false);
+        window.location.href = "/";
     };
-
-    if (!isAuth) {
-        return <AuthFormSwitcher onAuth={() => setIsAuth(true)} />;
-    }
 
     return (
         <div style={{ 
@@ -168,6 +159,8 @@ export default function MedicinesPage() {
                     <div style={{ 
                         display: 'flex', 
                         justifyContent: 'center', 
+                        alignItems: 'center',
+                        gap: '20px',
                         marginBottom: 24 
                     }}>
                         <Button 
@@ -175,13 +168,20 @@ export default function MedicinesPage() {
                             type="primary" 
                             size="large"
                             style={{ 
-                                padding: '0 40px',
                                 height: '48px',
                                 fontSize: '16px'
                             }}
                         >
                             Добавить лекарство
                         </Button>
+                        <Segmented
+                            options={[
+                                { label: 'Список', value: 'list', icon: <BarsOutlined /> },
+                                { label: 'Канбан', value: 'kanban', icon: <AppstoreOutlined /> },
+                            ]}
+                            value={view}
+                            onChange={(value) => setView(value as 'list' | 'kanban')}
+                        />
                     </div>
 
                     {loading ? (
@@ -195,12 +195,23 @@ export default function MedicinesPage() {
                             <Title>Загрузка...</Title>
                         </div>
                     ) : (
-                        <MedicineKanban
-                            medicines={medicines}
-                            handleOpen={openEditModal}
-                            handleDelete={handleDeleteMedicine}
-                            handleStatusChange={handleStatusChange}
-                        />
+                        <>
+                            {view === 'list' && (
+                                <Medicines
+                                    medicines={medicines}
+                                    handleDelete={handleDeleteMedicine}
+                                    handleOpen={openEditModal}
+                                />
+                            )}
+                            {view === 'kanban' && (
+                                <MedicineKanban
+                                    medicines={medicines}
+                                    handleOpen={openEditModal}
+                                    handleDelete={handleDeleteMedicine}
+                                    handleStatusChange={handleStatusChange}
+                                />
+                            )}
+                        </>
                     )}
                 </div>
             )}
