@@ -1,22 +1,28 @@
 import { MedicineName } from "./MedicineName";
-import Button from "antd/es/button/button";
-import { Card, Modal, Typography } from "antd";
-import { Medicine } from "../models/Medicine";
+import { Button, Card, Modal, Typography, Progress, Empty } from "antd";
+import { Medicine as MedicineModel } from "../models/Medicine";
 import { useState } from "react";
 import { getMedicineTypeLabel, getStatusLabel, getIntakeFrequencyLabel } from "@/utils/enumLocalization";
 
-const { Text } = Typography;
+const { Text, Title } = Typography;
 
-interface Props {
-    medicines: Medicine[];
-    handleDelete: (id:string) => void;
-    handleOpen: (medicine: Medicine) => void;
+interface EnrichedMedicineClient extends MedicineModel {
+    totalDosesInCourse: number;
+    takenDosesInCourse: number;
+    todaysIntakes: Array<{ time: Date, plannedTime: string, status: 'planned' | 'taken' | 'missed' }>;
 }
 
-export const Medicines = ({medicines, handleDelete, handleOpen} : Props) => {
-    const [medicineToDelete, setMedicineToDelete] = useState<Medicine | null>(null);
+interface Props {
+    medicines: EnrichedMedicineClient[];
+    handleDelete: (id:string) => void;
+    handleOpen: (medicine: MedicineModel) => void;
+    handleTakeDose: (medicineId: string, intakeTime: Date) => void;
+}
 
-    const showDeleteConfirm = (medicine: Medicine) => {
+export const Medicines = ({medicines, handleDelete, handleOpen, handleTakeDose} : Props) => {
+    const [medicineToDelete, setMedicineToDelete] = useState<MedicineModel | null>(null);
+
+    const showDeleteConfirm = (medicine: MedicineModel) => {
         setMedicineToDelete(medicine);
     };
 
@@ -48,11 +54,10 @@ export const Medicines = ({medicines, handleDelete, handleOpen} : Props) => {
 
     return (
         <div className="cards">
-            {medicines.map((medicine : Medicine) => (
+            {medicines.map((medicine : EnrichedMedicineClient) => (
                 <Card 
                     key={medicine.id} 
                     title={<MedicineName name={medicine.name}/>} 
-                    variant="borderless"
                 >
                     <div style={{ marginBottom: '16px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -63,9 +68,6 @@ export const Medicines = ({medicines, handleDelete, handleOpen} : Props) => {
                             )}
                             <Text type="secondary">
                                 <strong>Тип:</strong> {getMedicineTypeLabel(medicine.type)}
-                            </Text>
-                            <Text type="secondary">
-                                <strong>Статус:</strong> {getStatusLabel(medicine.status)}
                             </Text>
                             <Text type="secondary">
                                 <strong>Частота приема:</strong> {getIntakeFrequencyLabel(medicine.intakeFrequency)}
@@ -82,14 +84,61 @@ export const Medicines = ({medicines, handleDelete, handleOpen} : Props) => {
                                 <strong>Приемов в день:</strong> {medicine.timesADay}
                             </Text>
                             <Text type="secondary">
-                                <strong>Времена приёма:</strong> {medicine.timesOfTaking.map(time => formatTime(time)).join(', ')}
+                                <strong>Дата начала:</strong> {formatDate(new Date(medicine.startDate))}
                             </Text>
                             <Text type="secondary">
-                                <strong>Дата начала:</strong> {formatDate(medicine.startDate)}
+                                <strong>Дата окончания:</strong> {formatDate(new Date(medicine.endDate))}
                             </Text>
-                            <Text type="secondary">
-                                <strong>Дата окончания:</strong> {formatDate(medicine.endDate)}
-                            </Text>
+
+                            {medicine.totalDosesInCourse > 0 && (
+                                <div style={{ marginTop: '16px' }}>
+                                    <Title level={5} style={{ marginBottom: '8px' }}>Прогресс курса:</Title>
+                                    <Progress 
+                                        percent={Math.round((medicine.takenDosesInCourse / medicine.totalDosesInCourse) * 100)} 
+                                        strokeColor={{ '0%': '#108ee9', '100%': '#87d068' }} 
+                                    />
+                                    <Text type="secondary" style={{ display: 'block', textAlign: 'right' }}>
+                                        Принято {medicine.takenDosesInCourse} из {medicine.totalDosesInCourse}
+                                    </Text>
+                                </div>
+                            )}
+
+                            {medicine.todaysIntakes && medicine.todaysIntakes.length > 0 && (
+                                <div style={{ marginTop: '16px' }}>
+                                    <Title level={5} style={{ marginBottom: '8px' }}>Сегодняшние приемы:</Title>
+                                    {medicine.todaysIntakes.map((intake, index) => (
+                                        <div key={index} style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            padding: '8px 0',
+                                            borderBottom: index < medicine.todaysIntakes.length - 1 ? '1px solid #f0f0f0' : 'none'
+                                        }}>
+                                            <Text style={{ textDecoration: intake.status === 'taken' ? 'line-through' : 'none' }}>
+                                                {intake.plannedTime}
+                                            </Text>
+                                            {intake.status === 'planned' && (
+                                                <Button 
+                                                    size="small" 
+                                                    type="primary" 
+                                                    onClick={() => handleTakeDose(medicine.id, intake.time)}
+                                                >
+                                                    Принять
+                                                </Button>
+                                            )}
+                                            {intake.status === 'taken' && (
+                                                <Text type="success">Принято ✔</Text>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                             {medicine.todaysIntakes && medicine.todaysIntakes.length === 0 && medicine.totalDosesInCourse > 0 && (
+                                <div style={{ marginTop: '16px' }}>
+                                     <Title level={5} style={{ marginBottom: '8px' }}>Сегодняшние приемы:</Title>
+                                     <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="На сегодня приемов нет" />
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div className="card_buttons">

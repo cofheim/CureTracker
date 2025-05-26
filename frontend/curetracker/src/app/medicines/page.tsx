@@ -5,16 +5,23 @@ import { AppstoreOutlined, BarsOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { createMedicine, deleteMedicine, getAllMedicines, MedicineRequest, updateMedicine } from "@/services/medicines";
 import Title from "antd/es/typography/Title";
-import { Medicine } from "../models/Medicine";
+import { Medicine as MedicineModel } from "../models/Medicine";
 import { CreateUpdateMedicine, Mode } from "../components/CreateUpdateMedicine";
 import { MedicineType, Status, IntakeFrequency } from "@/services/medicines";
 import { MedicineKanban } from "../components/MedicineKanban";
 import { Medicines } from "../components/Medicines";
+import { calculateCourseDetails } from "@/utils/courseUtils";
+
+interface EnrichedMedicine extends MedicineModel {
+    totalDosesInCourse: number;
+    takenDosesInCourse: number;
+    todaysIntakes: Array<{ time: Date, plannedTime: string, status: 'planned' | 'taken' | 'missed' }>;
+}
 
 export default function MedicinesPage() {
-    const [view, setView] = useState<'list' | 'kanban'>('kanban');
+    const [view, setView] = useState<'list' | 'kanban'>('list');
 
-    const defaulValues: Medicine = {
+    const defaulValues: MedicineModel = {
         id: "",
         name: "",
         description: "",
@@ -29,41 +36,80 @@ export default function MedicinesPage() {
         intakeFrequency: IntakeFrequency.Daily
     };
 
-    const [values, setValues] = useState<Medicine>(defaulValues);
+    const [values, setValues] = useState<MedicineModel>(defaulValues);
     const [loading, setLoading] = useState(true);
-    const [medicines, setMedicines] = useState<Medicine[]>([]);
+    const [medicines, setMedicines] = useState<EnrichedMedicine[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [mode, setMode] = useState(Mode.Create);
+
+    const processMedicines = (medicinesToProcess: MedicineModel[]): EnrichedMedicine[] => {
+        return medicinesToProcess.map(med => {
+            const details = calculateCourseDetails(med);
+            return {
+                ...med,
+                totalDosesInCourse: details.totalDosesInCourse,
+                todaysIntakes: details.todaysIntakes,
+                takenDosesInCourse: med.takenDosesInCourse || 0 
+            };
+        });
+    };
 
     useEffect(() => {
         const getMedicinesList = async () => {
             setLoading(true);
-            const medicines = await getAllMedicines();
-            setMedicines(medicines);
+            const rawMedicines = await getAllMedicines();
+            setMedicines(processMedicines(rawMedicines));
             setLoading(false);
         };
         getMedicinesList();
     }, []);
 
+    const refreshMedicines = async () => {
+        setLoading(true);
+        const rawMedicines = await getAllMedicines();
+        setMedicines(processMedicines(rawMedicines));
+        setLoading(false);
+    }
+
     const handleCreateMedicine = async (request: MedicineRequest) => {
         await createMedicine(request);
         closeModal();
-        const medicines = await getAllMedicines();
-        setMedicines(medicines);
+        refreshMedicines();
     };
 
     const handleUpdateMedicine = async (id: string, request: MedicineRequest) => {
         await updateMedicine(id, request);
         closeModal();
-        const medicines = await getAllMedicines();
-        setMedicines(medicines);
+        refreshMedicines();
     };
 
     const handleDeleteMedicine = async (id: string) => {
         await deleteMedicine(id);
         closeModal();
-        const medicines = await getAllMedicines();
-        setMedicines(medicines);
+        refreshMedicines();
+    };
+
+    const handleTakeDose = (medicineId: string, intakeTimeToMark: Date) => {
+        setMedicines(prevMedicines => 
+            prevMedicines.map(med => {
+                if (med.id === medicineId) {
+                    let newTakenDoses = med.takenDosesInCourse;
+                    const newTodaysIntakes = med.todaysIntakes.map(intake => {
+                        if (intake.time.getTime() === intakeTimeToMark.getTime() && intake.status === 'planned') {
+                            newTakenDoses++;
+                            return { ...intake, status: 'taken' as 'taken' };
+                        }
+                        return intake;
+                    });
+                    return { 
+                        ...med, 
+                        todaysIntakes: newTodaysIntakes, 
+                        takenDosesInCourse: newTakenDoses 
+                    };
+                }
+                return med;
+            })
+        );
     };
 
     const handleStatusChange = async (id: string, newStatus: Status) => {
@@ -95,7 +141,7 @@ export default function MedicinesPage() {
         await handleUpdateMedicine(id, request);
     };
 
-    const openEditModal = (medicine: Medicine) => {
+    const openEditModal = (medicine: MedicineModel) => {
         setMode(Mode.Edit);
         setValues(medicine);
         setIsModalOpen(true);
@@ -201,6 +247,7 @@ export default function MedicinesPage() {
                                     medicines={medicines}
                                     handleDelete={handleDeleteMedicine}
                                     handleOpen={openEditModal}
+                                    handleTakeDose={handleTakeDose}
                                 />
                             )}
                             {view === 'kanban' && (
