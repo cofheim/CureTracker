@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { Calendar, Badge, Modal, Card, Typography, Button, Tooltip } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Badge, Modal, Card, Typography, Button, Tooltip, Row, Col, Select, DatePicker } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { Medicine } from '@/app/models/Medicine';
 import { getMedicineTypeLabel } from '@/utils/enumLocalization';
 import { MedicineName } from './MedicineName';
-import type { CalendarProps } from 'antd';
 
 const { Text, Title } = Typography;
+const { Option } = Select;
 
 interface MedicineCalendarProps {
   medicines: Medicine[];
@@ -22,6 +22,17 @@ export const MedicineCalendar: React.FC<MedicineCalendarProps> = ({
 }) => {
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [calendarDays, setCalendarDays] = useState<Dayjs[]>([]);
+  const [startDay, setStartDay] = useState<Dayjs>(dayjs());
+
+  // Генерируем 28 дней (4 недели), начиная с сегодняшнего дня
+  useEffect(() => {
+    const days: Dayjs[] = [];
+    for (let i = 0; i < 28; i++) {
+      days.push(startDay.add(i, 'day'));
+    }
+    setCalendarDays(days);
+  }, [startDay]);
 
   // Функция для получения запланированных приемов на конкретный день
   const getIntakesForDate = (date: Dayjs) => {
@@ -82,52 +93,73 @@ export const MedicineCalendar: React.FC<MedicineCalendarProps> = ({
     return intakes;
   };
 
-  // Функция для отображения событий в ячейке дня
-  const renderIntakesCell = (date: Dayjs) => {
+  // Функция для отображения дня
+  const renderDay = (date: Dayjs) => {
     const intakes = getIntakesForDate(date);
+    const isToday = date.isSame(dayjs(), 'day');
     
     return (
-      <ul className="events" style={{ 
-        margin: 0, 
-        padding: 0, 
-        listStyle: 'none',
-        maxHeight: '100px',
-        overflow: 'hidden'
-      }}>
-        {intakes.map((item, index) => {
-          let badgeStatus: "success" | "processing" | "error" | "warning" | "default" = "default";
-          
-          switch(item.status) {
-            case 'taken':
-              badgeStatus = 'success';
-              break;
-            case 'planned':
-              badgeStatus = 'processing';
-              break;
-            case 'missed':
-              badgeStatus = 'error';
-              break;
-          }
-          
-          return (
-            <li key={index} style={{ marginBottom: '3px' }}>
-              <Tooltip title={`${item.medicine.name} - ${item.plannedTime}`}>
-                <Badge status={badgeStatus} text={`${item.plannedTime} ${item.medicine.name.substr(0, 8)}${item.medicine.name.length > 8 ? '...' : ''}`} />
-              </Tooltip>
+      <div 
+        className={`calendar-day ${isToday ? 'today' : ''}`}
+        onClick={() => handleSelect(date)}
+        style={{ 
+          padding: '8px',
+          border: '1px solid #f0f0f0',
+          borderRadius: '4px',
+          height: '100%',
+          minHeight: '120px',
+          cursor: 'pointer',
+          backgroundColor: isToday ? '#e6f7ff' : 'white'
+        }}
+      >
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          marginBottom: '32px',
+          fontWeight: isToday ? 'bold' : 'normal'
+        }}>
+          <span>{date.format('D')}</span>
+          <span>{date.format('ddd')}</span>
+        </div>
+        
+        <ul style={{ 
+          margin: 0, 
+          padding: 0, 
+          listStyle: 'none',
+          overflow: 'hidden',
+          maxHeight: '75px'
+        }}>
+          {intakes.slice(0, 3).map((item, index) => {
+            let badgeStatus: "success" | "processing" | "error" | "warning" | "default" = "default";
+            
+            switch(item.status) {
+              case 'taken':
+                badgeStatus = 'success';
+                break;
+              case 'planned':
+                badgeStatus = 'processing';
+                break;
+              case 'missed':
+                badgeStatus = 'error';
+                break;
+            }
+            
+            return (
+              <li key={index} style={{ marginBottom: '3px', fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <Tooltip title={`${item.medicine.name} - ${item.plannedTime}`}>
+                  <Badge status={badgeStatus} text={`${item.plannedTime} ${item.medicine.name.substr(0, 8)}${item.medicine.name.length > 8 ? '...' : ''}`} />
+                </Tooltip>
+              </li>
+            );
+          })}
+          {intakes.length > 3 && (
+            <li style={{ fontSize: '12px', textAlign: 'right' }}>
+              +{intakes.length - 3} еще...
             </li>
-          );
-        })}
-        {intakes.length > 3 && <li>...</li>}
-      </ul>
+          )}
+        </ul>
+      </div>
     );
-  };
-
-  // Новый обработчик cellRender для Calendar в Ant Design v5+
-  const cellRender: CalendarProps<Dayjs>['cellRender'] = (current, info) => {
-    if (info.type === 'date') {
-      return renderIntakesCell(current);
-    }
-    return null;
   };
 
   const handleSelect = (date: Dayjs) => {
@@ -139,20 +171,57 @@ export const MedicineCalendar: React.FC<MedicineCalendarProps> = ({
     setIsModalOpen(false);
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('ru-RU', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const navigatePrevious = () => {
+    setStartDay(startDay.subtract(7, 'day'));
+  };
+
+  const navigateNext = () => {
+    setStartDay(startDay.add(7, 'day'));
+  };
+
+  const goToToday = () => {
+    setStartDay(dayjs());
+  };
+  
+  // Обработчик изменения даты через DatePicker
+  const handleDateChange = (date: Dayjs | null) => {
+    if (date) {
+      setStartDay(date);
+    }
   };
 
   return (
     <div>
-      <Calendar 
-        cellRender={cellRender}
-        onSelect={handleSelect}
-        style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px' }}
-      />
+      <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+        <div>
+          <Button onClick={goToToday}>Сегодня</Button>
+          <Button onClick={navigatePrevious} style={{ marginLeft: '8px' }}>← Назад</Button>
+          <Button onClick={navigateNext} style={{ marginLeft: '8px' }}>Вперед →</Button>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Text strong style={{ marginRight: '8px' }}>Перейти к:</Text>
+          <DatePicker 
+            value={startDay}
+            onChange={handleDateChange}
+            allowClear={false}
+            format="DD MMMM YYYY"
+            style={{ width: '180px' }}
+          />
+        </div>
+      </div>
+      
+      <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px' }}>
+        <div style={{ marginBottom: '16px', textAlign: 'center' }}>
+          <Title level={4}>{startDay.format('MMMM YYYY')}</Title>
+        </div>
+        <Row gutter={[8, 8]}>
+          {calendarDays.map((day, index) => (
+            <Col span={6} key={index}>
+              {renderDay(day)}
+            </Col>
+          ))}
+        </Row>
+      </div>
       
       <Modal
         title={`Приемы лекарств на ${selectedDate.format('DD MMMM YYYY')}`}
@@ -217,6 +286,16 @@ export const MedicineCalendar: React.FC<MedicineCalendarProps> = ({
           )}
         </div>
       </Modal>
+
+      <style jsx global>{`
+        .calendar-day:hover {
+          background-color: #f9f9f9 !important;
+        }
+        .today {
+          border-color: #1890ff !important;
+          box-shadow: 0 0 0 1px #1890ff;
+        }
+      `}</style>
     </div>
   );
 }; 
