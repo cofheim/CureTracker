@@ -9,6 +9,7 @@ const { Text, Title } = Typography;
 interface EnrichedMedicineClient extends MedicineModel {
     totalDosesInCourse: number;
     takenDosesInCourse: number;
+    skippedDosesCount?: number;
     todaysIntakes: Array<{ time: Date, plannedTime: string, status: 'planned' | 'taken' | 'missed' | 'skipped' }>;
 }
 
@@ -113,6 +114,11 @@ export const Medicines = ({medicines, handleDelete, handleOpen, handleTakeDose, 
                                         <Text type="secondary" style={{ display: 'block', textAlign: 'right' }}>
                                             Принято {medicine.takenDosesInCourse} из {medicine.totalDosesInCourse}
                                         </Text>
+                                        {medicine.skippedDosesCount !== undefined && medicine.skippedDosesCount > 0 && (
+                                            <Text type="warning" style={{ display: 'block', textAlign: 'right' }}>
+                                                Пропущено: {medicine.skippedDosesCount}
+                                            </Text>
+                                        )}
                                     </div>
                                 )}
 

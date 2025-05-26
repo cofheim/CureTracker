@@ -26,7 +26,8 @@ namespace CureTracker.Core.Models
             Status status,
             IntakeFrequency intakeFrequency,
             Guid userId,
-            int takenDosesCount = 0)
+            int takenDosesCount = 0,
+            int skippedDosesCount = 0)
         {
             Id = id;
             Name = name;
@@ -42,6 +43,7 @@ namespace CureTracker.Core.Models
             IntakeFrequency = intakeFrequency;
             UserId = userId;
             TakenDosesCount = takenDosesCount;
+            SkippedDosesCount = skippedDosesCount;
         }
 
         #region Props
@@ -58,6 +60,7 @@ namespace CureTracker.Core.Models
         public Status Status { get; private set; } = Status.Planned; // статус приёма: запланирован, в процессе и т.д.
         public IntakeFrequency IntakeFrequency { get; private set; } = IntakeFrequency.Daily; // как часто принимать лекарство
         public int TakenDosesCount { get; private set; } = 0; // количество принятых доз
+        public int SkippedDosesCount { get; private set; } = 0; // количество пропущенных доз
 
         // связь с пользователем
         public Guid UserId { get; private set; } // ID пользователя
@@ -81,7 +84,8 @@ namespace CureTracker.Core.Models
             Status status,
             IntakeFrequency intakeFrequency,
             Guid userId,
-            int takenDosesCount = 0)
+            int takenDosesCount = 0,
+            int skippedDosesCount = 0)
         {
             var error = string.Empty;
 
@@ -103,23 +107,12 @@ namespace CureTracker.Core.Models
                 error = "User ID cannot be empty";
             else if (takenDosesCount < 0)
                 error = "Taken doses count cannot be less than 0";
+            else if (skippedDosesCount < 0)
+                error = "Skipped doses count cannot be less than 0";
 
-            var medicine = new Medicine(id,
-                name,
-                description,
-                dosagePerTake,
-                storageConditions,
-                timesADay,
-                timesOfTaking,
-                startDate,
-                endDate,
-                type,
-                status,
-                intakeFrequency,
-                userId,
-                takenDosesCount);
-
-            return (medicine, error);
+            return error != string.Empty
+                ? (new Medicine(Guid.Empty, "", "", 0, "", 0, new List<DateTime>(), DateTime.MinValue, DateTime.MinValue, MedicineType.Other, Status.Planned, IntakeFrequency.Daily, Guid.Empty), error)
+                : (new Medicine(id, name, description, dosagePerTake, storageConditions, timesADay, timesOfTaking, startDate, endDate, type, status, intakeFrequency, userId, takenDosesCount, skippedDosesCount), error);
         }
     }
 }

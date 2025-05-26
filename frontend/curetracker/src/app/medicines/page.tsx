@@ -17,6 +17,7 @@ import dayjs from "dayjs";
 interface EnrichedMedicine extends MedicineModel {
     totalDosesInCourse: number;
     takenDosesInCourse: number;
+    skippedDosesCount?: number;
     todaysIntakes: Array<{ time: Date, plannedTime: string, status: 'planned' | 'taken' | 'missed' | 'skipped' }>;
 }
 
@@ -57,7 +58,8 @@ export default function MedicinesPage() {
                 ...med,
                 totalDosesInCourse: details.totalDosesInCourse,
                 todaysIntakes: details.todaysIntakes,
-                takenDosesInCourse: med.takenDosesCount || 0 
+                takenDosesInCourse: med.takenDosesCount || 0,
+                skippedDosesCount: med.skippedDosesCount || 0
             };
         });
     };
@@ -152,9 +154,10 @@ export default function MedicinesPage() {
                 setMedicines(prevMedicines => 
                     prevMedicines.map(med => {
                         if (med.id === medicineId) {
-                            // Увеличиваем счетчик принятых доз
+                            // Увеличиваем счетчик принятых доз и счетчик пропущенных доз
                             const takenDosesCount = (med.takenDosesCount || 0) + 1;
                             const takenDosesInCourse = (med.takenDosesInCourse || 0) + 1;
+                            const skippedDosesCount = (med.skippedDosesCount || 0) + 1;
                             
                             const newTodaysIntakes = med.todaysIntakes.map(intake => {
                                 if (new Date(intake.time).getTime() === new Date(intakeTimeToMark).getTime() && 
@@ -168,7 +171,8 @@ export default function MedicinesPage() {
                                 ...med, 
                                 todaysIntakes: newTodaysIntakes,
                                 takenDosesCount,
-                                takenDosesInCourse
+                                takenDosesInCourse,
+                                skippedDosesCount
                             };
                         }
                         return med;

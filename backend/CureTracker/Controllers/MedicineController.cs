@@ -41,7 +41,8 @@ namespace CureTracker.Controllers
                 z.Type,
                 z.Status,
                 z.IntakeFrequency,
-                z.TakenDosesCount));
+                z.TakenDosesCount,
+                z.SkippedDosesCount));
 
             return Ok(response);
         }
@@ -76,7 +77,8 @@ namespace CureTracker.Controllers
                 medicine.Type,
                 medicine.Status,
                 medicine.IntakeFrequency,
-                medicine.TakenDosesCount);
+                medicine.TakenDosesCount,
+                medicine.SkippedDosesCount);
                 
             return Ok(response);
         }

@@ -59,4 +59,11 @@ public interface IMedicineRepository
     /// <param name="medicineId">Идентификатор лекарства</param>
     /// <returns>Идентификатор обновленного лекарства</returns>
     Task<Guid> IncrementTakenDoses(Guid medicineId);
+    
+    /// <summary>
+    /// Увеличивает счетчик пропущенных доз лекарства на 1
+    /// </summary>
+    /// <param name="medicineId">Идентификатор лекарства</param>
+    /// <returns>Идентификатор обновленного лекарства</returns>
+    Task<Guid> IncrementSkippedDoses(Guid medicineId);
 }

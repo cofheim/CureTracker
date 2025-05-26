@@ -63,7 +63,8 @@ namespace CureTracker.DataAccess.Repositories
                 Status = medicine.Status,
                 IntakeFrequency = medicine.IntakeFrequency,
                 UserId = medicine.UserId,
-                TakenDosesCount = medicine.TakenDosesCount
+                TakenDosesCount = medicine.TakenDosesCount,
+                SkippedDosesCount = medicine.SkippedDosesCount
             };
 
             await _context.Medicines.AddAsync(medicineEntity);
@@ -121,6 +122,16 @@ namespace CureTracker.DataAccess.Repositories
             return medicineId;
         }
         
+        public async Task<Guid> IncrementSkippedDoses(Guid medicineId)
+        {
+            await _context.Medicines
+                .Where(m => m.Id == medicineId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(m => m.SkippedDosesCount, m => m.SkippedDosesCount + 1));
+            
+            return medicineId;
+        }
+        
         private Medicine MapEntityToDomain(MedicineEntity entity)
         {
             var (medicine, _) = Medicine.Create(
@@ -137,7 +148,8 @@ namespace CureTracker.DataAccess.Repositories
                 entity.Status,
                 entity.IntakeFrequency,
                 entity.UserId,
-                entity.TakenDosesCount);
+                entity.TakenDosesCount,
+                entity.SkippedDosesCount);
                 
             return medicine;
         }

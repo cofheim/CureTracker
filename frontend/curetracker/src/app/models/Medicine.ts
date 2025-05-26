@@ -16,5 +16,6 @@ export interface Medicine {
     totalDosesInCourse?: number;
     takenDosesInCourse?: number;
     takenDosesCount?: number;
+    skippedDosesCount?: number;
     todaysIntakes?: Array<{ time: Date, plannedTime: string, status: 'planned' | 'taken' | 'missed' | 'skipped' }>;
 }

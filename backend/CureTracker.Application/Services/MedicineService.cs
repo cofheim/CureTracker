@@ -122,8 +122,9 @@ namespace CureTracker.Application.Services
                 throw new InvalidOperationException("Cannot skip a dose of medicine outside its active period");
             }
             
-            // Используем тот же метод инкремента счетчика доз, что и для приема
-            // Пропущенная доза засчитывается так же, как принятая, для прогресса
+            // Увеличиваем счетчик пропущенных доз (для отдельного учета)
+            // И счетчик принятых доз (для прогресса курса)
+            await _medicineRepository.IncrementSkippedDoses(medicineId);
             return await _medicineRepository.IncrementTakenDoses(medicineId);
         }
     }

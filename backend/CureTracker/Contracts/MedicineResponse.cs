@@ -18,5 +18,6 @@ namespace CureTracker.Contracts
         MedicineType Type,
         Status Status,
         IntakeFrequency IntakeFrequency,
-        int TakenDosesCount);
+        int TakenDosesCount,
+        int SkippedDosesCount);
 }
