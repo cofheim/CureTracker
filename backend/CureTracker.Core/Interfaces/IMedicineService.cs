@@ -39,4 +39,7 @@ public interface IMedicineService
     
     // Регистрация приема дозы лекарства
     Task<Guid> TakeDose(Guid medicineId, DateTime intakeTime, Guid userId);
+    
+    // Регистрация пропуска дозы лекарства (считается как принятая)
+    Task<Guid> SkipDose(Guid medicineId, DateTime intakeTime, Guid userId);
 }

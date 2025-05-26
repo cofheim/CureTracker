@@ -101,5 +101,30 @@ namespace CureTracker.Application.Services
             
             return await _medicineRepository.IncrementTakenDoses(medicineId);
         }
+        
+        public async Task<Guid> SkipDose(Guid medicineId, DateTime intakeTime, Guid userId)
+        {
+            var medicine = await _medicineRepository.GetById(medicineId);
+            if (medicine == null)
+            {
+                throw new KeyNotFoundException($"Medicine with ID {medicineId} not found");
+            }
+            
+            if (medicine.UserId != userId)
+            {
+                throw new UnauthorizedAccessException("Not authorized to skip a dose of this medicine");
+            }
+            
+            // Проверяем, что лекарство в активном периоде
+            var today = DateTime.UtcNow.Date;
+            if (today < medicine.StartDate.Date || today > medicine.EndDate.Date)
+            {
+                throw new InvalidOperationException("Cannot skip a dose of medicine outside its active period");
+            }
+            
+            // Используем тот же метод инкремента счетчика доз, что и для приема
+            // Пропущенная доза засчитывается так же, как принятая, для прогресса
+            return await _medicineRepository.IncrementTakenDoses(medicineId);
+        }
     }
 }

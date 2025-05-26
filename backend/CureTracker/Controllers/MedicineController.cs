@@ -190,6 +190,33 @@ namespace CureTracker.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        
+        [HttpPost("{id:guid}/SkipDose")]
+        public async Task<ActionResult<Guid>> SkipDose(Guid id, [FromBody] TakeDoseRequest request)
+        {
+            var currentUserId = GetCurrentUserId();
+            
+            var existingMedicine = await _medicineService.GetMedicineById(id);
+            if (existingMedicine == null)
+            {
+                return NotFound();
+            }
+            
+            if (existingMedicine.UserId != currentUserId)
+            {
+                return Forbid();
+            }
+            
+            try
+            {
+                var medicineId = await _medicineService.SkipDose(id, request.IntakeTime, currentUserId);
+                return Ok(medicineId);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
         private Guid GetCurrentUserId()
         {

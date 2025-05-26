@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Badge, Modal, Card, Typography, Button, Tooltip, Row, Col, Select, DatePicker } from 'antd';
+import { Badge, Modal, Card, Typography, Button, Tooltip, Row, Col, Select, DatePicker, Space } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { Medicine } from '@/app/models/Medicine';
@@ -13,17 +13,22 @@ interface MedicineCalendarProps {
   medicines: Medicine[];
   handleTakeDose: (medicineId: string, intakeTime: Date) => void;
   handleOpen: (medicine: Medicine) => void;
+  handleSkipDose?: (medicineId: string, intakeTime: Date) => void;
 }
 
 export const MedicineCalendar: React.FC<MedicineCalendarProps> = ({
   medicines,
   handleTakeDose,
-  handleOpen
+  handleOpen,
+  handleSkipDose
 }) => {
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [calendarDays, setCalendarDays] = useState<Dayjs[]>([]);
   const [startDay, setStartDay] = useState<Dayjs>(dayjs());
+  
+  // Фиксированная высота ячейки
+  const cellHeight = 120;
 
   // Генерируем 28 дней (4 недели), начиная с сегодняшнего дня
   useEffect(() => {
@@ -39,7 +44,7 @@ export const MedicineCalendar: React.FC<MedicineCalendarProps> = ({
     const intakes: { 
       medicine: Medicine; 
       time: Date;
-      status: 'planned' | 'taken' | 'missed';
+      status: 'planned' | 'taken' | 'missed' | 'skipped';
       plannedTime: string;
     }[] = [];
 
@@ -56,7 +61,7 @@ export const MedicineCalendar: React.FC<MedicineCalendarProps> = ({
           intakeDate.setHours(time.getHours(), time.getMinutes(), 0, 0);
           
           // Определяем статус приема
-          let status: 'planned' | 'taken' | 'missed' = 'planned';
+          let status: 'planned' | 'taken' | 'missed' | 'skipped' = 'planned';
           
           // Если это сегодня, используем статус из todaysIntakes
           if (dayjs().isSame(date, 'day') && medicine.todaysIntakes) {
@@ -106,16 +111,17 @@ export const MedicineCalendar: React.FC<MedicineCalendarProps> = ({
           padding: '8px',
           border: '1px solid #f0f0f0',
           borderRadius: '4px',
-          height: '100%',
-          minHeight: '120px',
+          height: `${cellHeight}px`,
+          position: 'relative',
           cursor: 'pointer',
-          backgroundColor: isToday ? '#e6f7ff' : 'white'
+          backgroundColor: isToday ? '#e6f7ff' : 'white',
+          overflow: 'hidden'
         }}
       >
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
-          marginBottom: '32px',
+          marginBottom: '8px',
           fontWeight: isToday ? 'bold' : 'normal'
         }}>
           <span>{date.format('D')}</span>
@@ -127,7 +133,7 @@ export const MedicineCalendar: React.FC<MedicineCalendarProps> = ({
           padding: 0, 
           listStyle: 'none',
           overflow: 'hidden',
-          maxHeight: '75px'
+          maxHeight: `${cellHeight - 45}px`
         }}>
           {intakes.slice(0, 3).map((item, index) => {
             let badgeStatus: "success" | "processing" | "error" | "warning" | "default" = "default";
@@ -141,6 +147,9 @@ export const MedicineCalendar: React.FC<MedicineCalendarProps> = ({
                 break;
               case 'missed':
                 badgeStatus = 'error';
+                break;
+              case 'skipped':
+                badgeStatus = 'warning';
                 break;
             }
             
@@ -210,7 +219,11 @@ export const MedicineCalendar: React.FC<MedicineCalendarProps> = ({
         </div>
       </div>
       
-      <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px' }}>
+      <div style={{ 
+        backgroundColor: 'white', 
+        padding: '20px', 
+        borderRadius: '8px'
+      }}>
         <div style={{ marginBottom: '16px', textAlign: 'center' }}>
           <Title level={4}>{startDay.format('MMMM YYYY')}</Title>
         </div>
@@ -262,16 +275,34 @@ export const MedicineCalendar: React.FC<MedicineCalendarProps> = ({
                   
                   <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between' }}>
                     {intake.status === 'planned' && dayjs().isSame(selectedDate, 'day') ? (
-                      <Button 
-                        type="primary" 
-                        onClick={() => handleTakeDose(intake.medicine.id, intake.time)}
-                      >
-                        Отметить как принятое
-                      </Button>
+                      <Space>
+                        <Button 
+                          type="primary" 
+                          onClick={() => handleTakeDose(intake.medicine.id, intake.time)}
+                          disabled={(intake.medicine.takenDosesCount || 0) >= (intake.medicine.totalDosesInCourse || 0)}
+                          title={(intake.medicine.takenDosesCount || 0) >= (intake.medicine.totalDosesInCourse || 0) ? 
+                            "Курс лекарства завершен" : ""}
+                        >
+                          Отметить как принятое
+                        </Button>
+                        {handleSkipDose && (
+                          <Button 
+                            danger
+                            onClick={() => handleSkipDose(intake.medicine.id, intake.time)}
+                            disabled={(intake.medicine.takenDosesCount || 0) >= (intake.medicine.totalDosesInCourse || 0)}
+                            title={(intake.medicine.takenDosesCount || 0) >= (intake.medicine.totalDosesInCourse || 0) ? 
+                              "Курс лекарства завершен" : ""}
+                          >
+                            Пропустить
+                          </Button>
+                        )}
+                      </Space>
                     ) : intake.status === 'taken' ? (
                       <Text type="success">Принято ✓</Text>
                     ) : intake.status === 'missed' ? (
                       <Text type="danger">Пропущено</Text>
+                    ) : intake.status === 'skipped' ? (
+                      <Text type="warning">Пропущено намеренно</Text>
                     ) : (
                       <Text type="warning">Запланировано</Text>
                     )}

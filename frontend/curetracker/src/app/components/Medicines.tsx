@@ -1,5 +1,5 @@
 import { MedicineName } from "./MedicineName";
-import { Button, Card, Modal, Typography, Progress, Empty } from "antd";
+import { Button, Card, Modal, Typography, Progress, Empty, Space } from "antd";
 import { Medicine as MedicineModel } from "../models/Medicine";
 import { useState } from "react";
 import { getMedicineTypeLabel, getStatusLabel, getIntakeFrequencyLabel } from "@/utils/enumLocalization";
@@ -9,7 +9,7 @@ const { Text, Title } = Typography;
 interface EnrichedMedicineClient extends MedicineModel {
     totalDosesInCourse: number;
     takenDosesInCourse: number;
-    todaysIntakes: Array<{ time: Date, plannedTime: string, status: 'planned' | 'taken' | 'missed' }>;
+    todaysIntakes: Array<{ time: Date, plannedTime: string, status: 'planned' | 'taken' | 'missed' | 'skipped' }>;
 }
 
 interface Props {
@@ -17,9 +17,10 @@ interface Props {
     handleDelete: (id:string) => void;
     handleOpen: (medicine: MedicineModel) => void;
     handleTakeDose: (medicineId: string, intakeTime: Date) => void;
+    handleSkipDose?: (medicineId: string, intakeTime: Date) => void;
 }
 
-export const Medicines = ({medicines, handleDelete, handleOpen, handleTakeDose} : Props) => {
+export const Medicines = ({medicines, handleDelete, handleOpen, handleTakeDose, handleSkipDose} : Props) => {
     const [medicineToDelete, setMedicineToDelete] = useState<MedicineModel | null>(null);
 
     const showDeleteConfirm = (medicine: MedicineModel) => {
@@ -114,20 +115,40 @@ export const Medicines = ({medicines, handleDelete, handleOpen, handleTakeDose} 
                                             padding: '8px 0',
                                             borderBottom: index < medicine.todaysIntakes.length - 1 ? '1px solid #f0f0f0' : 'none'
                                         }}>
-                                            <Text style={{ textDecoration: intake.status === 'taken' ? 'line-through' : 'none' }}>
+                                            <Text style={{ textDecoration: intake.status === 'taken' || intake.status === 'skipped' ? 'line-through' : 'none' }}>
                                                 {intake.plannedTime}
                                             </Text>
                                             {intake.status === 'planned' && (
-                                                <Button 
-                                                    size="small" 
-                                                    type="primary" 
-                                                    onClick={() => handleTakeDose(medicine.id, intake.time)}
-                                                >
-                                                    Принять
-                                                </Button>
+                                                <Space>
+                                                    <Button 
+                                                        size="small" 
+                                                        type="primary" 
+                                                        onClick={() => handleTakeDose(medicine.id, intake.time)}
+                                                        disabled={medicine.takenDosesInCourse >= medicine.totalDosesInCourse}
+                                                        title={medicine.takenDosesInCourse >= medicine.totalDosesInCourse ? 
+                                                            "Курс лекарства завершен" : ""}
+                                                    >
+                                                        Принять
+                                                    </Button>
+                                                    {handleSkipDose && (
+                                                        <Button 
+                                                            size="small"
+                                                            danger
+                                                            onClick={() => handleSkipDose(medicine.id, intake.time)}
+                                                            disabled={medicine.takenDosesInCourse >= medicine.totalDosesInCourse}
+                                                            title={medicine.takenDosesInCourse >= medicine.totalDosesInCourse ? 
+                                                                "Курс лекарства завершен" : ""}
+                                                        >
+                                                            Пропустить
+                                                        </Button>
+                                                    )}
+                                                </Space>
                                             )}
                                             {intake.status === 'taken' && (
                                                 <Text type="success">Принято ✔</Text>
+                                            )}
+                                            {intake.status === 'skipped' && (
+                                                <Text type="warning">Пропущено ⊘</Text>
                                             )}
                                         </div>
                                     ))}

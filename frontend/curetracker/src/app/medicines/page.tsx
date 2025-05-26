@@ -3,7 +3,7 @@
 import { Button, Typography, Segmented } from "antd";
 import { AppstoreOutlined, BarsOutlined, CalendarOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { createMedicine, deleteMedicine, getAllMedicines, MedicineRequest, updateMedicine, takeDose, Status, IntakeFrequency } from "@/services/medicines";
+import { createMedicine, deleteMedicine, getAllMedicines, MedicineRequest, updateMedicine, takeDose, skipDose, Status, IntakeFrequency } from "@/services/medicines";
 import Title from "antd/es/typography/Title";
 import { Medicine as MedicineModel } from "../models/Medicine";
 import { CreateUpdateMedicine, Mode } from "../components/CreateUpdateMedicine";
@@ -15,7 +15,7 @@ import { calculateCourseDetails } from "@/utils/courseUtils";
 interface EnrichedMedicine extends MedicineModel {
     totalDosesInCourse: number;
     takenDosesInCourse: number;
-    todaysIntakes: Array<{ time: Date, plannedTime: string, status: 'planned' | 'taken' | 'missed' }>;
+    todaysIntakes: Array<{ time: Date, plannedTime: string, status: 'planned' | 'taken' | 'missed' | 'skipped' }>;
 }
 
 export default function MedicinesPage() {
@@ -91,28 +91,90 @@ export default function MedicinesPage() {
     };
 
     const handleTakeDose = async (medicineId: string, intakeTimeToMark: Date) => {
-        const success = await takeDose(medicineId, intakeTimeToMark);
-        
-        if (success) {
-            setMedicines(prevMedicines => 
-                prevMedicines.map(med => {
-                    if (med.id === medicineId) {
-                        const newTodaysIntakes = med.todaysIntakes.map(intake => {
-                            if (intake.time.getTime() === intakeTimeToMark.getTime() && intake.status === 'planned') {
-                                return { ...intake, status: 'taken' as 'taken' };
-                            }
-                            return intake;
-                        });
-                        return { 
-                            ...med, 
-                            todaysIntakes: newTodaysIntakes,
-                        };
-                    }
-                    return med;
-                })
-            );
+        try {
+            console.log("Прием дозы для:", medicineId, "время:", intakeTimeToMark);
+            const success = await takeDose(medicineId, intakeTimeToMark);
             
-            await refreshMedicines();
+            if (success) {
+                console.log("Доза успешно принята, обновляем UI");
+                // Немедленно обновляем UI для реактивности
+                setMedicines(prevMedicines => 
+                    prevMedicines.map(med => {
+                        if (med.id === medicineId) {
+                            // Увеличиваем счетчик принятых доз
+                            const takenDosesCount = (med.takenDosesCount || 0) + 1;
+                            const takenDosesInCourse = (med.takenDosesInCourse || 0) + 1;
+                            
+                            const newTodaysIntakes = med.todaysIntakes.map(intake => {
+                                if (new Date(intake.time).getTime() === new Date(intakeTimeToMark).getTime() && 
+                                    intake.status === 'planned') {
+                                    return { ...intake, status: 'taken' as 'taken' };
+                                }
+                                return intake;
+                            });
+                            
+                            return { 
+                                ...med, 
+                                todaysIntakes: newTodaysIntakes,
+                                takenDosesCount,
+                                takenDosesInCourse
+                            };
+                        }
+                        return med;
+                    })
+                );
+                
+                // Затем полное обновление с сервера
+                await refreshMedicines();
+            } else {
+                console.error("Ошибка при приеме дозы");
+            }
+        } catch (error) {
+            console.error("Ошибка при приеме дозы:", error);
+        }
+    };
+
+    const handleSkipDose = async (medicineId: string, intakeTimeToMark: Date) => {
+        try {
+            console.log("Пропуск дозы для:", medicineId, "время:", intakeTimeToMark);
+            const success = await skipDose(medicineId, intakeTimeToMark);
+            
+            if (success) {
+                console.log("Доза успешно пропущена, обновляем UI");
+                // Немедленно обновляем UI для реактивности
+                setMedicines(prevMedicines => 
+                    prevMedicines.map(med => {
+                        if (med.id === medicineId) {
+                            // Увеличиваем счетчик принятых доз
+                            const takenDosesCount = (med.takenDosesCount || 0) + 1;
+                            const takenDosesInCourse = (med.takenDosesInCourse || 0) + 1;
+                            
+                            const newTodaysIntakes = med.todaysIntakes.map(intake => {
+                                if (new Date(intake.time).getTime() === new Date(intakeTimeToMark).getTime() && 
+                                    intake.status === 'planned') {
+                                    return { ...intake, status: 'skipped' as 'skipped' };
+                                }
+                                return intake;
+                            });
+                            
+                            return { 
+                                ...med, 
+                                todaysIntakes: newTodaysIntakes,
+                                takenDosesCount,
+                                takenDosesInCourse
+                            };
+                        }
+                        return med;
+                    })
+                );
+                
+                // Затем полное обновление с сервера
+                await refreshMedicines();
+            } else {
+                console.error("Ошибка при пропуске дозы");
+            }
+        } catch (error) {
+            console.error("Ошибка при пропуске дозы:", error);
         }
     };
 
@@ -223,6 +285,7 @@ export default function MedicinesPage() {
                                     handleDelete={handleDeleteMedicine}
                                     handleOpen={openEditModal}
                                     handleTakeDose={handleTakeDose}
+                                    handleSkipDose={handleSkipDose}
                                 />
                             )}
                             {view === 'calendar' && (
@@ -230,6 +293,7 @@ export default function MedicinesPage() {
                                     medicines={medicines}
                                     handleOpen={openEditModal}
                                     handleTakeDose={handleTakeDose}
+                                    handleSkipDose={handleSkipDose}
                                 />
                             )}
                         </>

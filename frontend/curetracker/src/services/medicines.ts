@@ -88,13 +88,46 @@ export const deleteMedicine = async (id: string) => {
 
 export const takeDose = async (medicineId: string, intakeTime: Date) => {
     const token = localStorage.getItem("token");
+    
+    // Преобразуем дату в ISO формат для обеспечения правильной передачи
+    const formattedIntakeTime = new Date(intakeTime).toISOString();
+    
     const response = await fetch(`https://localhost:7210/Medicine/${medicineId}/TakeDose`, {
         method: "POST",
         headers: {
             "content-type": "application/json",
             "Authorization": "Bearer " + token,
         },
-        body: JSON.stringify({ intakeTime }),
+        body: JSON.stringify({ intakeTime: formattedIntakeTime }),
     });
+    
+    // Если ответ не OK, выведем информацию об ошибке
+    if (!response.ok) {
+        console.error("Ошибка при приеме дозы:", await response.text());
+    }
+    
+    return response.ok;
+};
+
+export const skipDose = async (medicineId: string, intakeTime: Date) => {
+    const token = localStorage.getItem("token");
+    
+    // Преобразуем дату в ISO формат для обеспечения правильной передачи
+    const formattedIntakeTime = new Date(intakeTime).toISOString();
+    
+    const response = await fetch(`https://localhost:7210/Medicine/${medicineId}/SkipDose`, {
+        method: "POST",
+        headers: {
+            "content-type": "application/json",
+            "Authorization": "Bearer " + token,
+        },
+        body: JSON.stringify({ intakeTime: formattedIntakeTime }),
+    });
+    
+    // Если ответ не OK, выведем информацию об ошибке
+    if (!response.ok) {
+        console.error("Ошибка при пропуске дозы:", await response.text());
+    }
+    
     return response.ok;
 };
