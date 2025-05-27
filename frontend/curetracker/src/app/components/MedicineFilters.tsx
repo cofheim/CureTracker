@@ -58,7 +58,7 @@ export const MedicineFilters: React.FC<MedicineFiltersProps> = ({
             onChange={handleStatusChange}
             allowClear
           >
-            {Object.values(Status).map((status) => (
+            {[Status.Planned, Status.InProgress, Status.Taken].map((status) => (
               <Option key={status} value={status}>
                 {getStatusLabel(status)}
               </Option>

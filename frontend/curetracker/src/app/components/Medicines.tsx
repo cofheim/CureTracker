@@ -107,18 +107,39 @@ export const Medicines = ({medicines, handleDelete, handleOpen, handleTakeDose, 
                                 {medicine.totalDosesInCourse > 0 && (
                                     <div style={{ marginTop: '16px' }}>
                                         <Title level={5} style={{ marginBottom: '8px' }}>Прогресс курса:</Title>
-                                        <Progress 
-                                            percent={Math.round((medicine.takenDosesInCourse / medicine.totalDosesInCourse) * 100)} 
-                                            strokeColor={{ '0%': '#108ee9', '100%': '#87d068' }} 
-                                        />
-                                        <Text type="secondary" style={{ display: 'block', textAlign: 'right' }}>
-                                            Принято {medicine.takenDosesInCourse} из {medicine.totalDosesInCourse}
-                                        </Text>
-                                        {medicine.skippedDosesCount !== undefined && medicine.skippedDosesCount > 0 && (
-                                            <Text type="warning" style={{ display: 'block', textAlign: 'right' }}>
-                                                Пропущено: {medicine.skippedDosesCount}
-                                            </Text>
-                                        )}
+                                        {(() => {
+                                            const skippedDoses = medicine.skippedDosesCount || 0;
+                                            const actualTakenDoses = medicine.takenDosesInCourse - skippedDoses;
+                                            const totalCompletedPercent = Math.round((medicine.takenDosesInCourse / medicine.totalDosesInCourse) * 100);
+                                            const actualTakenPercent = Math.round((actualTakenDoses / medicine.totalDosesInCourse) * 100);
+                                            const skippedPercent = Math.round((skippedDoses / medicine.totalDosesInCourse) * 100);
+                                            
+                                            return (
+                                                <>
+                                                    <Progress 
+                                                        success={{ percent: actualTakenPercent, strokeColor: '#52c41a' }}
+                                                        percent={totalCompletedPercent} 
+                                                        strokeColor="#faad14"
+                                                        trailColor="#f0f0f0"
+                                                    />
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
+                                                        <Text>
+                                                            Всего выполнено: <Text strong>{medicine.takenDosesInCourse}</Text> из {medicine.totalDosesInCourse} ({totalCompletedPercent}%)
+                                                        </Text>
+                                                    </div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                                                        <Text type="success">
+                                                            Принято: {actualTakenDoses}
+                                                        </Text>
+                                                        {skippedDoses > 0 && (
+                                                            <Text type="warning">
+                                                                Пропущено: {skippedDoses}
+                                                            </Text>
+                                                        )}
+                                                    </div>
+                                                </>
+                                            );
+                                        })()}
                                     </div>
                                 )}
 
@@ -142,9 +163,13 @@ export const Medicines = ({medicines, handleDelete, handleOpen, handleTakeDose, 
                                                             size="small" 
                                                             type="primary" 
                                                             onClick={() => handleTakeDose(medicine.id, intake.time)}
-                                                            disabled={medicine.takenDosesInCourse >= medicine.totalDosesInCourse}
-                                                            title={medicine.takenDosesInCourse >= medicine.totalDosesInCourse ? 
-                                                                "Курс лекарства завершен" : ""}
+                                                            disabled={
+                                                                (medicine.takenDosesInCourse - (medicine.skippedDosesCount || 0)) >= medicine.totalDosesInCourse
+                                                            }
+                                                            title={
+                                                                (medicine.takenDosesInCourse - (medicine.skippedDosesCount || 0)) >= medicine.totalDosesInCourse ? 
+                                                                "Курс лекарства завершен" : ""
+                                                            }
                                                         >
                                                             Принять
                                                         </Button>
@@ -153,9 +178,13 @@ export const Medicines = ({medicines, handleDelete, handleOpen, handleTakeDose, 
                                                                 size="small"
                                                                 danger
                                                                 onClick={() => handleSkipDose(medicine.id, intake.time)}
-                                                                disabled={medicine.takenDosesInCourse >= medicine.totalDosesInCourse}
-                                                                title={medicine.takenDosesInCourse >= medicine.totalDosesInCourse ? 
-                                                                    "Курс лекарства завершен" : ""}
+                                                                disabled={
+                                                                    medicine.takenDosesInCourse >= medicine.totalDosesInCourse
+                                                                }
+                                                                title={
+                                                                    medicine.takenDosesInCourse >= medicine.totalDosesInCourse ? 
+                                                                    "Курс лекарства завершен" : ""
+                                                                }
                                                             >
                                                                 Пропустить
                                                             </Button>

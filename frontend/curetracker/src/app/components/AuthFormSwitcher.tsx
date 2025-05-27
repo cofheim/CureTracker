@@ -7,7 +7,14 @@ export default function AuthFormSwitcher({ onAuth }: { onAuth: () => void }) {
   const [showLogin, setShowLogin] = useState(true);
 
   return (
-    <div style={{ maxWidth: 350, margin: "0 auto" }}>
+    <div style={{ 
+      maxWidth: 350, 
+      margin: "0 auto",
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)"
+      }}>
       {showLogin ? (
         <>
           <Login onLogin={onAuth} />

@@ -54,8 +54,28 @@ export default function MedicinesPage() {
         console.log('Raw medicines from API:', medicinesToProcess);
         return medicinesToProcess.map(med => {
             const details = calculateCourseDetails(med);
+            
+            // Автоматически определяем статус на основе дат
+            const currentDate = new Date();
+            currentDate.setHours(0, 0, 0, 0);
+            
+            const startDate = new Date(med.startDate);
+            startDate.setHours(0, 0, 0, 0);
+            
+            const endDate = new Date(med.endDate);
+            endDate.setHours(0, 0, 0, 0);
+            
+            let status = Status.Planned;
+            
+            if (currentDate > endDate) {
+                status = Status.Taken; // Курс завершен
+            } else if (currentDate >= startDate && currentDate <= endDate) {
+                status = Status.InProgress; // Курс в процессе
+            }
+
             return {
                 ...med,
+                status,
                 totalDosesInCourse: details.totalDosesInCourse,
                 todaysIntakes: details.todaysIntakes,
                 takenDosesInCourse: med.takenDosesCount || 0,

@@ -2,7 +2,7 @@ import { MedicineRequest, MedicineType, Status, IntakeFrequency } from "@/servic
 import { Medicine } from "@/app/models/Medicine";
 import { Input, Modal, Typography, DatePicker, InputNumber, Select, Space, TimePicker } from "antd";
 import { useEffect, useState } from "react";
-import { getMedicineTypeLabel, getStatusLabel, getIntakeFrequencyLabel } from "@/utils/enumLocalization";
+import { getMedicineTypeLabel, getIntakeFrequencyLabel } from "@/utils/enumLocalization";
 import dayjs from 'dayjs';
 
 interface Props {
@@ -36,7 +36,6 @@ export const CreateUpdateMedicine = ({
     const [startDate, setStartDate] = useState<Date>();
     const [endDate, setEndDate] = useState<Date>();
     const [type, setType] = useState<MedicineType>(MedicineType.Other);
-    const [status, setStatus] = useState<Status>(Status.Planned);
     const [intakeFrequency, setIntakeFrequency] = useState<IntakeFrequency>(IntakeFrequency.Daily);
 
     useEffect(() => {
@@ -49,7 +48,6 @@ export const CreateUpdateMedicine = ({
         setStartDate(values.startDate)
         setEndDate(values.endDate)
         setType(values.type as MedicineType)
-        setStatus(values.status as Status)
         setIntakeFrequency(values.intakeFrequency as IntakeFrequency)
     }, [values])
 
@@ -85,6 +83,22 @@ export const CreateUpdateMedicine = ({
         if (timesOfTaking.length !== timesADay) {
             alert("Пожалуйста, установите все времена приёма");
             return;
+        }
+
+        // Автоматически определяем статус на основе дат
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0);
+        
+        const start = startDate ? new Date(startDate) : new Date();
+        start.setHours(0, 0, 0, 0);
+        
+        const end = endDate ? new Date(endDate) : new Date();
+        end.setHours(0, 0, 0, 0);
+        
+        let status = Status.Planned;
+        
+        if (currentDate >= start && currentDate <= end) {
+            status = Status.InProgress;
         }
 
         const medicineRequest = {
@@ -188,16 +202,6 @@ export const CreateUpdateMedicine = ({
                     options={Object.values(MedicineType).map(type => ({
                         value: type,
                         label: getMedicineTypeLabel(type)
-                    }))}
-                />
-
-                <Select
-                    value={status}
-                    onChange={setStatus}
-                    placeholder="Статус"
-                    options={Object.values(Status).map(status => ({
-                        value: status,
-                        label: getStatusLabel(status)
                     }))}
                 />
 

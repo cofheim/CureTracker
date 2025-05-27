@@ -59,3 +59,43 @@ body {
   opacity: 1 !important;
   display: block !important;
 }
+
+/* Стили для кастомного меню навигации */
+.custom-menu {
+  display: flex;
+  align-items: center;
+}
+
+.custom-menu .ant-menu-item {
+  padding: 0 20px;
+  margin: 0 4px;
+  height: 48px;
+  line-height: 48px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.custom-menu .ant-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+.custom-menu .ant-menu-item-selected {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  font-weight: 600;
+}
+
+.custom-menu .ant-menu-item-selected::after {
+  display: none;
+}
+
+.custom-menu .ant-menu-item a {
+  color: white;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+.custom-menu .ant-menu-item a:hover {
+  color: rgba(255, 255, 255, 0.9);
+}

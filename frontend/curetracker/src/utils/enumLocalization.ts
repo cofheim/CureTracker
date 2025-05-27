@@ -16,7 +16,7 @@ export const getStatusLabel = (status: Status): string => {
     const labels: Record<Status, string> = {
         [Status.Planned]: "Запланировано",
         [Status.InProgress]: "В процессе",
-        [Status.Taken]: "Принято",
+        [Status.Taken]: "Завершено",
         [Status.Missed]: "Пропущено",
         [Status.Skipped]: "Пропущено намеренно"
     };

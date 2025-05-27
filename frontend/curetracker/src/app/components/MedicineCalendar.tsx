@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Badge, Modal, Card, Typography, Button, Tooltip, Row, Col, Select, DatePicker, Space, Empty } from 'antd';
+import { Badge, Modal, Card, Typography, Button, Tooltip, Row, Col, Select, DatePicker, Space, Empty, Progress } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { Medicine } from '@/app/models/Medicine';
@@ -290,15 +290,60 @@ export const MedicineCalendar: React.FC<MedicineCalendarProps> = ({
                     </Text>
                   )}
                   
+                  {intake.medicine.totalDosesInCourse && (
+                    <div style={{ marginTop: '10px', marginBottom: '10px' }}>
+                      <Text strong>Прогресс курса:</Text>
+                      {(() => {
+                        const skippedDoses = intake.medicine.skippedDosesCount || 0;
+                        const actualTakenDoses = (intake.medicine.takenDosesCount || 0) - skippedDoses;
+                        const totalCompletedPercent = Math.round(((intake.medicine.takenDosesCount || 0) / (intake.medicine.totalDosesInCourse || 1)) * 100);
+                        const actualTakenPercent = Math.round((actualTakenDoses / (intake.medicine.totalDosesInCourse || 1)) * 100);
+                        
+                        return (
+                          <>
+                            <Progress 
+                              success={{ percent: actualTakenPercent, strokeColor: '#52c41a' }}
+                              percent={totalCompletedPercent} 
+                              strokeColor="#faad14"
+                              trailColor="#f0f0f0"
+                              style={{ marginTop: '8px' }}
+                            />
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                              <Text>
+                                Всего выполнено: <Text strong>{intake.medicine.takenDosesCount || 0}</Text> из {intake.medicine.totalDosesInCourse} ({totalCompletedPercent}%)
+                              </Text>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                              <Text type="success">
+                                Принято: {actualTakenDoses}
+                              </Text>
+                              {skippedDoses > 0 && (
+                                <Text type="warning">
+                                  Пропущено: {skippedDoses}
+                                </Text>
+                              )}
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
+                  
                   <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between' }}>
                     {intake.status === 'planned' && dayjs().isSame(selectedDate, 'day') ? (
                       <Space>
                         <Button 
                           type="primary" 
                           onClick={() => handleTakeDose(intake.medicine.id, intake.time)}
-                          disabled={(intake.medicine.takenDosesCount || 0) >= (intake.medicine.totalDosesInCourse || 0)}
-                          title={(intake.medicine.takenDosesCount || 0) >= (intake.medicine.totalDosesInCourse || 0) ? 
-                            "Курс лекарства завершен" : ""}
+                          disabled={
+                            // Проверяем, не превышено ли количество доз в курсе
+                            // Учитываем только фактически принятые дозы (без пропущенных)
+                            (intake.medicine.takenDosesCount || 0) - (intake.medicine.skippedDosesCount || 0) >= (intake.medicine.totalDosesInCourse || 0)
+                          }
+                          title={
+                            (intake.medicine.takenDosesCount || 0) - (intake.medicine.skippedDosesCount || 0) >= (intake.medicine.totalDosesInCourse || 0) ? 
+                            "Курс лекарства завершен" : ""
+                          }
                         >
                           Отметить как принятое
                         </Button>
@@ -306,9 +351,15 @@ export const MedicineCalendar: React.FC<MedicineCalendarProps> = ({
                           <Button 
                             danger
                             onClick={() => handleSkipDose(intake.medicine.id, intake.time)}
-                            disabled={(intake.medicine.takenDosesCount || 0) >= (intake.medicine.totalDosesInCourse || 0)}
-                            title={(intake.medicine.takenDosesCount || 0) >= (intake.medicine.totalDosesInCourse || 0) ? 
-                              "Курс лекарства завершен" : ""}
+                            disabled={
+                              // Проверяем, не превышено ли количество доз в курсе
+                              // Для пропуска используем общий счетчик, так как он увеличивается при любом статусе
+                              (intake.medicine.takenDosesCount || 0) >= (intake.medicine.totalDosesInCourse || 0)
+                            }
+                            title={
+                              (intake.medicine.takenDosesCount || 0) >= (intake.medicine.totalDosesInCourse || 0) ? 
+                              "Курс лекарства завершен" : ""
+                            }
                           >
                             Пропустить
                           </Button>

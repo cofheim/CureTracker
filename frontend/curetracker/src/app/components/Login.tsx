@@ -35,7 +35,14 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
 
   return (
     <>
-      <div style={{ maxWidth: 300, margin: "0 auto", padding: 24, border: '1px solid #d9d9d9', borderRadius: 8 }}>
+      <div style={{ 
+        maxWidth: 300, 
+        margin: "0 auto", 
+        padding: 24, 
+        border: '1px solid #d9d9d9', 
+        borderRadius: 8,
+        boxShadow: '0 8px 20px rgba(0,0,0,0.25)'
+        }}>
         <Typography.Title level={2} style={{ textAlign: 'center', marginBottom: 24 }}>Вход</Typography.Title>
         <form onSubmit={handleSubmit}>
           <Input
