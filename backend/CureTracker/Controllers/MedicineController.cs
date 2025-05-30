@@ -34,15 +34,7 @@ namespace CureTracker.Controllers
                 z.Description,
                 z.DosagePerTake,
                 z.StorageConditions,
-                z.TimesADay,
-                z.TimesOfTaking,
-                z.StartDate,
-                z.EndDate,
-                z.Type,
-                z.Status,
-                z.IntakeFrequency,
-                z.TakenDosesCount,
-                z.SkippedDosesCount));
+                z.Type));
 
             return Ok(response);
         }
@@ -70,15 +62,7 @@ namespace CureTracker.Controllers
                 medicine.Description,
                 medicine.DosagePerTake,
                 medicine.StorageConditions,
-                medicine.TimesADay,
-                medicine.TimesOfTaking,
-                medicine.StartDate,
-                medicine.EndDate,
-                medicine.Type,
-                medicine.Status,
-                medicine.IntakeFrequency,
-                medicine.TakenDosesCount,
-                medicine.SkippedDosesCount);
+                medicine.Type);
                 
             return Ok(response);
         }
@@ -94,13 +78,7 @@ namespace CureTracker.Controllers
                 request.description,
                 request.dosagePerTake,
                 request.storageConditions,
-                request.timesADay,
-                request.timesOfTaking,
-                request.startDate,
-                request.endDate,
                 request.type,
-                request.status,
-                request.intakeFrequency,
                 currentUserId);
 
             if (!string.IsNullOrEmpty(error))
@@ -135,13 +113,7 @@ namespace CureTracker.Controllers
                 request.description,
                 request.dosagePerTake,
                 request.storageConditions,
-                request.timesADay,
-                request.timesOfTaking,
-                request.startDate,
-                request.endDate,
                 request.type,
-                request.status,
-                request.intakeFrequency,
                 currentUserId);
 
             return Ok(medicineId);
@@ -166,60 +138,6 @@ namespace CureTracker.Controllers
             return Ok(await _medicineService.DeleteMedicine(id));
         }
         
-        [HttpPost("{id:guid}/TakeDose")]
-        public async Task<ActionResult<Guid>> TakeDose(Guid id, [FromBody] TakeDoseRequest request)
-        {
-            var currentUserId = GetCurrentUserId();
-            
-            var existingMedicine = await _medicineService.GetMedicineById(id);
-            if (existingMedicine == null)
-            {
-                return NotFound();
-            }
-            
-            if (existingMedicine.UserId != currentUserId)
-            {
-                return Forbid();
-            }
-            
-            try
-            {
-                var medicineId = await _medicineService.TakeDose(id, request.IntakeTime, currentUserId);
-                return Ok(medicineId);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-        
-        [HttpPost("{id:guid}/SkipDose")]
-        public async Task<ActionResult<Guid>> SkipDose(Guid id, [FromBody] TakeDoseRequest request)
-        {
-            var currentUserId = GetCurrentUserId();
-            
-            var existingMedicine = await _medicineService.GetMedicineById(id);
-            if (existingMedicine == null)
-            {
-                return NotFound();
-            }
-            
-            if (existingMedicine.UserId != currentUserId)
-            {
-                return Forbid();
-            }
-            
-            try
-            {
-                var medicineId = await _medicineService.SkipDose(id, request.IntakeTime, currentUserId);
-                return Ok(medicineId);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
         private Guid GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

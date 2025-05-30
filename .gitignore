@@ -1,86 +1,36 @@
-# Frontend (Next.js) specific
-# dependencies
-**/node_modules
-**/.pnp
-**/.pnp.*
-**/.yarn/*
-!**/.yarn/patches
-!**/.yarn/plugins
-!**/.yarn/releases
-!**/.yarn/versions
-
-# testing
-**/coverage
-
-# next.js
-**/.next/
-**/out/
-
-# production
-**/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files
-.env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# Backend (.NET) specific
-# Visual Studio temporary files
-*.rsuser
+# Visual Studio и .NET-специфичные файлы и папки
+.vs/
+.vscode/
+/.idea/
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
 *.userprefs
 
-# Build results
+# Файлы сборки и бинарные артефакты
+[Bb]in/
+[Oo]bj/
 [Dd]ebug/
-[Dd]ebugPublic/
 [Rr]elease/
-[Rr]eleases/
 x64/
 x86/
 [Ww][Ii][Nn]32/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
-[Bb]in/
-[Oo]bj/
-[Oo]ut/
-[Ll]og/
-[Ll]ogs/
+[Bb]uild/
+msbuild.log
+msbuild.err
+msbuild.wrn
+*.pdb
+*.dll
+*.exe
 
-# Visual Studio directory
+# Visual Studio файлы
+*.vsix
+*.vsixmanifest
 .vs/
-
-# MSTest & NUnit
-[Tt]est[Rr]esult*/
-[Bb]uild[Ll]og.*
-*.VisualState.xml
-TestResult.xml
-nunit-*.xml
-
-# .NET Core
-project.lock.json
-project.fragment.lock.json
-artifacts/
-
-# Files built by Visual Studio
 *_i.c
 *_p.c
 *_h.h
@@ -89,7 +39,6 @@ artifacts/
 *.obj
 *.iobj
 *.pch
-*.pdb
 *.ipdb
 *.pgc
 *.pgd
@@ -102,14 +51,13 @@ artifacts/
 *.tmp_proj
 *_wpftmp.csproj
 *.log
+*.tlog
 *.vspscc
 *.vssscc
 .builds
 *.pidb
 *.svclog
 *.scc
-
-# Visual Studio cache files
 ipch/
 *.aps
 *.ncb
@@ -119,30 +67,67 @@ ipch/
 *.cachefile
 *.VC.db
 *.VC.VC.opendb
-
-# ReSharper
-_ReSharper*/
-*.[Rr]e[Ss]harper
-*.DotSettings.user
-
-# NuGet Packages
-*.nupkg
-*.snupkg
-**/[Pp]ackages/*
-!**/[Pp]ackages/build/
-*.nuget.props
-*.nuget.targets
-
-# Publishing
-*.[Pp]ublish.xml
-*.azurePubxml
-*.pubxml
-*.publishproj
-PublishScripts/
-
-# Others
+*.psess
+*.vsp
+*.vspx
+*.sap
 *.dbmdl
 *.dbproj.schemaview
 *.jfm
 *.pfx
 *.publishsettings
+
+# ReSharper, Rider и другие
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+.JustCode
+_TeamCity*
+*.dotCover
+.axoCover/*
+!.axoCover/settings.json
+*.coverage
+*.coveragexml
+*.csproj.dtbcache
+*.csproj.dtbcache.json
+
+# Node.js/npm/React (для frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+/build
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Другие часто исключаемые файлы и директории
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+.sass-cache/
+bower_components/
+.vs/
+healthchecksdb
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Локальные файлы конфигурации
+appsettings.*.json
+!appsettings.example.json
+secrets.json
+.env
+
+# Файлы миграций базы данных (при необходимости)
+# */Migrations/*
+
+# Локальная база данных SQLite (если используется)
+*.db
+*.db-shm
+*.db-wal 

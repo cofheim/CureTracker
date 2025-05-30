@@ -1,6 +1,5 @@
 ﻿using CureTracker.Core.Models;
 using static CureTracker.Core.Enums.MedicineTypeEnum;
-using static CureTracker.Core.Enums.MedicineStatusEnum;
 using static CureTracker.Core.Enums.MedicineIntakeFrequencyEnum;
 
 namespace CureTracker.Contracts
@@ -11,13 +10,5 @@ namespace CureTracker.Contracts
         string Description,
         int DosagePerTake,
         string StorageConditions,
-        int TimesADay,
-        List<DateTime> TimesOfTaking,
-        DateTime StartDate,
-        DateTime EndDate,
-        MedicineType Type,
-        Status Status,
-        IntakeFrequency IntakeFrequency,
-        int TakenDosesCount,
-        int SkippedDosesCount);
+        MedicineType Type);
 }

@@ -1,7 +1,6 @@
 ﻿using CureTracker.Core.Models;
 using CureTracker.Core.Interfaces;
 using static CureTracker.Core.Enums.MedicineTypeEnum;
-using static CureTracker.Core.Enums.MedicineStatusEnum;
 using static CureTracker.Core.Enums.MedicineIntakeFrequencyEnum;
 
 namespace CureTracker.Application.Services
@@ -39,13 +38,7 @@ namespace CureTracker.Application.Services
             string description,
             int dosagePerTake,
             string storageConditions,
-            int timesADay,
-            List<DateTime> timesOfTaking,
-            DateTime startDate,
-            DateTime endDate,
             MedicineType type,
-            Status status,
-            IntakeFrequency intakeFrequency,
             Guid userId)
         {
             var existingMedicine = await _medicineRepository.GetById(id);
@@ -64,13 +57,7 @@ namespace CureTracker.Application.Services
                 description,
                 dosagePerTake,
                 storageConditions,
-                timesADay,
-                timesOfTaking,
-                startDate,
-                endDate,
                 type,
-                status,
-                intakeFrequency,
                 userId);
         }
 
@@ -79,53 +66,5 @@ namespace CureTracker.Application.Services
             return await _medicineRepository.Delete(id);
         }
         
-        public async Task<Guid> TakeDose(Guid medicineId, DateTime intakeTime, Guid userId)
-        {
-            var medicine = await _medicineRepository.GetById(medicineId);
-            if (medicine == null)
-            {
-                throw new KeyNotFoundException($"Medicine with ID {medicineId} not found");
-            }
-            
-            if (medicine.UserId != userId)
-            {
-                throw new UnauthorizedAccessException("Not authorized to take a dose of this medicine");
-            }
-            
-            // Проверяем, что лекарство в активном периоде
-            var today = DateTime.UtcNow.Date;
-            if (today < medicine.StartDate.Date || today > medicine.EndDate.Date)
-            {
-                throw new InvalidOperationException("Cannot take a dose of medicine outside its active period");
-            }
-            
-            return await _medicineRepository.IncrementTakenDoses(medicineId);
-        }
-        
-        public async Task<Guid> SkipDose(Guid medicineId, DateTime intakeTime, Guid userId)
-        {
-            var medicine = await _medicineRepository.GetById(medicineId);
-            if (medicine == null)
-            {
-                throw new KeyNotFoundException($"Medicine with ID {medicineId} not found");
-            }
-            
-            if (medicine.UserId != userId)
-            {
-                throw new UnauthorizedAccessException("Not authorized to skip a dose of this medicine");
-            }
-            
-            // Проверяем, что лекарство в активном периоде
-            var today = DateTime.UtcNow.Date;
-            if (today < medicine.StartDate.Date || today > medicine.EndDate.Date)
-            {
-                throw new InvalidOperationException("Cannot skip a dose of medicine outside its active period");
-            }
-            
-            // Увеличиваем счетчик пропущенных доз (для отдельного учета)
-            // И счетчик принятых доз (для прогресса курса)
-            await _medicineRepository.IncrementSkippedDoses(medicineId);
-            return await _medicineRepository.IncrementTakenDoses(medicineId);
-        }
     }
 }

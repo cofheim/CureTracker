@@ -3,7 +3,6 @@ using CureTracker.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using CureTracker.Core.Interfaces;
 using static CureTracker.Core.Enums.MedicineTypeEnum;
-using static CureTracker.Core.Enums.MedicineStatusEnum;
 using static CureTracker.Core.Enums.MedicineIntakeFrequencyEnum;
 
 namespace CureTracker.DataAccess.Repositories
@@ -55,16 +54,8 @@ namespace CureTracker.DataAccess.Repositories
                 Description = medicine.Description,
                 DosagePerTake = medicine.DosagePerTake,
                 StorageConditions = medicine.StorageConditions,
-                TimesADay = medicine.TimesADay,
-                TimesOfTaking = medicine.TimesOfTaking,
-                StartDate = medicine.StartDate,
-                EndDate = medicine.EndDate,
                 Type = medicine.Type,
-                Status = medicine.Status,
-                IntakeFrequency = medicine.IntakeFrequency,
                 UserId = medicine.UserId,
-                TakenDosesCount = medicine.TakenDosesCount,
-                SkippedDosesCount = medicine.SkippedDosesCount
             };
 
             await _context.Medicines.AddAsync(medicineEntity);
@@ -78,13 +69,7 @@ namespace CureTracker.DataAccess.Repositories
             string description,
             int dosagePerTake,
             string storageConditions,
-            int timesADay,
-            List<DateTime> timesOfTaking,
-            DateTime startDate,
-            DateTime endDate,
             MedicineType type,
-            Status status,
-            IntakeFrequency intakeFrequency,
             Guid userId)
         {
             await _context.Medicines
@@ -94,13 +79,7 @@ namespace CureTracker.DataAccess.Repositories
                 .SetProperty(m => m.Description, m => description)
                 .SetProperty(m => m.StorageConditions, m => storageConditions)
                 .SetProperty(m => m.DosagePerTake, m => dosagePerTake)
-                .SetProperty(m => m.TimesADay, m => timesADay)
-                .SetProperty(m => m.TimesOfTaking, m => timesOfTaking)
-                .SetProperty(m => m.StartDate, m => startDate)
-                .SetProperty(m => m.EndDate, m => endDate)
                 .SetProperty(m => m.Type, m => type)
-                .SetProperty(m => m.Status, m => status)
-                .SetProperty(m => m.IntakeFrequency, m => intakeFrequency)
                 .SetProperty(m => m.UserId, m => userId));
 
             return id;
@@ -112,26 +91,6 @@ namespace CureTracker.DataAccess.Repositories
             return id;
         }
         
-        public async Task<Guid> IncrementTakenDoses(Guid medicineId)
-        {
-            await _context.Medicines
-                .Where(m => m.Id == medicineId)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(m => m.TakenDosesCount, m => m.TakenDosesCount + 1));
-            
-            return medicineId;
-        }
-        
-        public async Task<Guid> IncrementSkippedDoses(Guid medicineId)
-        {
-            await _context.Medicines
-                .Where(m => m.Id == medicineId)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(m => m.SkippedDosesCount, m => m.SkippedDosesCount + 1));
-            
-            return medicineId;
-        }
-        
         private Medicine MapEntityToDomain(MedicineEntity entity)
         {
             var (medicine, _) = Medicine.Create(
@@ -140,16 +99,8 @@ namespace CureTracker.DataAccess.Repositories
                 entity.Description,
                 entity.DosagePerTake,
                 entity.StorageConditions,
-                entity.TimesADay,
-                entity.TimesOfTaking,
-                entity.StartDate,
-                entity.EndDate,
                 entity.Type,
-                entity.Status,
-                entity.IntakeFrequency,
-                entity.UserId,
-                entity.TakenDosesCount,
-                entity.SkippedDosesCount);
+                entity.UserId);
                 
             return medicine;
         }

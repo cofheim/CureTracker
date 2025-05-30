@@ -25,7 +25,20 @@ namespace CureTracker.DataAccess.Configurations
                   .WithOne(m => m.User)
                   .HasForeignKey(m => m.UserId);
 
+            // Связь с курсами
+            builder.HasMany(u => u.Courses)
+                  .WithOne(c => c.User)
+                  .HasForeignKey(c => c.UserId);
 
+            // Связь с приемами лекарств
+            builder.HasMany(u => u.Intakes)
+                  .WithOne(i => i.User)
+                  .HasForeignKey(i => i.UserId);
+
+            // Связь с логами действий
+            builder.HasMany(u => u.ActionLogs)
+                  .WithOne(a => a.User)
+                  .HasForeignKey(a => a.UserId);
         }
     }
 }
