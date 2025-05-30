@@ -2,13 +2,11 @@
 
 namespace CureTracker.Core.Enums
 {
-    public class MedicineStatusEnum
+    public class IntakeStatusEnum
     {
         [JsonConverter(typeof(JsonStringEnumConverter))]
-        public enum Status
+        public enum IntakeStatus 
         {
-            Planned,
-            InProgress,
             Taken,
             Missed,
             Skipped
