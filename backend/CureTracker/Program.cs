@@ -25,8 +25,14 @@ services.AddScoped<IMedicineRepository, MedicineRepository>();
 services.AddScoped<IUserRepository, UserRepository>();
 services.AddScoped<IUserService, UserService>();
 
+services.AddScoped<ICourseRepository, CourseRepository>();
+services.AddScoped<IIntakeRepository, IntakeRepository>();
+services.AddScoped<IActionLogRepository, ActionLogRepository>();
+
 services.AddScoped<IJwtProvider, JwtProvider>();
 services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+
 
 services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
 
