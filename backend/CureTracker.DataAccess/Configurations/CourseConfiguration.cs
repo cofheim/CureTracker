@@ -1,6 +1,7 @@
 using CureTracker.DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Text.Json;
 
 namespace CureTracker.DataAccess.Configurations
@@ -22,12 +23,18 @@ namespace CureTracker.DataAccess.Configurations
             builder.Property(k => k.SkippedDosesCount).IsRequired();
 
             // Конвертация списка DateTime в JSON для хранения в БД
-            builder.Property(c => c.TimesOfTaking)
+            var property = builder.Property(c => c.TimesOfTaking)
                 .HasConversion(
                     v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
                     v => JsonSerializer.Deserialize<List<DateTime>>(v, (JsonSerializerOptions)null)
                 )
                 .IsRequired();
+                
+            property.Metadata.SetValueComparer(new ValueComparer<List<DateTime>>(
+                (c1, c2) => c1.SequenceEqual(c2),
+                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                c => c.ToList()
+            ));
 
             // Связь с лекарством
             builder.HasOne(c => c.Medicine)
