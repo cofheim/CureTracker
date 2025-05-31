@@ -1,9 +1,9 @@
 ﻿using CureTracker.Core.Interfaces;
-using CureTracker.Contracts;
 using CureTracker.Core.Models;
 using CureTracker.Core.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using CureTracker.Contracts.UserContracts;
 
 namespace CureTracker.Controllers
 {

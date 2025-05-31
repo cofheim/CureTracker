@@ -110,5 +110,17 @@ namespace CureTracker.DataAccess.Repositories
                 SkipReason = null
             };
         }
+
+        public async Task<bool> SetSkipReasonAsync(Guid intakeId, string skipReason)
+        {
+            var entity = await _context.Intakes.FindAsync(intakeId);
+            if (entity == null)
+                return false;
+
+            entity.SkipReason = skipReason;
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
     }
 }

@@ -19,18 +19,24 @@ services.AddDbContext<CureTrackerDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(CureTrackerDbContext)));
 });
 
-services.AddScoped<IMedicineService, MedicineService>();
-services.AddScoped<IMedicineRepository, MedicineRepository>();
 
+services.AddScoped<IJwtProvider, JwtProvider>();
+services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+// Репозитории
 services.AddScoped<IUserRepository, UserRepository>();
-services.AddScoped<IUserService, UserService>();
-
+services.AddScoped<IMedicineRepository, MedicineRepository>();
 services.AddScoped<ICourseRepository, CourseRepository>();
 services.AddScoped<IIntakeRepository, IntakeRepository>();
 services.AddScoped<IActionLogRepository, ActionLogRepository>();
 
-services.AddScoped<IJwtProvider, JwtProvider>();
-services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+// Сервисы
+services.AddScoped<IUserService, UserService>();
+services.AddScoped<IMedicineService, MedicineService>();
+builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<IIntakeService, IntakeService>();
+builder.Services.AddScoped<IActionLogService, ActionLogService>();
 
 
 

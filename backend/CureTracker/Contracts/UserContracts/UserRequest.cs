@@ -1,4 +1,4 @@
-﻿namespace CureTracker.Contracts
+﻿namespace CureTracker.Contracts.UserContracts
 {
     public record UserRequest(string Name,
         string Email,
