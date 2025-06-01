@@ -4,6 +4,7 @@
     {
         const int MAX_NAME_LENGTH = 50;
         const int MAX_EMAIL_LENGTH = 50;
+        
         public User(Guid id, string name, string email, string passwordHash)
         {
             Id = id;

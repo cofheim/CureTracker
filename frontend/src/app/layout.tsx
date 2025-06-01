@@ -78,16 +78,12 @@ export default function RootLayout({
                   collapsed={collapsed}
                   onCollapse={(value) => setCollapsed(value)}
                 >
-                  <div style={{ height: 32, margin: 16, background: 'rgba(255, 255, 255, 0.2)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    <span style={{ color: 'white', fontWeight: 'bold' }}>
-                      {collapsed ? 'CT' : 'CureTracker'}
-                    </span>
-                  </div>
                   <Menu
                     theme="dark"
                     mode="inline"
                     selectedKeys={[pathname]}
                     items={menuItems}
+                    style={{ marginTop: '16px' }}
                   />
                 </Sider>
                 <Layout>

@@ -2,7 +2,9 @@
 using CureTracker.Core.Models;
 using CureTracker.DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 using static CureTracker.Core.Enums.IntakeStatusEnum;
+using static CureTracker.Core.Enums.MedicineTypeEnum;
 
 namespace CureTracker.DataAccess.Repositories
 {
@@ -87,7 +89,7 @@ namespace CureTracker.DataAccess.Repositories
 
         private Intake MapToDomainModel(IntakeEntity entity)
         {
-            return new Intake(
+            var intake = new Intake(
                 entity.Id,
                 entity.ScheduledTime,
                 entity.ActualTime,
@@ -95,6 +97,48 @@ namespace CureTracker.DataAccess.Repositories
                 entity.CourseId,
                 entity.UserId
             );
+            
+            // Устанавливаем связанные объекты, если они загружены
+            if (entity.Course != null)
+            {
+                var course = new Course(
+                    entity.Course.Id,
+                    entity.Course.Name,
+                    entity.Course.Description,
+                    entity.Course.TimesADay,
+                    entity.Course.TimesOfTaking,
+                    entity.Course.StartDate,
+                    entity.Course.EndDate,
+                    entity.Course.MedicineId,
+                    entity.Course.UserId,
+                    entity.Course.Status,
+                    entity.Course.IntakeFrequency,
+                    entity.Course.TakenDosesCount,
+                    entity.Course.SkippedDosesCount
+                );
+                
+                // Устанавливаем лекарство для курса, если оно загружено
+                if (entity.Course.Medicine != null)
+                {
+                    var medicine = new Medicine(
+                        entity.Course.Medicine.Id,
+                        entity.Course.Medicine.Name,
+                        entity.Course.Medicine.Description,
+                        entity.Course.Medicine.DosagePerTake,
+                        entity.Course.Medicine.StorageConditions,
+                        entity.Course.Medicine.Type,
+                        entity.Course.Medicine.UserId
+                    );
+                    
+                    // Устанавливаем лекарство для курса через рефлексию, так как свойство Medicine в Course имеет приватный сеттер
+                    typeof(Course).GetProperty("Medicine")?.SetValue(course, medicine);
+                }
+                
+                // Устанавливаем курс для приема через рефлексию, так как свойство Course в Intake имеет приватный сеттер
+                typeof(Intake).GetProperty("Course")?.SetValue(intake, course);
+            }
+            
+            return intake;
         }
 
         private IntakeEntity MapToEntity(Intake intake)
