@@ -6,6 +6,8 @@ import { Card, Typography, Button, Descriptions, Spin, App, Space, Divider } fro
 import { ArrowLeftOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { API_BASE_URL } from '../../../lib/apiConfig';
 import EntityActivityLog from '../../components/EntityActivityLog';
+import { useTheme } from '../../../lib/ThemeContext';
+import ThemeWrapper from '../../components/ThemeWrapper';
 
 const { Title, Text } = Typography;
 
@@ -32,6 +34,7 @@ const MedicineDetailsPage: React.FC = () => {
   const medicineId = params.id as string;
   const router = useRouter();
   const { message, modal } = App.useApp();
+  const { theme } = useTheme();
   
   const [medicine, setMedicine] = useState<Medicine | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -119,8 +122,11 @@ const MedicineDetailsPage: React.FC = () => {
     return typeLabels[type] || type;
   };
 
+  // Определяем цвет фона в зависимости от темы
+  const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f8ff';
+
   return (
-    <div style={{ background: '#f0f8ff', minHeight: '100vh' }}>
+    <div style={{ background: backgroundColor, minHeight: '100vh' }}>
       <div style={{ padding: '20px' }}>
         <Button 
           icon={<ArrowLeftOutlined />} 
@@ -131,7 +137,7 @@ const MedicineDetailsPage: React.FC = () => {
         </Button>
         
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '50px 0' }}>
+          <div style={{ textAlign: 'center', padding: '50px' }}>
             <Spin size="large" />
           </div>
         ) : (
@@ -140,7 +146,7 @@ const MedicineDetailsPage: React.FC = () => {
               <>
                 <Card>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-                    <Title level={2}>{medicine.name}</Title>
+                    <Title level={2} style={{ color: 'var(--primary-color)' }}>{medicine.name}</Title>
                     <Space>
                       <Button 
                         type="primary" 
@@ -194,4 +200,10 @@ const MedicineDetailsPage: React.FC = () => {
   );
 };
 
-export default MedicineDetailsPage; 
+export default function MedicineDetailsPageWithTheme() {
+  return (
+    <ThemeWrapper>
+      <MedicineDetailsPage />
+    </ThemeWrapper>
+  );
+} 

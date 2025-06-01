@@ -21,6 +21,8 @@ namespace CureTracker.DataAccess.Repositories
         {
             var intakes = await _context.Intakes
                 .Where(i => i.CourseId == courseId)
+                .Include(i => i.Course)
+                .ThenInclude(c => c.Medicine)
                 .OrderBy(i => i.ScheduledTime)
                 .ToListAsync();
 

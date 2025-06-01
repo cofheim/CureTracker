@@ -1,6 +1,63 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --card-background: #ffffff;
+  --border-color: #e8e8e8;
+  --primary-color: #1890ff;
+  --secondary-color: #f0f8ff;
+  --text-color: #171717;
+  --text-secondary: #6c757d;
+  --success-color: #52c41a;
+  --warning-color: #faad14;
+  --error-color: #ff4d4f;
+  --header-background: #ffffff;
+  --menu-background: #001529;
+  --menu-text: #ffffff;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --table-header-bg: #fafafa;
+  --table-row-hover: #f5f5f5;
+  --table-border: #f0f0f0;
+  --modal-background: #ffffff;
+  --modal-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+  --tooltip-bg: #000000e6;
+  --tooltip-color: #ffffff;
+  --disabled-bg: #f5f5f5;
+  --disabled-color: rgba(0, 0, 0, 0.25);
+  --tag-default-bg: #fafafa;
+  --dropdown-bg: #ffffff;
+  --notification-bg: #ffffff;
+  --popover-bg: #ffffff;
+}
+
+body[data-theme='dark'] {
+  --background: #121212;
+  --foreground: #f0f0f0;
+  --card-background: #1f1f1f;
+  --border-color: #303030;
+  --primary-color: #177ddc;
+  --secondary-color: #141414;
+  --text-color: #f0f0f0;
+  --text-secondary: #a0a0a0;
+  --success-color: #49aa19;
+  --warning-color: #d89614;
+  --error-color: #d32029;
+  --header-background: #1f1f1f;
+  --menu-background: #141414;
+  --menu-text: #f0f0f0;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --table-header-bg: #1d1d1d;
+  --table-row-hover: #262626;
+  --table-border: #303030;
+  --modal-background: #1f1f1f;
+  --modal-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.48), 0 6px 16px 0 rgba(0, 0, 0, 0.32), 0 9px 28px 8px rgba(0, 0, 0, 0.2);
+  --tooltip-bg: #434343;
+  --tooltip-color: #ffffff;
+  --disabled-bg: #262626;
+  --disabled-color: rgba(255, 255, 255, 0.25);
+  --tag-default-bg: #262626;
+  --dropdown-bg: #1f1f1f;
+  --notification-bg: #1f1f1f;
+  --popover-bg: #1f1f1f;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -79,4 +136,221 @@ a {
     word-wrap: break-word;
     overflow-wrap: break-word;
   }
+}
+
+/* Глобальные стили для темной темы */
+body[data-theme='dark'] {
+  background-color: var(--background);
+  color: var(--text-color);
+}
+
+/* Темная тема для компонентов */
+body[data-theme='dark'] .ant-card {
+  background-color: var(--card-background);
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+body[data-theme='dark'] .ant-typography {
+  color: var(--text-color);
+}
+
+body[data-theme='dark'] .ant-typography.ant-typography-secondary {
+  color: var(--text-secondary);
+}
+
+body[data-theme='dark'] .ant-layout {
+  background-color: var(--background);
+}
+
+body[data-theme='dark'] .ant-layout-header {
+  background-color: var(--header-background);
+}
+
+body[data-theme='dark'] .ant-layout-sider {
+  background-color: var(--menu-background);
+}
+
+body[data-theme='dark'] .ant-menu.ant-menu-dark {
+  background-color: var(--menu-background);
+}
+
+body[data-theme='dark'] .ant-btn-text {
+  color: var(--text-color);
+}
+
+body[data-theme='dark'] .ant-btn-text:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+body[data-theme='dark'] .ant-drawer-content {
+  background-color: var(--card-background);
+  color: var(--text-color);
+}
+
+body[data-theme='dark'] .ant-drawer-header {
+  background-color: var(--card-background);
+  border-color: var(--border-color);
+}
+
+body[data-theme='dark'] .ant-drawer-title {
+  color: var(--text-color);
+}
+
+body[data-theme='dark'] .ant-form-item-label > label {
+  color: var(--text-color);
+}
+
+body[data-theme='dark'] .ant-input {
+  background-color: var(--card-background);
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+body[data-theme='dark'] .ant-input-prefix {
+  color: var(--text-secondary);
+}
+
+body[data-theme='dark'] .ant-divider {
+  border-color: var(--border-color);
+}
+
+body[data-theme='dark'] .ant-divider-inner-text {
+  color: var(--text-color);
+}
+
+/* Таблицы в темной теме */
+body[data-theme='dark'] .ant-table {
+  background-color: var(--card-background);
+  color: var(--text-color);
+}
+
+body[data-theme='dark'] .ant-table-thead > tr > th {
+  background-color: var(--table-header-bg);
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+body[data-theme='dark'] .ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--border-color);
+}
+
+body[data-theme='dark'] .ant-table-tbody > tr:hover > td {
+  background-color: var(--table-row-hover);
+}
+
+body[data-theme='dark'] .ant-table-cell-row-hover {
+  background-color: var(--table-row-hover);
+}
+
+body[data-theme='dark'] .ant-table-row-expand-icon {
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+/* Модальные окна в темной теме */
+body[data-theme='dark'] .ant-modal-content,
+body[data-theme='dark'] .ant-modal-header {
+  background-color: var(--modal-background);
+  border-color: var(--border-color);
+}
+
+body[data-theme='dark'] .ant-modal-title {
+  color: var(--text-color);
+}
+
+body[data-theme='dark'] .ant-modal-close-x {
+  color: var(--text-secondary);
+}
+
+/* Выпадающие списки в темной теме */
+body[data-theme='dark'] .ant-select-dropdown {
+  background-color: var(--dropdown-bg);
+}
+
+body[data-theme='dark'] .ant-select-item {
+  color: var(--text-color);
+}
+
+body[data-theme='dark'] .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+body[data-theme='dark'] .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+  background-color: var(--table-row-hover);
+}
+
+/* Селект в темной теме */
+body[data-theme='dark'] .ant-select-selector {
+  background-color: var(--card-background) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-color) !important;
+}
+
+body[data-theme='dark'] .ant-select-selection-item {
+  color: var(--text-color);
+}
+
+body[data-theme='dark'] .ant-select-arrow {
+  color: var(--text-secondary);
+}
+
+/* Тэги в темной теме */
+body[data-theme='dark'] .ant-tag {
+  background-color: var(--tag-default-bg);
+  border-color: var(--border-color);
+}
+
+/* Уведомления в темной теме */
+body[data-theme='dark'] .ant-notification-notice {
+  background-color: var(--notification-bg);
+  border-color: var(--border-color);
+}
+
+body[data-theme='dark'] .ant-notification-notice-message {
+  color: var(--text-color);
+}
+
+body[data-theme='dark'] .ant-notification-notice-description {
+  color: var(--text-secondary);
+}
+
+/* Popover в темной теме */
+body[data-theme='dark'] .ant-popover-inner {
+  background-color: var(--popover-bg);
+}
+
+body[data-theme='dark'] .ant-popover-title {
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+body[data-theme='dark'] .ant-popover-inner-content {
+  color: var(--text-color);
+}
+
+body[data-theme='dark'] .ant-popover-arrow-content {
+  background-color: var(--popover-bg);
+}
+
+/* Tooltip в темной теме */
+body[data-theme='dark'] .ant-tooltip-inner {
+  background-color: var(--tooltip-bg);
+  color: var(--tooltip-color);
+}
+
+/* Переопределение стилей для компонентов в темной теме */
+.theme-toggle-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
 }

@@ -187,7 +187,7 @@ namespace CureTracker.Application.Services
                 {
                     foreach (var time in course.TimesOfTaking)
                     {
-                        // Создаем DateTime с указанием UTC
+                        // Создаем DateTime с указанием UTC, сохраняя часы и минуты из времени приема
                         var intakeTime = new DateTime(
                             currentDate.Year,
                             currentDate.Month,

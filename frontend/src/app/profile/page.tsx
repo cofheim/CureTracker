@@ -24,6 +24,7 @@ import {
   SaveOutlined
 } from '@ant-design/icons';
 import { API_BASE_URL } from '../../lib/apiConfig';
+import { useTheme } from '../../lib/ThemeContext';
 
 const { Title, Text } = Typography;
 
@@ -41,6 +42,7 @@ const ProfilePage: React.FC = () => {
   const [form] = Form.useForm();
   const router = useRouter();
   const { message } = App.useApp();
+  const { theme } = useTheme();
 
   useEffect(() => {
     fetchUserProfile();
@@ -164,8 +166,11 @@ const ProfilePage: React.FC = () => {
     );
   }
 
+  // Определяем цвет фона в зависимости от темы
+  const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f8ff';
+
   return (
-    <div style={{ background: '#f0f8ff', minHeight: '100vh', padding: isMobile ? '10px' : '20px' }}>
+    <div style={{ background: backgroundColor, minHeight: '100vh', padding: isMobile ? '10px' : '20px' }}>
       <Title level={isMobile ? 3 : 2} style={{ marginBottom: '24px' }}>Профиль пользователя</Title>
 
       <Row gutter={[16, 16]}>
@@ -175,7 +180,7 @@ const ProfilePage: React.FC = () => {
               <Avatar 
                 size={isMobile ? 80 : 100} 
                 style={{ 
-                  backgroundColor: '#1890ff',
+                  backgroundColor: 'var(--primary-color)',
                   fontSize: isMobile ? '28px' : '36px',
                   display: 'flex',
                   justifyContent: 'center',

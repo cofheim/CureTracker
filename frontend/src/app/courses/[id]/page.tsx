@@ -6,9 +6,11 @@ import { Table, Button, Typography, Space, Tag, Modal, Input, Spin, App, Tabs, C
 import { CheckCircleOutlined, CloseCircleOutlined, ArrowLeftOutlined, CalendarOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { API_BASE_URL } from '../../../lib/apiConfig';
+import { useTheme } from '../../../lib/ThemeContext';
+import ThemeWrapper from '../../components/ThemeWrapper';
+import type { ColumnsType } from 'antd/es/table';
 
 const { Title, Text } = Typography;
-const { TabPane } = Tabs;
 
 // Интерфейсы для типизации данных
 interface Intake {
@@ -50,6 +52,7 @@ const CourseDetailsPage: React.FC = () => {
   const courseId = params.id as string;
   const router = useRouter();
   const { message, modal } = App.useApp();
+  const { theme } = useTheme();
 
   const [course, setCourse] = useState<Course | null>(null);
   const [intakes, setIntakes] = useState<Intake[]>([]);
@@ -59,6 +62,7 @@ const CourseDetailsPage: React.FC = () => {
   const [currentIntakeId, setCurrentIntakeId] = useState<string>('');
   const [activeTab, setActiveTab] = useState<string>('list');
   const [calendarData, setCalendarData] = useState<Record<string, Intake[]>>({});
+  const [isMobile, setIsMobile] = useState<boolean>(false);
 
   // Загрузка данных о курсе и приемах при монтировании компонента
   useEffect(() => {
@@ -66,6 +70,24 @@ const CourseDetailsPage: React.FC = () => {
     fetchIntakes();
     fetchCalendarData();
   }, [courseId]);
+
+  // Проверка размера экрана при монтировании и изменении размера окна
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    // Проверяем при монтировании
+    checkIfMobile();
+    
+    // Добавляем слушатель изменения размера окна
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Очищаем слушатель при размонтировании
+    return () => {
+      window.removeEventListener('resize', checkIfMobile);
+    };
+  }, []);
 
   // Функция для загрузки данных о курсе
   const fetchCourseDetails = async () => {
@@ -217,13 +239,13 @@ const CourseDetailsPage: React.FC = () => {
   const getStatusColor = (status: IntakeStatus) => {
     switch (status) {
       case IntakeStatus.Taken:
-        return 'green';
+        return theme === 'dark' ? 'green' : 'green';
       case IntakeStatus.Missed:
-        return 'red';
+        return theme === 'dark' ? 'red' : 'red';
       case IntakeStatus.Skipped:
-        return 'orange';
+        return theme === 'dark' ? 'orange' : 'orange';
       case IntakeStatus.Scheduled:
-        return 'blue';
+        return theme === 'dark' ? 'blue' : 'blue';
       default:
         return 'default';
     }
@@ -245,8 +267,11 @@ const CourseDetailsPage: React.FC = () => {
     }
   };
 
+  // Определяем цвет фона в зависимости от темы
+  const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f8ff';
+
   // Определение колонок для таблицы
-  const columns = [
+  const columns: ColumnsType<Intake> = [
     {
       title: 'Дата и время',
       key: 'scheduledTime',
@@ -256,6 +281,12 @@ const CourseDetailsPage: React.FC = () => {
       sorter: (a: Intake, b: Intake) => 
         new Date(a.scheduledTime).getTime() - new Date(b.scheduledTime).getTime(),
       defaultSortOrder: 'ascend' as 'ascend',
+    },
+    {
+      title: 'Лекарство',
+      key: 'medicineName',
+      dataIndex: 'medicineName',
+      render: (text: string) => <strong>{text}</strong>,
     },
     {
       title: 'Статус',
@@ -278,27 +309,30 @@ const CourseDetailsPage: React.FC = () => {
       render: (record: Intake) => (
         <>{record.actualTime ? new Date(record.actualTime).toLocaleString() : '-'}</>
       ),
+      className: isMobile ? 'hidden-column' : '',
     },
     {
       title: 'Действия',
       key: 'actions',
       render: (record: Intake) => (
-        <Space size="middle">
+        <Space size={isMobile ? "small" : "middle"} wrap>
           {record.status === IntakeStatus.Scheduled && (
             <>
               <Button 
                 type="primary" 
+                size={isMobile ? "small" : "middle"}
                 icon={<CheckCircleOutlined />}
                 onClick={() => handleMarkAsTaken(record.id)}
               >
-                Принято
+                {!isMobile && "Принято"}
               </Button>
               <Button 
                 danger
+                size={isMobile ? "small" : "middle"}
                 icon={<CloseCircleOutlined />}
                 onClick={() => handleOpenSkipModal(record.id)}
               >
-                Пропущено
+                {!isMobile && "Пропущено"}
               </Button>
             </>
           )}
@@ -329,95 +363,113 @@ const CourseDetailsPage: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '20px', background: '#f0f8ff', minHeight: '100vh' }}>
-      <Button 
-        icon={<ArrowLeftOutlined />} 
-        onClick={() => router.push('/courses')} 
-        style={{ marginBottom: '20px' }}
-      >
-        Вернуться к списку курсов
-      </Button>
-      
-      {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', margin: '50px 0' }}>
-          <Spin size="large" />
-        </div>
-      ) : (
-        <>
-          {course ? (
-            <>
-              <Title level={2}>{course.name}</Title>
-              <div style={{ marginBottom: '20px' }}>
-                <Text strong>Лекарство: </Text>
-                <Text>{course.medicineName}</Text>
-                <br />
-                <Text strong>Период: </Text>
-                <Text>{new Date(course.startDate).toLocaleDateString()} - {new Date(course.endDate).toLocaleDateString()}</Text>
-                <br />
-                <Text strong>Частота: </Text>
-                <Text>{course.intakeFrequency}</Text>
-                <br />
-                <Text strong>Статус: </Text>
-                <Tag color={course.status === 'Active' ? 'green' : 
-                           course.status === 'Planned' ? 'blue' : 
-                           course.status === 'Completed' ? 'purple' : 'red'}>
-                  {course.status === 'Active' ? 'Активный' : 
-                   course.status === 'Planned' ? 'Запланирован' : 
-                   course.status === 'Completed' ? 'Завершен' : 'Отменен'}
-                </Tag>
-                <br />
-                <Text strong>Прогресс: </Text>
-                <Text>{course.takenDosesCount} принято / {course.skippedDosesCount} пропущено</Text>
+    <div style={{ background: backgroundColor, minHeight: '100vh' }}>
+      <div style={{ padding: '20px' }}>
+        <Button 
+          icon={<ArrowLeftOutlined />} 
+          onClick={() => router.push('/courses')} 
+          style={{ marginBottom: '20px' }}
+        >
+          Вернуться к списку курсов
+        </Button>
+        
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '50px' }}>
+            <Spin size="large" />
+          </div>
+        ) : (
+          <>
+            {course ? (
+              <>
+                <div style={{ marginBottom: '20px' }}>
+                  <Title level={2} style={{ color: 'var(--primary-color)' }}>{course.name}</Title>
+                  <Space direction="vertical" size="small">
+                    <Text>Лекарство: <strong>{course.medicineName}</strong></Text>
+                    <Text>Описание: {course.description || 'Нет описания'}</Text>
+                    <Text>Период: {dayjs(course.startDate).format('DD.MM.YYYY')} - {dayjs(course.endDate).format('DD.MM.YYYY')}</Text>
+                    <Text>Частота приема: {course.intakeFrequency === 'Daily' ? 'Ежедневно' : 
+                                          course.intakeFrequency === 'Weekly' ? 'Еженедельно' : 'Ежемесячно'}</Text>
+                    <Text>Количество приемов в день: {course.timesADay}</Text>
+                    <Text>Статус: <Tag color={course.status === 'Active' ? 'green' : 
+                                        course.status === 'Completed' ? 'blue' : 
+                                        course.status === 'Planned' ? 'orange' : 'red'}>
+                      {course.status === 'Active' ? 'Активный' : 
+                       course.status === 'Completed' ? 'Завершен' : 
+                       course.status === 'Planned' ? 'Запланирован' : 'Отменен'}
+                    </Tag></Text>
+                    <Text>Принято доз: {course.takenDosesCount}</Text>
+                    <Text>Пропущено доз: {course.skippedDosesCount}</Text>
+                  </Space>
+                </div>
+                
+                <style jsx global>{`
+                  .hidden-column {
+                    display: none;
+                  }
+                `}</style>
+                
+                <Tabs 
+                  activeKey={activeTab} 
+                  onChange={setActiveTab}
+                  items={[
+                    {
+                      key: 'list',
+                      label: <span><UnorderedListOutlined /> Список приемов</span>,
+                      children: (
+                        <Table 
+                          columns={columns} 
+                          dataSource={intakes}
+                          rowKey="id"
+                          pagination={{ pageSize: 10 }}
+                          scroll={{ x: 'max-content' }}
+                        />
+                      )
+                    },
+                    {
+                      key: 'calendar',
+                      label: <span><CalendarOutlined /> Календарь</span>,
+                      children: (
+                        <Calendar 
+                          dateCellRender={dateCellRender}
+                          monthCellRender={undefined}
+                        />
+                      )
+                    }
+                  ]}
+                />
+              </>
+            ) : (
+              <div style={{ textAlign: 'center', margin: '50px 0' }}>
+                <Text>Курс не найден или у вас нет доступа к нему.</Text>
               </div>
-
-              <Tabs activeKey={activeTab} onChange={setActiveTab}>
-                <TabPane 
-                  tab={<span><UnorderedListOutlined /> Список приемов</span>}
-                  key="list"
-                >
-                  <Table 
-                    columns={columns} 
-                    dataSource={intakes.map(intake => ({ ...intake, key: intake.id }))} 
-                    pagination={{ pageSize: 10 }}
-                    bordered
-                  />
-                </TabPane>
-                <TabPane 
-                  tab={<span><CalendarOutlined /> Календарь</span>}
-                  key="calendar"
-                >
-                  <div className="calendar-container" style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px' }}>
-                    <Calendar cellRender={dateCellRender} />
-                  </div>
-                </TabPane>
-              </Tabs>
-            </>
-          ) : (
-            <div style={{ textAlign: 'center', margin: '50px 0' }}>
-              <Text>Курс не найден или у вас нет доступа к нему.</Text>
-            </div>
-          )}
-        </>
-      )}
-
+            )}
+          </>
+        )}
+      </div>
+      
       <Modal
-        title="Пропуск приема"
+        title="Причина пропуска приема"
         open={skipModalVisible}
         onOk={handleMarkAsSkipped}
         onCancel={() => setSkipModalVisible(false)}
         okText="Подтвердить"
         cancelText="Отмена"
       >
-        <p>Укажите причину пропуска приема:</p>
         <Input.TextArea 
           rows={4} 
+          placeholder="Укажите причину пропуска приема (необязательно)"
           value={skipReason}
           onChange={(e) => setSkipReason(e.target.value)}
-          placeholder="Например: Забыл, плохое самочувствие, и т.д."
         />
       </Modal>
     </div>
   );
 };
 
-export default CourseDetailsPage; 
+export default function CourseDetailsPageWithTheme() {
+  return (
+    <ThemeWrapper>
+      <CourseDetailsPage />
+    </ThemeWrapper>
+  );
+} 

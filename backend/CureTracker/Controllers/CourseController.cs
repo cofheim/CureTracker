@@ -73,8 +73,10 @@ namespace CureTracker.Controllers
                     // Пытаемся разобрать строку как TimeSpan
                     if (TimeSpan.TryParse(timeStr, out var timeSpan))
                     {
-                        // Создаем DateTime с фиксированной датой и временем из TimeSpan, с указанием UTC
-                        timesOfTaking.Add(new DateTime(2000, 1, 1, timeSpan.Hours, timeSpan.Minutes, 0, DateTimeKind.Utc));
+                        // Создаем DateTime как локальное время сервера
+                        var localTime = new DateTime(2000, 1, 1, timeSpan.Hours, timeSpan.Minutes, 0, DateTimeKind.Local);
+                        // Конвертируем в UTC для сохранения и дальнейшей работы
+                        timesOfTaking.Add(localTime.ToUniversalTime());
                     }
                     else
                     {
@@ -142,8 +144,10 @@ namespace CureTracker.Controllers
                     // Пытаемся разобрать строку как TimeSpan
                     if (TimeSpan.TryParse(timeStr, out var timeSpan))
                     {
-                        // Создаем DateTime с фиксированной датой и временем из TimeSpan, с указанием UTC
-                        timesOfTaking.Add(new DateTime(2000, 1, 1, timeSpan.Hours, timeSpan.Minutes, 0, DateTimeKind.Utc));
+                        // Создаем DateTime как локальное время сервера
+                        var localTime = new DateTime(2000, 1, 1, timeSpan.Hours, timeSpan.Minutes, 0, DateTimeKind.Local);
+                        // Конвертируем в UTC для сохранения и дальнейшей работы
+                        timesOfTaking.Add(localTime.ToUniversalTime());
                     }
                     else
                     {
@@ -174,7 +178,7 @@ namespace CureTracker.Controllers
                 timesOfTaking,
                 startDate,
                 endDate,
-                existingCourse.MedicineId,
+                request.MedicineId,
                 userId,
                 existingCourse.Status,
                 request.IntakeFrequency,
@@ -184,12 +188,13 @@ namespace CureTracker.Controllers
 
             var updatedCourse = await _courseService.UpdateCourseAsync(course);
 
-            // Перегенерируем интейки для курса, если изменились даты или времена приема
-            if (existingCourse.StartDate != startDate ||
-                existingCourse.EndDate != endDate ||
+            // Перегенерируем интейки для курса, если изменились даты, времена приема, лекарство или частота
+            if (existingCourse.StartDate.Date != startDate.Date || 
+                existingCourse.EndDate.Date != endDate.Date ||
                 existingCourse.TimesADay != request.TimesADay ||
-                !existingCourse.TimesOfTaking.Select(t => new TimeSpan(t.Hour, t.Minute, 0))
-                    .SequenceEqual(timesOfTaking.Select(t => new TimeSpan(t.Hour, t.Minute, 0))))
+                !existingCourse.TimesOfTaking.SequenceEqual(timesOfTaking) || 
+                existingCourse.MedicineId != request.MedicineId ||
+                existingCourse.IntakeFrequency != request.IntakeFrequency) 
             {
                 await _courseService.GenerateIntakesForCourseAsync(id, userId);
             }

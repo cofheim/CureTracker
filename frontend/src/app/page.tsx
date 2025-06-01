@@ -2,11 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Spin, Typography, Button, Row, Col, Card, Space, App, Divider } from 'antd';
+import { Spin, Typography, Button, Row, Col, Card, Space, App, Divider, Modal } from 'antd';
 import { LogoutOutlined, MedicineBoxOutlined, ScheduleOutlined, HistoryOutlined } from '@ant-design/icons';
 import Head from 'next/head';
 import { API_BASE_URL } from '../lib/apiConfig'; // Предполагаем, что apiConfig.ts на один уровень выше
 import Dashboard from './components/Dashboard';
+import { useTheme } from '../lib/ThemeContext';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -58,8 +59,10 @@ const useAuth = () => {
 const HomePage: React.FC = () => {
   const { isAuthenticated, userData } = useAuth();
   const router = useRouter();
-  const { message } = App.useApp(); // Используем App.useApp() вместо message.useMessage()
+  const { message, modal } = App.useApp(); // Используем App.useApp() вместо message.useMessage()
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const { theme } = useTheme();
+  const [specialMessageVisible, setSpecialMessageVisible] = useState<boolean>(false);
 
   useEffect(() => {
     // Определение мобильного устройства
@@ -74,6 +77,13 @@ const HomePage: React.FC = () => {
       window.removeEventListener('resize', checkIsMobile);
     };
   }, []);
+
+  // Показываем специальное сообщение для конкретного пользователя
+  useEffect(() => {
+    if (userData && userData.email === 'christina.brysina@yandex.ru') {
+      setSpecialMessageVisible(true);
+    }
+  }, [userData]);
 
   const handleLogout = async () => {
     try {
@@ -108,14 +118,17 @@ const HomePage: React.FC = () => {
     return null; 
   }
 
+  // Определяем цвет фона в зависимости от темы
+  const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f8ff';
+
   return (
-    <div style={{ background: '#f0f8ff', minHeight: '100vh' }}>
+    <div style={{ background: backgroundColor, minHeight: '100vh' }}>
       <Head>
         <title>Главная - CureTracker</title>
       </Head>
       
       <div style={{ padding: isMobile ? '10px' : '20px' }}>
-        <Title level={isMobile ? 3 : 2} style={{ color: '#1890ff', marginTop: isMobile ? '10px' : '20px', wordBreak: 'break-word' }}>
+        <Title level={isMobile ? 3 : 2} style={{ color: 'var(--primary-color)', marginTop: isMobile ? '10px' : '20px', wordBreak: 'break-word' }}>
           Добро пожаловать в CureTracker, {userData?.name}!
         </Title>
         
@@ -135,7 +148,7 @@ const HomePage: React.FC = () => {
               size={isMobile ? 'small' : 'default'}
             >
               <div style={{ textAlign: 'center' }}>
-                <MedicineBoxOutlined style={{ fontSize: isMobile ? '36px' : '48px', color: '#1890ff', marginBottom: isMobile ? '8px' : '16px' }} />
+                <MedicineBoxOutlined style={{ fontSize: isMobile ? '36px' : '48px', color: 'var(--primary-color)', marginBottom: isMobile ? '8px' : '16px' }} />
                 <Title level={isMobile ? 5 : 4}>Управление лекарствами</Title>
                 <Paragraph style={{ fontSize: isMobile ? '12px' : '14px' }}>
                   Добавляйте, редактируйте и удаляйте лекарства в вашей базе данных.
@@ -152,7 +165,7 @@ const HomePage: React.FC = () => {
               size={isMobile ? 'small' : 'default'}
             >
               <div style={{ textAlign: 'center' }}>
-                <ScheduleOutlined style={{ fontSize: isMobile ? '36px' : '48px', color: '#52c41a', marginBottom: isMobile ? '8px' : '16px' }} />
+                <ScheduleOutlined style={{ fontSize: isMobile ? '36px' : '48px', color: 'var(--success-color)', marginBottom: isMobile ? '8px' : '16px' }} />
                 <Title level={isMobile ? 5 : 4}>Курсы лечения</Title>
                 <Paragraph style={{ fontSize: isMobile ? '12px' : '14px' }}>
                   Создавайте и управляйте курсами приема лекарств, отслеживайте прогресс.
@@ -169,7 +182,7 @@ const HomePage: React.FC = () => {
               size={isMobile ? 'small' : 'default'}
             >
               <div style={{ textAlign: 'center' }}>
-                <HistoryOutlined style={{ fontSize: isMobile ? '36px' : '48px', color: '#722ed1', marginBottom: isMobile ? '8px' : '16px' }} />
+                <HistoryOutlined style={{ fontSize: isMobile ? '36px' : '48px', color: theme === 'dark' ? '#b37feb' : '#722ed1', marginBottom: isMobile ? '8px' : '16px' }} />
                 <Title level={isMobile ? 5 : 4}>История действий</Title>
                 <Paragraph style={{ fontSize: isMobile ? '12px' : '14px' }}>
                   Просматривайте историю всех действий с лекарствами, курсами и приемами.
@@ -179,6 +192,24 @@ const HomePage: React.FC = () => {
           </Col>
         </Row>
       </div>
+
+      {/* Специальное модальное окно для конкретного пользователя */}
+      <Modal
+        title="Персональное сообщение"
+        open={specialMessageVisible}
+        onOk={() => setSpecialMessageVisible(false)}
+        onCancel={() => setSpecialMessageVisible(false)}
+        footer={[
+          <Button key="ok" type="primary" onClick={() => setSpecialMessageVisible(false)}>
+            Ок
+          </Button>
+        ]}
+      >
+        <div style={{ padding: '10px 0' }}>
+          <p>Дорогая Кристиночка! <br /> Это приложение создано специально для тебя, 
+          чтобы ты могла легко и удобно следить за своим здоровьем, которое мне очень дорого! <br /> <br />Я тебя очень люблю! </p>
+        </div>
+      </Modal>
     </div>
   );
 };

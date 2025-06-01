@@ -2,10 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, InputNumber, Select, Typography, Space, Spin, Popconfirm, App } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import Head from 'next/head';
 import { API_BASE_URL } from '../../lib/apiConfig';
+import { useTheme } from '../../lib/ThemeContext';
+import ThemeWrapper from '../components/ThemeWrapper';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -37,6 +40,26 @@ const MedicinesPage: React.FC = () => {
   const [form] = Form.useForm();
   const router = useRouter();
   const { message, modal } = App.useApp();
+  const { theme } = useTheme();
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  // Проверка размера экрана при монтировании и изменении размера окна
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    // Проверяем при монтировании
+    checkIfMobile();
+    
+    // Добавляем слушатель изменения размера окна
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Очищаем слушатель при размонтировании
+    return () => {
+      window.removeEventListener('resize', checkIfMobile);
+    };
+  }, []);
 
   // Загрузка списка лекарств при монтировании компонента
   useEffect(() => {
@@ -159,7 +182,7 @@ const MedicinesPage: React.FC = () => {
   };
 
   // Определение колонок для таблицы
-  const columns = [
+  const columns: ColumnsType<Medicine> = [
     {
       title: 'Название',
       dataIndex: 'name',
@@ -173,6 +196,8 @@ const MedicinesPage: React.FC = () => {
       dataIndex: 'description',
       key: 'description',
       ellipsis: true,
+      // Скрываем колонку на мобильных устройствах
+      className: isMobile ? 'hidden-column' : '',
     },
     {
       title: 'Дозировка',
@@ -184,6 +209,8 @@ const MedicinesPage: React.FC = () => {
       title: 'Условия хранения',
       dataIndex: 'storageConditions',
       key: 'storageConditions',
+      // Скрываем колонку на мобильных устройствах
+      className: isMobile ? 'hidden-column' : '',
     },
     {
       title: 'Тип',
@@ -205,18 +232,20 @@ const MedicinesPage: React.FC = () => {
       title: 'Действия',
       key: 'actions',
       render: (_: any, record: Medicine) => (
-        <Space size="middle">
+        <Space size="small" wrap>
           <Button 
+            size={isMobile ? "small" : "middle"}
             onClick={() => router.push(`/medicines/${record.id}`)}
           >
             Подробнее
           </Button>
           <Button 
             type="primary" 
+            size={isMobile ? "small" : "middle"}
             icon={<EditOutlined />} 
             onClick={() => handleEdit(record)}
           >
-            Редактировать
+            {!isMobile && "Редактировать"}
           </Button>
           <Popconfirm
             title="Удалить лекарство?"
@@ -225,8 +254,8 @@ const MedicinesPage: React.FC = () => {
             okText="Да"
             cancelText="Нет"
           >
-            <Button type="primary" danger icon={<DeleteOutlined />}>
-              Удалить
+            <Button type="primary" danger size={isMobile ? "small" : "middle"} icon={<DeleteOutlined />}>
+              {!isMobile && "Удалить"}
             </Button>
           </Popconfirm>
         </Space>
@@ -234,15 +263,18 @@ const MedicinesPage: React.FC = () => {
     },
   ];
 
+  // Определяем цвет фона в зависимости от темы
+  const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f8ff';
+
   return (
-    <div style={{ background: '#f0f8ff', minHeight: '100vh' }}>
+    <div style={{ background: backgroundColor, minHeight: '100vh' }}>
       <Head>
         <title>Лекарства - CureTracker</title>
       </Head>
       
       <div style={{ padding: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <Title level={2} style={{ color: '#1890ff', margin: 0 }}>Мои лекарства</Title>
+          <Title level={2} style={{ color: 'var(--primary-color)', margin: 0 }}>Мои лекарства</Title>
           <Button 
             type="primary" 
             icon={<PlusOutlined />} 
@@ -252,96 +284,102 @@ const MedicinesPage: React.FC = () => {
           </Button>
         </div>
         
-        {loading && !modalVisible ? (
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '50px 0' }}>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '50px' }}>
             <Spin size="large" />
           </div>
         ) : (
           <>
-            {medicines.length === 0 ? (
-              <div style={{ textAlign: 'center', margin: '50px 0' }}>
-                <Text>У вас пока нет добавленных лекарств. Нажмите "Добавить лекарство", чтобы начать.</Text>
-              </div>
-            ) : (
-              <Table 
-                columns={columns} 
-                dataSource={medicines.map(med => ({ ...med, key: med.id }))} 
-                pagination={{ pageSize: 10 }}
-                bordered
-              />
-            )}
+            <style jsx global>{`
+              .hidden-column {
+                display: none;
+              }
+            `}</style>
+            <Table 
+              columns={columns} 
+              dataSource={medicines} 
+              rowKey="id" 
+              pagination={{ pageSize: 10 }}
+              scroll={{ x: 'max-content' }}
+            />
           </>
         )}
-        
-        <Modal
-          title={editingMedicine ? 'Редактировать лекарство' : 'Добавить лекарство'}
-          open={modalVisible}
-          onCancel={() => setModalVisible(false)}
-          footer={null}
-        >
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleSubmit}
-          >
-            <Form.Item
-              name="name"
-              label="Название"
-              rules={[{ required: true, message: 'Пожалуйста, введите название лекарства' }]}
-            >
-              <Input placeholder="Например: Аспирин" />
-            </Form.Item>
-            
-            <Form.Item
-              name="description"
-              label="Описание"
-            >
-              <Input.TextArea rows={3} placeholder="Краткое описание лекарства" />
-            </Form.Item>
-            
-            <Form.Item
-              name="dosagePerTake"
-              label="Дозировка (мг)"
-              rules={[{ required: true, message: 'Пожалуйста, укажите дозировку' }]}
-            >
-              <InputNumber min={1} style={{ width: '100%' }} placeholder="Например: 500" />
-            </Form.Item>
-            
-            <Form.Item
-              name="storageConditions"
-              label="Условия хранения"
-            >
-              <Input placeholder="Например: Хранить в сухом месте при температуре до 25°C" />
-            </Form.Item>
-            
-            <Form.Item
-              name="type"
-              label="Тип лекарства"
-              rules={[{ required: true, message: 'Пожалуйста, выберите тип лекарства' }]}
-            >
-              <Select placeholder="Выберите тип лекарства">
-                <Option value={MedicineType.Tablet}>Таблетка</Option>
-                <Option value={MedicineType.Capsule}>Капсула</Option>
-                <Option value={MedicineType.Liquid}>Жидкость</Option>
-                <Option value={MedicineType.Injection}>Инъекция</Option>
-                <Option value={MedicineType.Powder}>Порошок</Option>
-                <Option value={MedicineType.Other}>Другое</Option>
-              </Select>
-            </Form.Item>
-            
-            <Form.Item>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <Button onClick={() => setModalVisible(false)}>Отмена</Button>
-                <Button type="primary" htmlType="submit" loading={loading}>
-                  {editingMedicine ? 'Сохранить' : 'Добавить'}
-                </Button>
-              </div>
-            </Form.Item>
-          </Form>
-        </Modal>
       </div>
+
+      <Modal
+        title={editingMedicine ? 'Редактировать лекарство' : 'Добавить новое лекарство'}
+        open={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        footer={null}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+        >
+          <Form.Item
+            name="name"
+            label="Название"
+            rules={[{ required: true, message: 'Пожалуйста, введите название лекарства' }]}
+          >
+            <Input />
+          </Form.Item>
+          
+          <Form.Item
+            name="description"
+            label="Описание"
+          >
+            <Input.TextArea rows={4} />
+          </Form.Item>
+          
+          <Form.Item
+            name="dosagePerTake"
+            label="Дозировка (мг)"
+            rules={[{ required: true, message: 'Пожалуйста, укажите дозировку' }]}
+          >
+            <InputNumber min={0} step={0.1} style={{ width: '100%' }} />
+          </Form.Item>
+          
+          <Form.Item
+            name="storageConditions"
+            label="Условия хранения"
+          >
+            <Input />
+          </Form.Item>
+          
+          <Form.Item
+            name="type"
+            label="Тип"
+            rules={[{ required: true, message: 'Пожалуйста, выберите тип лекарства' }]}
+          >
+            <Select>
+              <Option value={MedicineType.Capsule}>Капсула</Option>
+              <Option value={MedicineType.Tablet}>Таблетка</Option>
+              <Option value={MedicineType.Liquid}>Жидкость</Option>
+              <Option value={MedicineType.Injection}>Инъекция</Option>
+              <Option value={MedicineType.Powder}>Порошок</Option>
+              <Option value={MedicineType.Other}>Другое</Option>
+            </Select>
+          </Form.Item>
+          
+          <Form.Item>
+            <Space>
+              <Button type="primary" htmlType="submit" loading={loading}>
+                {editingMedicine ? 'Сохранить' : 'Добавить'}
+              </Button>
+              <Button onClick={() => setModalVisible(false)}>Отмена</Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };
 
-export default MedicinesPage; 
+export default function MedicinesPageWithTheme() {
+  return (
+    <ThemeWrapper>
+      <MedicinesPage />
+    </ThemeWrapper>
+  );
+} 

@@ -3,6 +3,7 @@ import { List, Typography, Card, Tag, Spin, Empty } from 'antd';
 import { HistoryOutlined } from '@ant-design/icons';
 import { API_BASE_URL } from '../../lib/apiConfig';
 import dayjs from 'dayjs';
+import { useTheme } from '../../lib/ThemeContext';
 
 const { Title, Text } = Typography;
 
@@ -26,6 +27,7 @@ interface EntityActivityLogProps {
 const EntityActivityLog: React.FC<EntityActivityLogProps> = ({ entityType, entityId, title }) => {
   const [logs, setLogs] = useState<ActionLog[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (entityId) {
@@ -65,14 +67,14 @@ const EntityActivityLog: React.FC<EntityActivityLogProps> = ({ entityType, entit
     <Card 
       title={
         <div>
-          <HistoryOutlined style={{ marginRight: '8px' }} />
+          <HistoryOutlined style={{ marginRight: '8px', color: 'var(--primary-color)' }} />
           {title || 'История действий'}
         </div>
       }
       style={{ marginTop: '20px' }}
     >
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
+        <div style={{ textAlign: 'center', padding: '20px' }}>
           <Spin />
         </div>
       ) : logs.length > 0 ? (

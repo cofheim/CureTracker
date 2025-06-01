@@ -3,6 +3,7 @@ import { Card, Typography, List, Tag, Progress, Space, Empty, Spin, Button } fro
 import { CheckCircleOutlined, CloseCircleOutlined, CalendarOutlined } from '@ant-design/icons';
 import { API_BASE_URL } from '../../lib/apiConfig';
 import { useRouter } from 'next/navigation';
+import { useTheme } from '../../lib/ThemeContext';
 
 const { Title, Text } = Typography;
 
@@ -47,6 +48,7 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const router = useRouter();
+  const { theme } = useTheme();
 
   useEffect(() => {
     fetchTodayIntakes();
@@ -152,13 +154,13 @@ const Dashboard: React.FC = () => {
   const getStatusColor = (status: IntakeStatus) => {
     switch (status) {
       case IntakeStatus.Taken:
-        return 'green';
+        return theme === 'dark' ? 'green' : 'green';
       case IntakeStatus.Missed:
-        return 'red';
+        return theme === 'dark' ? 'red' : 'red';
       case IntakeStatus.Skipped:
-        return 'orange';
+        return theme === 'dark' ? 'orange' : 'orange';
       case IntakeStatus.Scheduled:
-        return 'blue';
+        return theme === 'dark' ? 'blue' : 'blue';
       default:
         return 'default';
     }
@@ -262,9 +264,9 @@ const Dashboard: React.FC = () => {
                     <div style={{ marginTop: '8px' }}>
                       <Progress
                         success={{ percent: takenPercent }}
-                        trailColor="#f5f5f5"
+                        trailColor={theme === 'dark' ? '#303030' : '#f5f5f5'}
                         percent={progressPercent}
-                        strokeColor="#faad14"
+                        strokeColor={theme === 'dark' ? '#d89614' : '#faad14'}
                         format={() => `${completedDoses}/${totalDoses} (${progressPercent}%)`}
                         size={isMobile ? 'small' : 'default'}
                       />

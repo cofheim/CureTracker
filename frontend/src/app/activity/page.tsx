@@ -7,6 +7,8 @@ import { ArrowLeftOutlined, HistoryOutlined, FilterOutlined, SearchOutlined, Rel
 import { API_BASE_URL } from '../../lib/apiConfig';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
+import { useTheme } from '../../lib/ThemeContext';
+import ThemeWrapper from '../components/ThemeWrapper';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -41,6 +43,7 @@ const ActivityPage: React.FC = () => {
   const [searchText, setSearchText] = useState<string>('');
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null]);
   const [filteredLogs, setFilteredLogs] = useState<ActionLog[]>([]);
+  const { theme } = useTheme();
 
   useEffect(() => {
     fetchLogs();
@@ -222,8 +225,11 @@ const ActivityPage: React.FC = () => {
     },
   ];
 
+  // Определяем цвет фона в зависимости от темы
+  const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f8ff';
+
   return (
-    <div style={{ background: '#f0f8ff', minHeight: '100vh' }}>
+    <div style={{ background: backgroundColor, minHeight: '100vh' }}>
       <Space direction="vertical" size="large" style={{ width: '100%', padding: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Button 
@@ -232,7 +238,7 @@ const ActivityPage: React.FC = () => {
           >
             Вернуться на главную
           </Button>
-          <Title level={2} style={{ margin: 0 }}>
+          <Title level={2} style={{ margin: 0, color: 'var(--primary-color)' }}>
             <HistoryOutlined /> История действий
           </Title>
           <Button 
@@ -249,7 +255,7 @@ const ActivityPage: React.FC = () => {
               <Text strong>Тип сущности:</Text>
               <Select
                 style={{ width: '100%', marginTop: '8px' }}
-                placeholder="Выберите тип сущности"
+                placeholder="Выберите тип"
                 allowClear
                 value={entityType}
                 onChange={handleEntityTypeChange}
@@ -259,31 +265,30 @@ const ActivityPage: React.FC = () => {
                 <Option value="intake">Приемы</Option>
               </Select>
             </Col>
+            
             <Col xs={24} sm={12} md={8} lg={6}>
-              <Text strong>Поиск по тексту:</Text>
-              <Search
-                style={{ marginTop: '8px' }}
-                placeholder="Введите текст для поиска"
-                allowClear
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-              />
-            </Col>
-            <Col xs={24} sm={12} md={8} lg={8}>
               <Text strong>Период:</Text>
               <RangePicker 
                 style={{ width: '100%', marginTop: '8px' }}
-                value={dateRange}
+                value={dateRange as any}
                 onChange={(dates) => setDateRange(dates as [dayjs.Dayjs | null, dayjs.Dayjs | null])}
                 format="DD.MM.YYYY"
               />
             </Col>
-            <Col xs={24} sm={12} md={24} lg={4} style={{ display: 'flex', alignItems: 'flex-end' }}>
-              <Button 
-                type="primary" 
-                onClick={resetFilters} 
-                style={{ marginTop: '8px' }}
-              >
+            
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Text strong>Поиск:</Text>
+              <Search
+                placeholder="Введите текст для поиска"
+                allowClear
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                style={{ width: '100%', marginTop: '8px' }}
+              />
+            </Col>
+            
+            <Col xs={24} sm={12} md={8} lg={6} style={{ display: 'flex', alignItems: 'flex-end', height: '100%' }}>
+              <Button onClick={resetFilters} style={{ marginTop: '8px' }}>
                 Сбросить фильтры
               </Button>
             </Col>
@@ -291,26 +296,24 @@ const ActivityPage: React.FC = () => {
         </Card>
         
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
+          <div style={{ textAlign: 'center', padding: '50px' }}>
             <Spin size="large" />
           </div>
         ) : (
           <Card>
-            <Table
-              columns={columns}
-              dataSource={filteredLogs.map(log => ({ ...log, key: log.id }))}
+            <Table 
+              columns={columns} 
+              dataSource={filteredLogs}
+              rowKey="id"
               pagination={{
                 current: page,
                 pageSize: pageSize,
-                total: filteredLogs.length,
-                onChange: (page, pageSize) => {
-                  setPage(page);
-                  setPageSize(pageSize || 10);
-                },
+                total: totalLogs,
+                onChange: (newPage) => setPage(newPage),
+                onShowSizeChange: (_, newSize) => setPageSize(newSize),
                 showSizeChanger: true,
-                pageSizeOptions: ['10', '20', '50', '100'],
+                showTotal: (total) => `Всего: ${total} записей`,
               }}
-              locale={{ emptyText: 'Нет данных' }}
             />
           </Card>
         )}
@@ -319,4 +322,10 @@ const ActivityPage: React.FC = () => {
   );
 };
 
-export default ActivityPage; 
+export default function ActivityPageWithTheme() {
+  return (
+    <ThemeWrapper>
+      <ActivityPage />
+    </ThemeWrapper>
+  );
+} 

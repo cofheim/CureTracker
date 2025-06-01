@@ -60,6 +60,7 @@ namespace CureTracker.DataAccess.Repositories
             entity.IntakeFrequency = course.IntakeFrequency;
             entity.TakenDosesCount = course.TakenDosesCount;
             entity.SkippedDosesCount = course.SkippedDosesCount;
+            entity.MedicineId = course.MedicineId;
 
             await _context.SaveChangesAsync();
 

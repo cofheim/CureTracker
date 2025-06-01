@@ -104,7 +104,8 @@ namespace CureTracker.Controllers
             {
                 HttpOnly = true,
                 SameSite = SameSiteMode.None,
-                Secure = true 
+                Secure = true,
+                Expires = DateTime.Now.AddHours(12)
             });
 
             return Ok(token);

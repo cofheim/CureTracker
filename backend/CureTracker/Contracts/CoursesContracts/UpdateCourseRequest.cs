@@ -10,6 +10,7 @@ namespace CureTracker.Contracts.CoursesContracts
         [Required] List<string> TimesOfTaking,
         [Required] DateTime StartDate,
         [Required] DateTime EndDate,
+        [Required] Guid MedicineId,
         IntakeFrequency IntakeFrequency
     );
 }

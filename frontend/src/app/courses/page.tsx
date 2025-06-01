@@ -8,6 +8,8 @@ import Head from 'next/head';
 import { API_BASE_URL } from '../../lib/apiConfig';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import { useTheme } from '../../lib/ThemeContext';
+import ThemeWrapper from '../components/ThemeWrapper';
 
 // Подключаем плагин UTC для dayjs
 dayjs.extend(utc);
@@ -64,6 +66,7 @@ const CoursesPage: React.FC = () => {
   const [form] = Form.useForm();
   const router = useRouter();
   const { message, modal } = App.useApp();
+  const { theme } = useTheme();
 
   // Загрузка списка курсов и лекарств при монтировании компонента
   useEffect(() => {
@@ -532,22 +535,18 @@ const CoursesPage: React.FC = () => {
     },
   ];
 
+  // Определяем цвет фона в зависимости от темы
+  const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f8ff';
+
   return (
-    <div style={{ padding: '20px', background: '#f0f8ff', minHeight: '100vh' }}>
+    <div style={{ background: backgroundColor, minHeight: '100vh' }}>
       <Head>
         <title>Курсы лечения - CureTracker</title>
       </Head>
       
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <Title level={2} style={{ color: '#1890ff', margin: 0 }}>Мои курсы лечения</Title>
-        <Space>
-          <Button 
-            type="primary" 
-            icon={<MedicineBoxOutlined />}
-            onClick={() => router.push('/medicines')}
-          >
-            Управление лекарствами
-          </Button>
+      <div style={{ padding: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <Title level={2} style={{ color: 'var(--primary-color)', margin: 0 }}>Курсы лечения</Title>
           <Button 
             type="primary" 
             icon={<PlusOutlined />} 
@@ -555,32 +554,25 @@ const CoursesPage: React.FC = () => {
           >
             Добавить курс
           </Button>
-        </Space>
-      </div>
-      
-      {loading && !modalVisible ? (
-        <div style={{ display: 'flex', justifyContent: 'center', margin: '50px 0' }}>
-          <Spin size="large" />
         </div>
-      ) : (
-        <>
-          {courses.length === 0 ? (
-            <div style={{ textAlign: 'center', margin: '50px 0' }}>
-              <Text>У вас пока нет добавленных курсов. Нажмите "Добавить курс", чтобы начать.</Text>
-            </div>
-          ) : (
-            <Table 
-              columns={columns} 
-              dataSource={courses.map(course => ({ ...course, key: course.id }))} 
-              pagination={{ pageSize: 10 }}
-              bordered
-            />
-          )}
-        </>
-      )}
-      
+        
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '50px' }}>
+            <Spin size="large" />
+          </div>
+        ) : (
+          <Table 
+            columns={columns} 
+            dataSource={courses} 
+            rowKey="id" 
+            pagination={{ pageSize: 10 }}
+          />
+        )}
+      </div>
+
+      {/* Модальное окно для создания/редактирования курса */}
       <Modal
-        title={editingCourse ? 'Редактировать курс' : 'Добавить курс'}
+        title={editingCourse ? 'Редактировать курс' : 'Добавить новый курс'}
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
@@ -596,14 +588,14 @@ const CoursesPage: React.FC = () => {
             label="Название курса"
             rules={[{ required: true, message: 'Пожалуйста, введите название курса' }]}
           >
-            <Input placeholder="Например: Курс лечения простуды" />
+            <Input />
           </Form.Item>
           
           <Form.Item
             name="description"
             label="Описание"
           >
-            <Input.TextArea rows={3} placeholder="Краткое описание курса" />
+            <Input.TextArea rows={4} />
           </Form.Item>
           
           <Form.Item
@@ -611,7 +603,7 @@ const CoursesPage: React.FC = () => {
             label="Лекарство"
             rules={[{ required: true, message: 'Пожалуйста, выберите лекарство' }]}
           >
-            <Select placeholder="Выберите лекарство">
+            <Select>
               {medicines.map(medicine => (
                 <Option key={medicine.id} value={medicine.id}>{medicine.name}</Option>
               ))}
@@ -620,8 +612,8 @@ const CoursesPage: React.FC = () => {
           
           <Form.Item
             name="dateRange"
-            label="Период курса"
-            rules={[{ required: true, message: 'Пожалуйста, укажите период курса' }]}
+            label="Период приема"
+            rules={[{ required: true, message: 'Пожалуйста, выберите период приема' }]}
           >
             <RangePicker 
               style={{ width: '100%' }}
@@ -634,7 +626,7 @@ const CoursesPage: React.FC = () => {
             label="Частота приема"
             rules={[{ required: true, message: 'Пожалуйста, выберите частоту приема' }]}
           >
-            <Select placeholder="Выберите частоту приема">
+            <Select>
               <Option value={IntakeFrequency.Daily}>Ежедневно</Option>
               <Option value={IntakeFrequency.Weekly}>Еженедельно</Option>
               <Option value={IntakeFrequency.Monthly}>Ежемесячно</Option>
@@ -646,7 +638,7 @@ const CoursesPage: React.FC = () => {
             rules={[
               {
                 validator: async (_, times) => {
-                  if (!times || times.length < 1) {
+                  if (!times || times.length === 0) {
                     return Promise.reject(new Error('Добавьте хотя бы одно время приема'));
                   }
                 },
@@ -655,59 +647,61 @@ const CoursesPage: React.FC = () => {
           >
             {(fields, { add, remove }, { errors }) => (
               <>
-                <Form.Item label="Время приема">
-                  {fields.map((field) => (
-                    <Form.Item
-                      required={false}
-                      key={field.key}
-                    >
-                      <Space>
-                        <Form.Item
-                          name={field.name}
-                          validateTrigger={['onChange', 'onBlur']}
-                          rules={[
-                            {
-                              required: true,
-                              message: 'Пожалуйста, укажите время',
-                            },
-                          ]}
-                          noStyle
-                        >
-                          <TimePicker format="HH:mm" />
-                        </Form.Item>
-                        {fields.length > 1 ? (
-                          <Button
-                            danger
-                            onClick={() => remove(field.name)}
-                            style={{ width: '32px', padding: '0' }}
-                          >
-                            X
-                          </Button>
-                        ) : null}
-                      </Space>
-                    </Form.Item>
-                  ))}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <Text>Время приема</Text>
                   <Button
                     type="dashed"
-                    onClick={() => add(dayjs().hour(12).minute(0))}
-                    style={{ width: '100%' }}
+                    onClick={() => add(dayjs('12:00:00', 'HH:mm:ss'))}
                     icon={<PlusOutlined />}
                   >
-                    Добавить время приема
+                    Добавить время
                   </Button>
-                  <Form.ErrorList errors={errors} />
-                </Form.Item>
+                </div>
+                {fields.map((field, index) => (
+                  <Form.Item
+                    required={false}
+                    key={field.key}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <Form.Item
+                        {...field}
+                        validateTrigger={['onChange', 'onBlur']}
+                        rules={[
+                          {
+                            required: true,
+                            message: 'Пожалуйста, укажите время приема',
+                          },
+                        ]}
+                        noStyle
+                      >
+                        <TimePicker format="HH:mm" style={{ width: '100%' }} />
+                      </Form.Item>
+                      {fields.length > 1 ? (
+                        <Button
+                          type="text"
+                          danger
+                          className="dynamic-delete-button"
+                          onClick={() => remove(field.name)}
+                          style={{ marginLeft: '8px' }}
+                        >
+                          Удалить
+                        </Button>
+                      ) : null}
+                    </div>
+                  </Form.Item>
+                ))}
+                <Form.ErrorList errors={errors} />
               </>
             )}
           </Form.List>
           
           <Form.Item>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-              <Button onClick={() => setModalVisible(false)}>Отмена</Button>
+            <Space>
               <Button type="primary" htmlType="submit" loading={loading}>
                 {editingCourse ? 'Сохранить' : 'Добавить'}
               </Button>
-            </div>
+              <Button onClick={() => setModalVisible(false)}>Отмена</Button>
+            </Space>
           </Form.Item>
         </Form>
       </Modal>
@@ -715,4 +709,10 @@ const CoursesPage: React.FC = () => {
   );
 };
 
-export default CoursesPage; 
+export default function CoursesPageWithTheme() {
+  return (
+    <ThemeWrapper>
+      <CoursesPage />
+    </ThemeWrapper>
+  );
+} 
