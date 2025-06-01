@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Spin, Typography, Button, Row, Col, Card, Space, App, Divider } from 'antd';
-import { LogoutOutlined, MedicineBoxOutlined, ScheduleOutlined } from '@ant-design/icons';
+import { LogoutOutlined, MedicineBoxOutlined, ScheduleOutlined, HistoryOutlined } from '@ant-design/icons';
 import Head from 'next/head';
 import { API_BASE_URL } from '../lib/apiConfig'; // Предполагаем, что apiConfig.ts на один уровень выше
 import Dashboard from './components/Dashboard';
@@ -94,57 +94,71 @@ const HomePage: React.FC = () => {
   }
 
   return (
-    <div style={{ padding: '20px', background: '#f0f8ff', minHeight: '100vh' }}>
+    <div style={{ background: '#f0f8ff', minHeight: '100vh' }}>
       <Head>
         <title>Главная - CureTracker</title>
       </Head>
-      <Row justify="space-between" align="middle" style={{ marginBottom: '20px' }}>
-        <Title level={2} style={{ color: '#1890ff' }}>Добро пожаловать в CureTracker!</Title>
-        <Button type="primary" onClick={handleLogout} danger icon={<LogoutOutlined />}>
-          Выйти
-        </Button>
-      </Row>
       
-      {/* Добавляем дашборд */}
-      <Dashboard />
-      
-      <Divider />
-
-      <Title level={3} style={{ marginTop: '30px' }}>Что вы хотите сделать?</Title>
-      
-      <Row gutter={[16, 16]} style={{ marginTop: '20px' }}>
-        <Col xs={24} sm={12} md={8}>
-          <Card 
-            hoverable 
-            style={{ height: '100%' }}
-            onClick={() => router.push('/medicines')}
-          >
-            <div style={{ textAlign: 'center' }}>
-              <MedicineBoxOutlined style={{ fontSize: '48px', color: '#1890ff', marginBottom: '16px' }} />
-              <Title level={4}>Управление лекарствами</Title>
-              <Paragraph>
-                Добавляйте, редактируйте и удаляйте лекарства в вашей базе данных.
-              </Paragraph>
-            </div>
-          </Card>
-        </Col>
+      <div style={{ padding: '20px' }}>
+        <Title level={2} style={{ color: '#1890ff', marginTop: '20px' }}>Добро пожаловать в CureTracker!</Title>
         
-        <Col xs={24} sm={12} md={8}>
-          <Card 
-            hoverable 
-            style={{ height: '100%' }}
-            onClick={() => router.push('/courses')}
-          >
-            <div style={{ textAlign: 'center' }}>
-              <ScheduleOutlined style={{ fontSize: '48px', color: '#52c41a', marginBottom: '16px' }} />
-              <Title level={4}>Курсы лечения</Title>
-              <Paragraph>
-                Создавайте и управляйте курсами приема лекарств, отслеживайте прогресс.
-              </Paragraph>
-            </div>
-          </Card>
-        </Col>
-      </Row>
+        {/* Добавляем дашборд */}
+        <Dashboard />
+        
+        <Divider />
+  
+        <Title level={3} style={{ marginTop: '30px' }}>Что вы хотите сделать?</Title>
+        
+        <Row gutter={[16, 16]} style={{ marginTop: '20px' }}>
+          <Col xs={24} sm={12} md={8}>
+            <Card 
+              hoverable 
+              style={{ height: '100%' }}
+              onClick={() => router.push('/medicines')}
+            >
+              <div style={{ textAlign: 'center' }}>
+                <MedicineBoxOutlined style={{ fontSize: '48px', color: '#1890ff', marginBottom: '16px' }} />
+                <Title level={4}>Управление лекарствами</Title>
+                <Paragraph>
+                  Добавляйте, редактируйте и удаляйте лекарства в вашей базе данных.
+                </Paragraph>
+              </div>
+            </Card>
+          </Col>
+          
+          <Col xs={24} sm={12} md={8}>
+            <Card 
+              hoverable 
+              style={{ height: '100%' }}
+              onClick={() => router.push('/courses')}
+            >
+              <div style={{ textAlign: 'center' }}>
+                <ScheduleOutlined style={{ fontSize: '48px', color: '#52c41a', marginBottom: '16px' }} />
+                <Title level={4}>Курсы лечения</Title>
+                <Paragraph>
+                  Создавайте и управляйте курсами приема лекарств, отслеживайте прогресс.
+                </Paragraph>
+              </div>
+            </Card>
+          </Col>
+  
+          <Col xs={24} sm={12} md={8}>
+            <Card 
+              hoverable 
+              style={{ height: '100%' }}
+              onClick={() => router.push('/activity')}
+            >
+              <div style={{ textAlign: 'center' }}>
+                <HistoryOutlined style={{ fontSize: '48px', color: '#722ed1', marginBottom: '16px' }} />
+                <Title level={4}>История действий</Title>
+                <Paragraph>
+                  Просматривайте историю всех действий с лекарствами, курсами и приемами.
+                </Paragraph>
+              </div>
+            </Card>
+          </Col>
+        </Row>
+      </div>
     </div>
   );
 };

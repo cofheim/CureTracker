@@ -8,9 +8,12 @@ namespace CureTracker.Application.Services
     public class MedicineService : IMedicineService
     {
         private readonly IMedicineRepository _medicineRepository;
-        public MedicineService(IMedicineRepository medicineRepository)
+        private readonly IActionLogService _actionLogService;
+
+        public MedicineService(IMedicineRepository medicineRepository, IActionLogService actionLogService)
         {
             _medicineRepository = medicineRepository;
+            _actionLogService = actionLogService;
         }
 
         public async Task<List<Medicine>> GetAllMedicines()
@@ -30,7 +33,17 @@ namespace CureTracker.Application.Services
 
         public async Task<Guid> CreateMedicine(Medicine medicine)
         {
-            return await _medicineRepository.Create(medicine);
+            var medicineId = await _medicineRepository.Create(medicine);
+            
+            // Логируем создание лекарства
+            await _actionLogService.LogActionAsync(
+                $"Создано новое лекарство: {medicine.Name}",
+                medicine.UserId,
+                medicineId,
+                null,
+                null);
+                
+            return medicineId;
         }
 
         public async Task<Guid> UpdateMedicine(Guid id,
@@ -52,18 +65,44 @@ namespace CureTracker.Application.Services
                 throw new UnauthorizedAccessException("Not authorized to update this medicine");
             }
             
-            return await _medicineRepository.Update(id,
+            var medicineId = await _medicineRepository.Update(id,
                 name,
                 description,
                 dosagePerTake,
                 storageConditions,
                 type,
                 userId);
+                
+            // Логируем обновление лекарства
+            await _actionLogService.LogActionAsync(
+                $"Обновлено лекарство: {name}",
+                userId,
+                medicineId,
+                null,
+                null);
+                
+            return medicineId;
         }
 
         public async Task<Guid> DeleteMedicine(Guid id)
         {
-            return await _medicineRepository.Delete(id);
+            var medicine = await _medicineRepository.GetById(id);
+            if (medicine == null)
+            {
+                throw new KeyNotFoundException($"Medicine with ID {id} not found");
+            }
+            
+            var medicineId = await _medicineRepository.Delete(id);
+            
+            // Логируем удаление лекарства
+            await _actionLogService.LogActionAsync(
+                $"Удалено лекарство: {medicine.Name}",
+                medicine.UserId,
+                medicineId,
+                null,
+                null);
+                
+            return medicineId;
         }
         
     }

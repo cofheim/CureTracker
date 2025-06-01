@@ -164,6 +164,9 @@ const MedicinesPage: React.FC = () => {
       title: 'Название',
       dataIndex: 'name',
       key: 'name',
+      render: (text: string, record: Medicine) => (
+        <a onClick={() => router.push(`/medicines/${record.id}`)}>{text}</a>
+      ),
     },
     {
       title: 'Описание',
@@ -204,6 +207,11 @@ const MedicinesPage: React.FC = () => {
       render: (_: any, record: Medicine) => (
         <Space size="middle">
           <Button 
+            onClick={() => router.push(`/medicines/${record.id}`)}
+          >
+            Подробнее
+          </Button>
+          <Button 
             type="primary" 
             icon={<EditOutlined />} 
             onClick={() => handleEdit(record)}
@@ -227,109 +235,111 @@ const MedicinesPage: React.FC = () => {
   ];
 
   return (
-    <div style={{ padding: '20px', background: '#f0f8ff', minHeight: '100vh' }}>
+    <div style={{ background: '#f0f8ff', minHeight: '100vh' }}>
       <Head>
         <title>Лекарства - CureTracker</title>
       </Head>
       
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <Title level={2} style={{ color: '#1890ff', margin: 0 }}>Мои лекарства</Title>
-        <Button 
-          type="primary" 
-          icon={<PlusOutlined />} 
-          onClick={handleAdd}
-        >
-          Добавить лекарство
-        </Button>
-      </div>
-      
-      {loading && !modalVisible ? (
-        <div style={{ display: 'flex', justifyContent: 'center', margin: '50px 0' }}>
-          <Spin size="large" />
+      <div style={{ padding: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <Title level={2} style={{ color: '#1890ff', margin: 0 }}>Мои лекарства</Title>
+          <Button 
+            type="primary" 
+            icon={<PlusOutlined />} 
+            onClick={handleAdd}
+          >
+            Добавить лекарство
+          </Button>
         </div>
-      ) : (
-        <>
-          {medicines.length === 0 ? (
-            <div style={{ textAlign: 'center', margin: '50px 0' }}>
-              <Text>У вас пока нет добавленных лекарств. Нажмите "Добавить лекарство", чтобы начать.</Text>
-            </div>
-          ) : (
-            <Table 
-              columns={columns} 
-              dataSource={medicines.map(med => ({ ...med, key: med.id }))} 
-              pagination={{ pageSize: 10 }}
-              bordered
-            />
-          )}
-        </>
-      )}
-      
-      <Modal
-        title={editingMedicine ? 'Редактировать лекарство' : 'Добавить лекарство'}
-        open={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        footer={null}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
+        
+        {loading && !modalVisible ? (
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '50px 0' }}>
+            <Spin size="large" />
+          </div>
+        ) : (
+          <>
+            {medicines.length === 0 ? (
+              <div style={{ textAlign: 'center', margin: '50px 0' }}>
+                <Text>У вас пока нет добавленных лекарств. Нажмите "Добавить лекарство", чтобы начать.</Text>
+              </div>
+            ) : (
+              <Table 
+                columns={columns} 
+                dataSource={medicines.map(med => ({ ...med, key: med.id }))} 
+                pagination={{ pageSize: 10 }}
+                bordered
+              />
+            )}
+          </>
+        )}
+        
+        <Modal
+          title={editingMedicine ? 'Редактировать лекарство' : 'Добавить лекарство'}
+          open={modalVisible}
+          onCancel={() => setModalVisible(false)}
+          footer={null}
         >
-          <Form.Item
-            name="name"
-            label="Название"
-            rules={[{ required: true, message: 'Пожалуйста, введите название лекарства' }]}
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmit}
           >
-            <Input placeholder="Например: Аспирин" />
-          </Form.Item>
-          
-          <Form.Item
-            name="description"
-            label="Описание"
-          >
-            <Input.TextArea rows={3} placeholder="Краткое описание лекарства" />
-          </Form.Item>
-          
-          <Form.Item
-            name="dosagePerTake"
-            label="Дозировка (мг)"
-            rules={[{ required: true, message: 'Пожалуйста, укажите дозировку' }]}
-          >
-            <InputNumber min={1} style={{ width: '100%' }} placeholder="Например: 500" />
-          </Form.Item>
-          
-          <Form.Item
-            name="storageConditions"
-            label="Условия хранения"
-          >
-            <Input placeholder="Например: Хранить в сухом месте при температуре до 25°C" />
-          </Form.Item>
-          
-          <Form.Item
-            name="type"
-            label="Тип лекарства"
-            rules={[{ required: true, message: 'Пожалуйста, выберите тип лекарства' }]}
-          >
-            <Select placeholder="Выберите тип лекарства">
-              <Option value={MedicineType.Tablet}>Таблетка</Option>
-              <Option value={MedicineType.Capsule}>Капсула</Option>
-              <Option value={MedicineType.Liquid}>Жидкость</Option>
-              <Option value={MedicineType.Injection}>Инъекция</Option>
-              <Option value={MedicineType.Powder}>Порошок</Option>
-              <Option value={MedicineType.Other}>Другое</Option>
-            </Select>
-          </Form.Item>
-          
-          <Form.Item>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-              <Button onClick={() => setModalVisible(false)}>Отмена</Button>
-              <Button type="primary" htmlType="submit" loading={loading}>
-                {editingMedicine ? 'Сохранить' : 'Добавить'}
-              </Button>
-            </div>
-          </Form.Item>
-        </Form>
-      </Modal>
+            <Form.Item
+              name="name"
+              label="Название"
+              rules={[{ required: true, message: 'Пожалуйста, введите название лекарства' }]}
+            >
+              <Input placeholder="Например: Аспирин" />
+            </Form.Item>
+            
+            <Form.Item
+              name="description"
+              label="Описание"
+            >
+              <Input.TextArea rows={3} placeholder="Краткое описание лекарства" />
+            </Form.Item>
+            
+            <Form.Item
+              name="dosagePerTake"
+              label="Дозировка (мг)"
+              rules={[{ required: true, message: 'Пожалуйста, укажите дозировку' }]}
+            >
+              <InputNumber min={1} style={{ width: '100%' }} placeholder="Например: 500" />
+            </Form.Item>
+            
+            <Form.Item
+              name="storageConditions"
+              label="Условия хранения"
+            >
+              <Input placeholder="Например: Хранить в сухом месте при температуре до 25°C" />
+            </Form.Item>
+            
+            <Form.Item
+              name="type"
+              label="Тип лекарства"
+              rules={[{ required: true, message: 'Пожалуйста, выберите тип лекарства' }]}
+            >
+              <Select placeholder="Выберите тип лекарства">
+                <Option value={MedicineType.Tablet}>Таблетка</Option>
+                <Option value={MedicineType.Capsule}>Капсула</Option>
+                <Option value={MedicineType.Liquid}>Жидкость</Option>
+                <Option value={MedicineType.Injection}>Инъекция</Option>
+                <Option value={MedicineType.Powder}>Порошок</Option>
+                <Option value={MedicineType.Other}>Другое</Option>
+              </Select>
+            </Form.Item>
+            
+            <Form.Item>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <Button onClick={() => setModalVisible(false)}>Отмена</Button>
+                <Button type="primary" htmlType="submit" loading={loading}>
+                  {editingMedicine ? 'Сохранить' : 'Добавить'}
+                </Button>
+              </div>
+            </Form.Item>
+          </Form>
+        </Modal>
+      </div>
     </div>
   );
 };
