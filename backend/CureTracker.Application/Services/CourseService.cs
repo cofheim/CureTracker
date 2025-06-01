@@ -153,16 +153,18 @@ namespace CureTracker.Application.Services
             return result;
         }
 
-        public async Task<Course> GenerateIntakesForCourseAsync(Guid courseId, Guid userId)
+        public async Task GenerateIntakesForCourseAsync(Course course, Guid userId)
         {
-            var course = await _courseRepository.GetByIdAsync(courseId);
             if (course == null || course.UserId != userId)
-                throw new UnauthorizedAccessException("У вас нет прав на изменение этого курса");
+                throw new UnauthorizedAccessException("У вас нет прав на изменение этого курса или курс не найден");
 
             // Удаляем существующие интейки для этого курса, если они есть
-            var existingIntakes = await _intakeRepository.GetAllByCourseIdAsync(courseId);
+            var existingIntakes = await _intakeRepository.GetAllByCourseIdAsync(course.Id);
             foreach (var intake in existingIntakes)
             {
+                // Сначала очищаем ссылки на этот Intake в ActionLogs
+                await _actionLogRepository.ClearIntakeReferencesAsync(intake.Id);
+                // Затем удаляем сам Intake
                 await _intakeRepository.DeleteAsync(intake.Id);
             }
 
@@ -213,7 +215,7 @@ namespace CureTracker.Application.Services
                             Guid.NewGuid(),
                             intakeTime,
                             status,
-                            courseId,
+                            course.Id,
                             userId
                         );
 
@@ -230,13 +232,11 @@ namespace CureTracker.Application.Services
                 $"Сгенерировано {scheduledIntakes.Count} приёмов для курса {course.Name}",
                 userId,
                 course.MedicineId,
-                courseId);
+                course.Id);
 
             // Статус курса НЕ меняется при генерации приемов
             // Статус курса будет обновляться автоматически фоновой службой CourseStatusUpdateService
             // в соответствии с текущей датой и датами начала/окончания курса
-
-            return course;
         }
 
         /// <summary>

@@ -102,6 +102,45 @@ namespace CureTracker.DataAccess.Repositories
             }
         }
 
+        public async Task DeleteByMedicineIdAsync(Guid medicineId)
+        {
+            try
+            {
+                var logsToDelete = await _context.ActionLogs
+                    .Where(log => log.MedicineId == medicineId)
+                    .ToListAsync();
+
+                if (logsToDelete.Any())
+                {
+                    _context.ActionLogs.RemoveRange(logsToDelete);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Логируем ошибку или обрабатываем ее соответствующим образом
+                Console.WriteLine($"Ошибка при удалении логов для лекарства {medicineId}: {ex.Message}");
+                // В зависимости от требований, здесь можно пробросить исключение дальше
+                // throw; 
+            }
+        }
+
+        public async Task ClearIntakeReferencesAsync(Guid intakeId)
+        {
+            var logsToUpdate = await _context.ActionLogs
+                .Where(log => log.IntakeId == intakeId)
+                .ToListAsync();
+
+            if (logsToUpdate.Any())
+            {
+                foreach (var log in logsToUpdate)
+                {
+                    log.IntakeId = null;
+                }
+                await _context.SaveChangesAsync();
+            }
+        }
+
         // Вспомогательные методы для маппинга
         private ActionLog MapToDomainModel(ActionLogEntity entity)
         {

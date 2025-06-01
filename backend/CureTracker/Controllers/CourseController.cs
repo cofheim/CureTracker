@@ -119,7 +119,7 @@ namespace CureTracker.Controllers
             var createdCourse = await _courseService.CreateCourseAsync(courseResult.Course);
 
             // Генерируем интейки для курса
-            await _courseService.GenerateIntakesForCourseAsync(createdCourse.Id, userId);
+            await _courseService.GenerateIntakesForCourseAsync(createdCourse, userId);
 
             var response = MapToCourseResponse(createdCourse);
             return CreatedAtAction(nameof(GetCourseById), new { id = response.Id }, response);
@@ -196,7 +196,7 @@ namespace CureTracker.Controllers
                 existingCourse.MedicineId != request.MedicineId ||
                 existingCourse.IntakeFrequency != request.IntakeFrequency) 
             {
-                await _courseService.GenerateIntakesForCourseAsync(id, userId);
+                await _courseService.GenerateIntakesForCourseAsync(updatedCourse, userId);
             }
 
             var response = MapToCourseResponse(updatedCourse);
