@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Spin, Typography, Button, Row, Col, Card, Space, App } from 'antd';
+import { Spin, Typography, Button, Row, Col, Card, Space, App, Divider } from 'antd';
 import { LogoutOutlined, MedicineBoxOutlined, ScheduleOutlined } from '@ant-design/icons';
 import Head from 'next/head';
 import { API_BASE_URL } from '../lib/apiConfig'; // Предполагаем, что apiConfig.ts на один уровень выше
+import Dashboard from './components/Dashboard';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -104,15 +105,10 @@ const HomePage: React.FC = () => {
         </Button>
       </Row>
       
-      {userData && (
-        <Card style={{ marginBottom: '20px' }}>
-            <Title level={4}>Ваш профиль</Title>
-            <Text strong>ID:</Text> <Text>{userData.id}</Text><br/>
-            <Text strong>Имя:</Text> <Text>{userData.name}</Text><br/>
-            <Text strong>Email:</Text> <Text>{userData.email}</Text><br/>
-            {userData.telegramId && <><Text strong>Telegram ID:</Text> <Text>{userData.telegramId}</Text><br/></>}
-        </Card>
-      )}
+      {/* Добавляем дашборд */}
+      <Dashboard />
+      
+      <Divider />
 
       <Title level={3} style={{ marginTop: '30px' }}>Что вы хотите сделать?</Title>
       
