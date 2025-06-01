@@ -101,7 +101,7 @@ namespace CureTracker.DataAccess.Repositories
 
         private Course MapToDomainModel(CourseEntity entity)
         {
-            return new Course(
+            var course = new Course(
                 entity.Id,
                 entity.Name,
                 entity.Description,
@@ -116,6 +116,35 @@ namespace CureTracker.DataAccess.Repositories
                 entity.TakenDosesCount,
                 entity.SkippedDosesCount
             );
+
+            if (entity.Medicine != null)
+            {
+                var medicine = new Medicine(
+                    entity.Medicine.Id,
+                    entity.Medicine.Name,
+                    entity.Medicine.Description,
+                    entity.Medicine.DosagePerTake,
+                    entity.Medicine.StorageConditions,
+                    entity.Medicine.Type,
+                    entity.Medicine.UserId
+                );
+                typeof(Course).GetProperty("Medicine", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(course, medicine);
+            }
+
+            if (entity.Intakes != null)
+            {
+                var mappedIntakes = entity.Intakes.Select(intakeEntity => new Intake(
+                    intakeEntity.Id,
+                    intakeEntity.ScheduledTime,
+                    intakeEntity.ActualTime,
+                    intakeEntity.Status,
+                    intakeEntity.CourseId,
+                    intakeEntity.UserId
+                )).ToList();
+                typeof(Course).GetProperty("Intakes", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(course, mappedIntakes);
+            }
+
+            return course;
         }
 
         private CourseEntity MapToEntity(Course course)
