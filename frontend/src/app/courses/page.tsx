@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, DatePicker, Select, Typography, Space, Spin, Popconfirm, Tag, TimePicker, InputNumber, App } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, CalendarOutlined, MedicineBoxOutlined } from '@ant-design/icons';
+import { Table, Button, Modal, Form, Input, DatePicker, Select, Typography, Space, Spin, Popconfirm, Tag, TimePicker, InputNumber, App, Card, Row, Col } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, CalendarOutlined, MedicineBoxOutlined, ReloadOutlined, FilterOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import Head from 'next/head';
 import { API_BASE_URL } from '../../lib/apiConfig';
@@ -17,6 +17,7 @@ dayjs.extend(utc);
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
+const { Search } = Input;
 
 // Интерфейсы для типизации данных
 interface Course {
@@ -47,8 +48,7 @@ interface Medicine {
 enum CourseStatus {
   Planned = 'Planned',
   Active = 'Active',
-  Completed = 'Completed',
-  Cancelled = 'Cancelled'
+  Completed = 'Completed'
 }
 
 enum IntakeFrequency {
@@ -68,11 +68,56 @@ const CoursesPage: React.FC = () => {
   const { message, modal } = App.useApp();
   const { theme } = useTheme();
 
+  // Состояния для фильтрации и поиска
+  const [searchText, setSearchText] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<CourseStatus | null>(null);
+  const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
+
   // Загрузка списка курсов и лекарств при монтировании компонента
   useEffect(() => {
     fetchCourses();
     fetchMedicines();
   }, []);
+
+  // Применение фильтров при изменении курсов или параметров фильтрации
+  useEffect(() => {
+    applyCourseFilters();
+  }, [courses, searchText, statusFilter]);
+
+  const applyCourseFilters = () => {
+    let tempFilteredCourses = [...courses];
+
+    // Фильтр по текстовому поиску (название курса, название лекарства)
+    if (searchText) {
+      const lowerSearchText = searchText.toLowerCase();
+      tempFilteredCourses = tempFilteredCourses.filter(course =>
+        course.name.toLowerCase().includes(lowerSearchText) ||
+        (course.medicineName && course.medicineName.toLowerCase().includes(lowerSearchText))
+      );
+    }
+
+    // Фильтр по статусу
+    if (statusFilter) {
+      tempFilteredCourses = tempFilteredCourses.filter(course => course.status === statusFilter);
+    }
+
+    setFilteredCourses(tempFilteredCourses);
+  };
+
+  const resetCourseFilters = () => {
+    setSearchText('');
+    setStatusFilter(null);
+  };
+
+  // Обработчик изменения текста поиска
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(e.target.value);
+  };
+
+  // Обработчик изменения фильтра по статусу
+  const handleStatusFilterChange = (value: CourseStatus | null) => {
+    setStatusFilter(value);
+  };
 
   // Функция для загрузки списка курсов с API
   const fetchCourses = async () => {
@@ -378,8 +423,6 @@ const CoursesPage: React.FC = () => {
         return 'blue';
       case CourseStatus.Completed:
         return 'purple';
-      case CourseStatus.Cancelled:
-        return 'red';
       default:
         return 'default';
     }
@@ -394,8 +437,6 @@ const CoursesPage: React.FC = () => {
         return 'Запланирован';
       case CourseStatus.Completed:
         return 'Завершен';
-      case CourseStatus.Cancelled:
-        return 'Отменен';
       default:
         return status;
     }
@@ -509,16 +550,6 @@ const CoursesPage: React.FC = () => {
             </Button>
           )}
           
-          {(record.status === CourseStatus.Planned || record.status === CourseStatus.Active) && (
-            <Button 
-              type="primary" 
-              danger
-              onClick={() => handleStatusChange(record.id, CourseStatus.Cancelled)}
-            >
-              Отменить
-            </Button>
-          )}
-          
           <Popconfirm
             title="Удалить курс?"
             description="Вы уверены, что хотите удалить этот курс?"
@@ -547,15 +578,63 @@ const CoursesPage: React.FC = () => {
       <div style={{ padding: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <Title level={2} style={{ color: 'var(--primary-color)', margin: 0 }}>Курсы лечения</Title>
-          <Button 
-            type="primary" 
-            icon={<PlusOutlined />} 
-            onClick={handleAdd}
-          >
-            Добавить курс
-          </Button>
+          <Space>
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              onClick={handleAdd}
+            >
+              Добавить курс
+            </Button>
+            <Button 
+              icon={<ReloadOutlined />} 
+              onClick={fetchCourses}
+            >
+              Обновить
+            </Button>
+          </Space>
         </div>
         
+        {/* Панель фильтров */}
+        <Card style={{ marginBottom: '20px' }}>
+          <Row gutter={[16, 16]} align="bottom">
+            <Col xs={24} sm={12} md={10}>
+              <Text>Поиск по названию:</Text>
+              <Input.Search
+                placeholder="Введите текст для поиска"
+                allowClear
+                value={searchText}
+                onChange={handleSearchChange}
+                onSearch={(value) => setSearchText(value)}
+                style={{ width: '100%' }}
+              />
+            </Col>
+            <Col xs={24} sm={12} md={8}>
+              <Text>Фильтр по статусу:</Text>
+              <Select
+                allowClear
+                placeholder="Все статусы"
+                value={statusFilter}
+                onChange={handleStatusFilterChange}
+                style={{ width: '100%' }}
+              >
+                <Option value={CourseStatus.Planned}>{getStatusLabel(CourseStatus.Planned)}</Option>
+                <Option value={CourseStatus.Active}>{getStatusLabel(CourseStatus.Active)}</Option>
+                <Option value={CourseStatus.Completed}>{getStatusLabel(CourseStatus.Completed)}</Option>
+              </Select>
+            </Col>
+            <Col xs={24} sm={24} md={6}>
+              <Button 
+                icon={<FilterOutlined />} 
+                onClick={resetCourseFilters} 
+                style={{ width: '100%' }}
+              >
+                Сбросить фильтры
+              </Button>
+            </Col>
+          </Row>
+        </Card>
+
         {loading ? (
           <div style={{ textAlign: 'center', padding: '50px' }}>
             <Spin size="large" />
@@ -563,7 +642,7 @@ const CoursesPage: React.FC = () => {
         ) : (
           <Table 
             columns={columns} 
-            dataSource={courses} 
+            dataSource={filteredCourses} 
             rowKey="id" 
             pagination={{ pageSize: 10 }}
           />

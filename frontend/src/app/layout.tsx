@@ -3,7 +3,7 @@
 import './globals.css';
 import React, { useState, useEffect } from 'react';
 import { Layout, Menu, ConfigProvider, theme as antdTheme, App, Button, Drawer, FloatButton } from 'antd';
-import { HomeOutlined, MedicineBoxOutlined, ScheduleOutlined, HistoryOutlined, UserOutlined, MenuOutlined, BulbOutlined, BulbFilled } from '@ant-design/icons';
+import { HomeOutlined, MedicineBoxOutlined, ScheduleOutlined, HistoryOutlined, UserOutlined, MenuOutlined, BulbOutlined, BulbFilled, CalendarOutlined } from '@ant-design/icons';
 import { usePathname, useRouter } from 'next/navigation';
 import ru_RU from 'antd/locale/ru_RU';
 import { ThemeProvider, useTheme } from '../lib/ThemeContext';
@@ -86,6 +86,15 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       label: 'Курсы лечения',
       onClick: () => {
         router.push('/courses');
+        if (isMobile) setDrawerVisible(false);
+      },
+    },
+    {
+      key: '/calendar',
+      icon: <CalendarOutlined />,
+      label: 'Календарь',
+      onClick: () => {
+        router.push('/calendar');
         if (isMobile) setDrawerVisible(false);
       },
     },

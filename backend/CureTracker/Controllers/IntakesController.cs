@@ -152,6 +152,15 @@ namespace CureTracker.Controllers
             return Ok(response);
         }
 
+        [HttpGet("calendar/range")]
+        public async Task<ActionResult<List<IntakeResponse>>> GetUserIntakesForCalendar([FromQuery] CalendarIntakesRequest request)
+        {
+            var userId = GetUserIdFromClaims();
+            var intakes = await _intakeService.GetUserIntakesForCalendarAsync(userId, request.StartDate, request.EndDate);
+            var response = intakes.Select(MapToIntakeResponse).ToList();
+            return Ok(response);
+        }
+
         // Вспомогательные методы
         private Guid GetUserIdFromClaims()
         {

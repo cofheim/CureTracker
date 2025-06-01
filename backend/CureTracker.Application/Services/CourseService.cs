@@ -121,7 +121,6 @@ namespace CureTracker.Application.Services
                 CourseStatus.Planned => "запланирован",
                 CourseStatus.Active => "в процессе",
                 CourseStatus.Completed => "завершен",
-                CourseStatus.Cancelled => "отменен",
                 _ => newStatus.ToString()
             };
 

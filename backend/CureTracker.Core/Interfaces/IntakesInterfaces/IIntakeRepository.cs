@@ -11,5 +11,6 @@ namespace CureTracker.Core.Interfaces
         Task<bool> DeleteAsync(Guid id);
         Task<List<Intake>> GetScheduledIntakesByDateRangeAsync(Guid userId, DateTime startDate, DateTime endDate);
         Task<bool> SetSkipReasonAsync(Guid intakeId, string skipReason);
+        Task<List<Intake>> GetAllUserIntakesForPeriodAsync(Guid userId, DateTime startDate, DateTime endDate);
     }
 }

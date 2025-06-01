@@ -142,6 +142,14 @@ namespace CureTracker.Application.Services
             return await _intakeRepository.GetScheduledIntakesByDateRangeAsync(userId, startDate, endDate);
         }
 
+        public async Task<List<Intake>> GetUserIntakesForCalendarAsync(Guid userId, DateTime startDate, DateTime endDate)
+        {
+            // Убедимся, что startDate это начало дня, а endDate - конец дня, для корректного запроса в БД
+            var startOfDay = startDate.Date;
+            var endOfDay = endDate.Date.AddDays(1).AddTicks(-1);
+            return await _intakeRepository.GetAllUserIntakesForPeriodAsync(userId, startOfDay, endOfDay);
+        }
+
         public async Task<Dictionary<DateTime, List<Intake>>> GetCalendarDataAsync(Guid userId, DateTime month)
         {
             // Получаем первый и последний день месяца с указанием UTC

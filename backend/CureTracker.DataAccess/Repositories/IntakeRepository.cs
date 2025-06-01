@@ -89,6 +89,20 @@ namespace CureTracker.DataAccess.Repositories
             return intakes.Select(MapToDomainModel).ToList();
         }
 
+        public async Task<List<Intake>> GetAllUserIntakesForPeriodAsync(Guid userId, DateTime startDate, DateTime endDate)
+        {
+            var intakes = await _context.Intakes
+                .Where(i => i.UserId == userId && 
+                            i.ScheduledTime >= startDate && 
+                            i.ScheduledTime <= endDate)
+                .Include(i => i.Course)
+                    .ThenInclude(c => c!.Medicine) // Добавляем явное указание non-null, если c может быть null, или обрабатываем null
+                .OrderBy(i => i.ScheduledTime)
+                .ToListAsync();
+
+            return intakes.Select(MapToDomainModel).ToList();
+        }
+
         private Intake MapToDomainModel(IntakeEntity entity)
         {
             var intake = new Intake(

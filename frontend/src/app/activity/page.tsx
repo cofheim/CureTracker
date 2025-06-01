@@ -159,30 +159,26 @@ const ActivityPage: React.FC = () => {
   };
 
   const getEntityTag = (log: ActionLog) => {
-    if (log.medicineId) {
+    if (log.medicineId && log.medicineName) {
       return (
-        <Tag color="blue" onClick={() => {
-          setEntityType('medicine');
-          setEntityId(log.medicineId!);
-        }}>
-          Лекарство: {log.medicineName || log.medicineId}
+        <Tag color="blue">
+          <a onClick={() => router.push(`/medicines/${log.medicineId}`)} style={{ color: 'inherit', textDecoration: 'underline', cursor: 'pointer' }}>
+            Лекарство: {log.medicineName}
+          </a>
         </Tag>
       );
-    } else if (log.courseId) {
+    } else if (log.courseId && log.courseName) {
       return (
-        <Tag color="green" onClick={() => {
-          setEntityType('course');
-          setEntityId(log.courseId!);
-        }}>
-          Курс: {log.courseName || log.courseId}
+        <Tag color="green">
+          <a onClick={() => router.push(`/courses/${log.courseId}`)} style={{ color: 'inherit', textDecoration: 'underline', cursor: 'pointer' }}>
+            Курс: {log.courseName}
+          </a>
         </Tag>
       );
     } else if (log.intakeId) {
+      // Для Intake пока оставляем ID, т.к. нет отдельной страницы и имени
       return (
-        <Tag color="orange" onClick={() => {
-          setEntityType('intake');
-          setEntityId(log.intakeId!);
-        }}>
+        <Tag color="orange">
           Прием: {log.intakeId}
         </Tag>
       );

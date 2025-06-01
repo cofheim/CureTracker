@@ -18,6 +18,8 @@ namespace CureTracker.DataAccess.Repositories
         {
             var logs = await _context.ActionLogs
                 .Where(a => a.UserId == userId)
+                .Include(a => a.Medicine)
+                .Include(a => a.Course)
                 .OrderByDescending(a => a.Timestamp)
                 .Skip(offset)
                 .Take(limit)
@@ -29,6 +31,8 @@ namespace CureTracker.DataAccess.Repositories
         public async Task<ActionLog?> GetByIdAsync(Guid id)
         {
             var log = await _context.ActionLogs
+                .Include(a => a.Medicine)
+                .Include(a => a.Course)
                 .FirstOrDefaultAsync(a => a.Id == id);
 
             return log != null ? MapToDomainModel(log) : null;
@@ -45,19 +49,23 @@ namespace CureTracker.DataAccess.Repositories
 
         public async Task<List<ActionLog>> GetByRelatedEntityAsync(Guid entityId, string entityType)
         {
+            var query = _context.ActionLogs
+                .Include(a => a.Medicine)
+                .Include(a => a.Course);
+
             var logs = entityType.ToLower() switch
             {
-                "medicine" => await _context.ActionLogs
+                "medicine" => await query
                     .Where(a => a.MedicineId == entityId)
                     .OrderByDescending(a => a.Timestamp)
                     .ToListAsync(),
 
-                "course" => await _context.ActionLogs
+                "course" => await query
                     .Where(a => a.CourseId == entityId)
                     .OrderByDescending(a => a.Timestamp)
                     .ToListAsync(),
 
-                "intake" => await _context.ActionLogs
+                "intake" => await query
                     .Where(a => a.IntakeId == entityId)
                     .OrderByDescending(a => a.Timestamp)
                     .ToListAsync(),
@@ -97,7 +105,7 @@ namespace CureTracker.DataAccess.Repositories
         // Вспомогательные методы для маппинга
         private ActionLog MapToDomainModel(ActionLogEntity entity)
         {
-            return new ActionLog(
+            var actionLog = new ActionLog(
                 entity.Id,
                 entity.Description,
                 entity.Timestamp,
@@ -106,6 +114,18 @@ namespace CureTracker.DataAccess.Repositories
                 entity.CourseId,
                 entity.IntakeId
             );
+
+            if (entity.Medicine != null)
+            {
+                typeof(ActionLog).GetProperty("Medicine", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(actionLog, new Medicine(entity.Medicine.Id, entity.Medicine.Name, entity.Medicine.Description, entity.Medicine.DosagePerTake, entity.Medicine.StorageConditions, entity.Medicine.Type, entity.Medicine.UserId));
+            }
+
+            if (entity.Course != null)
+            {
+                typeof(ActionLog).GetProperty("Course", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(actionLog, new Course(entity.Course.Id, entity.Course.Name, entity.Course.Description, entity.Course.TimesADay, entity.Course.TimesOfTaking, entity.Course.StartDate, entity.Course.EndDate, entity.Course.MedicineId, entity.Course.UserId, entity.Course.Status, entity.Course.IntakeFrequency, entity.Course.TakenDosesCount, entity.Course.SkippedDosesCount));
+            }
+            
+            return actionLog;
         }
 
         private ActionLogEntity MapToEntity(ActionLog actionLog)

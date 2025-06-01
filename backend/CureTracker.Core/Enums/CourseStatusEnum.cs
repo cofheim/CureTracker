@@ -9,8 +9,7 @@ namespace CureTracker.Core.Enums
         {
             Planned,
             Active,
-            Completed,
-            Cancelled
+            Completed
         }
     }
 }
