@@ -479,6 +479,13 @@ const CoursesPage: React.FC = () => {
             Редактировать
           </Button>
           
+          <Button
+            type="primary"
+            onClick={() => router.push(`/courses/${record.id}`)}
+          >
+            Приемы
+          </Button>
+          
           {record.status === CourseStatus.Planned && (
             <Button 
               type="primary" 

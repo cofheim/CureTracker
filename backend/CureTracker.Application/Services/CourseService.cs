@@ -171,6 +171,7 @@ namespace CureTracker.Application.Services
             var scheduledIntakes = new List<Intake>();
             var currentDate = course.StartDate.Date;
             var endDate = course.EndDate.Date;
+            var utcNow = DateTime.UtcNow; // Текущее время для определения статуса
 
             while (currentDate <= endDate)
             {
@@ -196,10 +197,23 @@ namespace CureTracker.Application.Services
                             0,
                             DateTimeKind.Utc);
 
+                        // Определяем статус в зависимости от времени
+                        IntakeStatus status;
+                        if (intakeTime < utcNow)
+                        {
+                            // Если время приема уже прошло, помечаем как пропущенный
+                            status = IntakeStatus.Missed;
+                        }
+                        else
+                        {
+                            // Если время приема еще не наступило, помечаем как запланированный
+                            status = IntakeStatus.Scheduled;
+                        }
+
                         var intake = Intake.Create(
                             Guid.NewGuid(),
                             intakeTime,
-                            IntakeStatus.Missed, // По умолчанию - пропущено, пока не отметят
+                            status,
                             courseId,
                             userId
                         );

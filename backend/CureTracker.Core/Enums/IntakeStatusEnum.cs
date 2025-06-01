@@ -7,6 +7,7 @@ namespace CureTracker.Core.Enums
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public enum IntakeStatus 
         {
+            Scheduled,
             Taken,
             Missed,
             Skipped
