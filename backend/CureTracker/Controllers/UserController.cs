@@ -199,5 +199,51 @@ namespace CureTracker.Controllers
             var userId = await _userService.DeleteUser(id);
             return Ok(userId);
         }
+
+        [HttpPut("update-profile")]
+        [Authorize]
+        public async Task<ActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+                {
+                    _logger.LogWarning("Failed to get user ID from token claims");
+                    return Unauthorized();
+                }
+
+                var user = await _userService.GetUserById(userId);
+                if (user == null)
+                {
+                    _logger.LogWarning($"User with ID {userId} not found");
+                    return NotFound();
+                }
+
+                // Проверяем, не занят ли email другим пользователем
+                if (user.Email != request.Email)
+                {
+                    var existingUser = await _userService.GetUserByEmail(request.Email);
+                    if (existingUser != null && existingUser.Id != userId)
+                    {
+                        return Conflict(new { message = "Этот email уже используется другим пользователем" });
+                    }
+                }
+
+                // Обновляем данные профиля
+                user.Name = request.Name;
+                user.Email = request.Email;
+
+                // Сохраняем изменения
+                await _userService.UpdateUser(user);
+
+                return Ok(new { message = "Профиль успешно обновлен" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error in UpdateProfile: {ex.Message}");
+                return StatusCode(500, new { message = "Внутренняя ошибка сервера" });
+            }
+        }
     }
 }

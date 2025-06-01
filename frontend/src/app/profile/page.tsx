@@ -11,12 +11,17 @@ import {
   Col, 
   Avatar, 
   Divider,
-  App
+  App,
+  Form,
+  Input,
+  Space
 } from 'antd';
 import { 
   UserOutlined, 
   MailOutlined, 
-  LogoutOutlined 
+  LogoutOutlined,
+  EditOutlined,
+  SaveOutlined
 } from '@ant-design/icons';
 import { API_BASE_URL } from '../../lib/apiConfig';
 
@@ -31,6 +36,8 @@ interface UserProfile {
 const ProfilePage: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [editing, setEditing] = useState<boolean>(false);
+  const [form] = Form.useForm();
   const router = useRouter();
   const { message } = App.useApp();
 
@@ -51,6 +58,10 @@ const ProfilePage: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         setProfile(data);
+        form.setFieldsValue({
+          name: data.name,
+          email: data.email,
+        });
       } else if (response.status === 401) {
         router.push('/auth');
       } else {
@@ -59,6 +70,39 @@ const ProfilePage: React.FC = () => {
     } catch (error) {
       console.error('Error fetching profile:', error);
       message.error('Произошла ошибка при загрузке профиля');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateProfile = async (values: any) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/User/update-profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: values.name,
+          email: values.email,
+        }),
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        message.success('Профиль успешно обновлен');
+        setEditing(false);
+        fetchUserProfile();
+      } else if (response.status === 409) {
+        message.error('Этот email уже используется другим пользователем');
+      } else {
+        const errorData = await response.json();
+        message.error(errorData.message || 'Не удалось обновить профиль');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      message.error('Произошла ошибка при обновлении профиля');
     } finally {
       setLoading(false);
     }
@@ -93,7 +137,7 @@ const ProfilePage: React.FC = () => {
     return initials || 'U';
   };
 
-  if (loading) {
+  if (loading && !profile) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <Spin size="large" />
@@ -129,11 +173,67 @@ const ProfilePage: React.FC = () => {
         </Col>
 
         <Col xs={24} md={16}>
-          <Card title="Личная информация">
-            <div>
-              <p><strong>Имя пользователя:</strong> {profile?.name}</p>
-              <p><strong>Email:</strong> {profile?.email}</p>
-            </div>
+          <Card
+            title={
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Личная информация</span>
+                {!editing && (
+                  <Button 
+                    type="text" 
+                    icon={<EditOutlined />} 
+                    onClick={() => setEditing(true)}
+                  >
+                    Редактировать
+                  </Button>
+                )}
+              </div>
+            }
+          >
+            {editing ? (
+              <Form
+                form={form}
+                layout="vertical"
+                onFinish={handleUpdateProfile}
+              >
+                <Form.Item
+                  name="name"
+                  label="Имя пользователя"
+                  rules={[{ required: true, message: 'Пожалуйста, введите имя пользователя' }]}
+                >
+                  <Input prefix={<UserOutlined />} placeholder="Имя пользователя" />
+                </Form.Item>
+
+                <Form.Item
+                  name="email"
+                  label="Email"
+                  rules={[
+                    { required: true, message: 'Пожалуйста, введите email' },
+                    { type: 'email', message: 'Пожалуйста, введите корректный email' }
+                  ]}
+                >
+                  <Input prefix={<MailOutlined />} placeholder="Email" />
+                </Form.Item>
+
+                <Form.Item>
+                  <Space>
+                    <Button 
+                      type="primary" 
+                      htmlType="submit" 
+                      icon={<SaveOutlined />}
+                      loading={loading}
+                    >
+                      Сохранить
+                    </Button>
+                    <Button onClick={() => setEditing(false)}>Отмена</Button>
+                  </Space>
+                </Form.Item>
+              </Form>
+            ) : (
+              <div>
+                <p><strong>Имя пользователя:</strong> {profile?.name}</p>
+                <p><strong>Email:</strong> {profile?.email}</p>
+              </div>
+            )}
           </Card>
 
           <Card style={{ marginTop: '16px' }}>

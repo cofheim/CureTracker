@@ -100,7 +100,7 @@ const HomePage: React.FC = () => {
       </Head>
       
       <div style={{ padding: '20px' }}>
-        <Title level={2} style={{ color: '#1890ff', marginTop: '20px' }}>Добро пожаловать в CureTracker!</Title>
+        <Title level={2} style={{ color: '#1890ff', marginTop: '20px' }}>Добро пожаловать в CureTracker, {userData?.name}!</Title>
         
         {/* Добавляем дашборд */}
         <Dashboard />
