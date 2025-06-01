@@ -59,6 +59,21 @@ const HomePage: React.FC = () => {
   const { isAuthenticated, userData } = useAuth();
   const router = useRouter();
   const { message } = App.useApp(); // Используем App.useApp() вместо message.useMessage()
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Определение мобильного устройства
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkIsMobile);
+    };
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -99,27 +114,30 @@ const HomePage: React.FC = () => {
         <title>Главная - CureTracker</title>
       </Head>
       
-      <div style={{ padding: '20px' }}>
-        <Title level={2} style={{ color: '#1890ff', marginTop: '20px' }}>Добро пожаловать в CureTracker, {userData?.name}!</Title>
+      <div style={{ padding: isMobile ? '10px' : '20px' }}>
+        <Title level={isMobile ? 3 : 2} style={{ color: '#1890ff', marginTop: isMobile ? '10px' : '20px', wordBreak: 'break-word' }}>
+          Добро пожаловать в CureTracker, {userData?.name}!
+        </Title>
         
         {/* Добавляем дашборд */}
         <Dashboard />
         
         <Divider />
   
-        <Title level={3} style={{ marginTop: '30px' }}>Что вы хотите сделать?</Title>
+        <Title level={isMobile ? 4 : 3} style={{ marginTop: isMobile ? '20px' : '30px' }}>Что вы хотите сделать?</Title>
         
-        <Row gutter={[16, 16]} style={{ marginTop: '20px' }}>
+        <Row gutter={[isMobile ? 8 : 16, isMobile ? 8 : 16]} style={{ marginTop: isMobile ? '10px' : '20px' }}>
           <Col xs={24} sm={12} md={8}>
             <Card 
               hoverable 
               style={{ height: '100%' }}
               onClick={() => router.push('/medicines')}
+              size={isMobile ? 'small' : 'default'}
             >
               <div style={{ textAlign: 'center' }}>
-                <MedicineBoxOutlined style={{ fontSize: '48px', color: '#1890ff', marginBottom: '16px' }} />
-                <Title level={4}>Управление лекарствами</Title>
-                <Paragraph>
+                <MedicineBoxOutlined style={{ fontSize: isMobile ? '36px' : '48px', color: '#1890ff', marginBottom: isMobile ? '8px' : '16px' }} />
+                <Title level={isMobile ? 5 : 4}>Управление лекарствами</Title>
+                <Paragraph style={{ fontSize: isMobile ? '12px' : '14px' }}>
                   Добавляйте, редактируйте и удаляйте лекарства в вашей базе данных.
                 </Paragraph>
               </div>
@@ -131,11 +149,12 @@ const HomePage: React.FC = () => {
               hoverable 
               style={{ height: '100%' }}
               onClick={() => router.push('/courses')}
+              size={isMobile ? 'small' : 'default'}
             >
               <div style={{ textAlign: 'center' }}>
-                <ScheduleOutlined style={{ fontSize: '48px', color: '#52c41a', marginBottom: '16px' }} />
-                <Title level={4}>Курсы лечения</Title>
-                <Paragraph>
+                <ScheduleOutlined style={{ fontSize: isMobile ? '36px' : '48px', color: '#52c41a', marginBottom: isMobile ? '8px' : '16px' }} />
+                <Title level={isMobile ? 5 : 4}>Курсы лечения</Title>
+                <Paragraph style={{ fontSize: isMobile ? '12px' : '14px' }}>
                   Создавайте и управляйте курсами приема лекарств, отслеживайте прогресс.
                 </Paragraph>
               </div>
@@ -147,11 +166,12 @@ const HomePage: React.FC = () => {
               hoverable 
               style={{ height: '100%' }}
               onClick={() => router.push('/activity')}
+              size={isMobile ? 'small' : 'default'}
             >
               <div style={{ textAlign: 'center' }}>
-                <HistoryOutlined style={{ fontSize: '48px', color: '#722ed1', marginBottom: '16px' }} />
-                <Title level={4}>История действий</Title>
-                <Paragraph>
+                <HistoryOutlined style={{ fontSize: isMobile ? '36px' : '48px', color: '#722ed1', marginBottom: isMobile ? '8px' : '16px' }} />
+                <Title level={isMobile ? 5 : 4}>История действий</Title>
+                <Paragraph style={{ fontSize: isMobile ? '12px' : '14px' }}>
                   Просматривайте историю всех действий с лекарствами, курсами и приемами.
                 </Paragraph>
               </div>

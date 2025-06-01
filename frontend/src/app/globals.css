@@ -40,3 +40,43 @@ a {
     color-scheme: dark;
   }
 }
+
+/* Стили для адаптивности на мобильных устройствах */
+@media screen and (max-width: 768px) {
+  /* Улучшение читабельности текста */
+  body {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Предотвращение горизонтального скролла */
+  .ant-table-wrapper {
+    overflow-x: auto;
+  }
+
+  /* Адаптация таблиц для мобильных устройств */
+  .ant-table {
+    font-size: 12px;
+  }
+
+  /* Улучшение отображения форм */
+  .ant-form-item {
+    margin-bottom: 12px;
+  }
+
+  /* Улучшение отображения кнопок на мобильных устройствах */
+  .ant-btn {
+    padding: 4px 12px;
+    font-size: 12px;
+  }
+
+  /* Улучшение отображения списков */
+  .ant-list-item {
+    padding: 8px;
+  }
+
+  /* Улучшение отображения длинных слов */
+  p, h1, h2, h3, h4, h5, h6, span, div {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+}

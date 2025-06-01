@@ -45,11 +45,24 @@ const Dashboard: React.FC = () => {
   const [todayIntakes, setTodayIntakes] = useState<Intake[]>([]);
   const [activeCourses, setActiveCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
     fetchTodayIntakes();
     fetchActiveCourses();
+    
+    // Определение мобильного устройства
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkIsMobile);
+    };
   }, []);
 
   const fetchTodayIntakes = async () => {
@@ -211,7 +224,11 @@ const Dashboard: React.FC = () => {
 
   return (
     <div>
-      <Card title="Прогресс по активным курсам" style={{ marginBottom: '20px' }}>
+      <Card 
+        title={<span style={{ fontSize: isMobile ? '14px' : '16px' }}>Прогресс по активным курсам</span>} 
+        style={{ marginBottom: '20px' }}
+        size={isMobile ? 'small' : 'default'}
+      >
         {activeCourses.length > 0 ? (
           <List
             dataSource={activeCourses}
@@ -225,16 +242,23 @@ const Dashboard: React.FC = () => {
               return (
                 <List.Item>
                   <div style={{ width: '100%' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <Text strong>{course.name}</Text>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      marginBottom: '8px',
+                      flexDirection: isMobile ? 'column' : 'row'
+                    }}>
+                      <Text strong style={{ fontSize: isMobile ? '13px' : '14px', wordBreak: 'break-word' }}>{course.name}</Text>
                       <Button 
                         type="link" 
                         onClick={() => router.push(`/courses/${course.id}`)}
+                        size={isMobile ? 'small' : 'middle'}
+                        style={{ padding: isMobile ? '0' : undefined, height: isMobile ? 'auto' : undefined }}
                       >
                         Подробнее
                       </Button>
                     </div>
-                    <Text type="secondary">{course.medicineName}</Text>
+                    <Text type="secondary" style={{ fontSize: isMobile ? '12px' : '14px', wordBreak: 'break-word' }}>{course.medicineName}</Text>
                     <div style={{ marginTop: '8px' }}>
                       <Progress
                         success={{ percent: takenPercent }}
@@ -242,9 +266,10 @@ const Dashboard: React.FC = () => {
                         percent={progressPercent}
                         strokeColor="#faad14"
                         format={() => `${completedDoses}/${totalDoses} (${progressPercent}%)`}
+                        size={isMobile ? 'small' : 'default'}
                       />
                     </div>
-                    <div style={{ marginTop: '4px', fontSize: '12px' }}>
+                    <div style={{ marginTop: '4px', fontSize: isMobile ? '10px' : '12px' }}>
                       <Text type="secondary">
                         Принято: {course.takenDosesCount} | Пропущено: {course.skippedDosesCount}
                       </Text>
@@ -255,62 +280,69 @@ const Dashboard: React.FC = () => {
             }}
           />
         ) : (
-          <Empty description="Нет активных курсов" />
+          <Empty description="У вас нет активных курсов" />
         )}
       </Card>
 
       <Card 
-        title={
-          <Space>
-            <CalendarOutlined />
-            <span>Приёмы на сегодня</span>
-          </Space>
-        }
+        title={<span style={{ fontSize: isMobile ? '14px' : '16px' }}>Приёмы на сегодня</span>}
+        size={isMobile ? 'small' : 'default'}
       >
         {todayIntakes.length > 0 ? (
           <List
+            itemLayout={isMobile ? "vertical" : "horizontal"}
             dataSource={todayIntakes}
             renderItem={(intake) => (
               <List.Item
                 actions={
-                  intake.status === IntakeStatus.Scheduled ? [
-                    <Button 
-                      key="take" 
-                      type="primary" 
-                      size="small" 
-                      icon={<CheckCircleOutlined />}
-                      onClick={() => handleMarkAsTaken(intake.id)}
-                    >
-                      Принято
-                    </Button>,
-                    <Button 
-                      key="skip" 
-                      danger 
-                      size="small" 
-                      icon={<CloseCircleOutlined />}
-                      onClick={() => handleMarkAsSkipped(intake.id)}
-                    >
-                      Пропустить
-                    </Button>
-                  ] : []
+                  intake.status === IntakeStatus.Scheduled
+                    ? [
+                        <Button 
+                          key="take" 
+                          type="primary" 
+                          icon={<CheckCircleOutlined />} 
+                          onClick={() => handleMarkAsTaken(intake.id)}
+                          size={isMobile ? 'small' : 'middle'}
+                        >
+                          Принять
+                        </Button>,
+                        <Button 
+                          key="skip" 
+                          danger 
+                          icon={<CloseCircleOutlined />} 
+                          onClick={() => handleMarkAsSkipped(intake.id)}
+                          size={isMobile ? 'small' : 'middle'}
+                        >
+                          Пропустить
+                        </Button>
+                      ]
+                    : undefined
                 }
               >
                 <List.Item.Meta
-                  title={`${intake.medicineName} (${intake.courseName})`}
-                  description={
-                    <Space>
-                      <span>{formatTime(intake.scheduledTime)}</span>
-                      <Tag color={getStatusColor(intake.status as IntakeStatus)}>
-                        {getStatusLabel(intake.status as IntakeStatus)}
+                  title={
+                    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', gap: '8px' }}>
+                      <span style={{ fontSize: isMobile ? '13px' : '14px', wordBreak: 'break-word' }}>{intake.medicineName}</span>
+                      <Tag color={getStatusColor(intake.status)} style={{ fontSize: isMobile ? '10px' : '12px', margin: isMobile ? '4px 0' : undefined }}>
+                        {getStatusLabel(intake.status)}
                       </Tag>
-                    </Space>
+                    </div>
+                  }
+                  description={
+                    <div style={{ fontSize: isMobile ? '11px' : '12px' }}>
+                      <div>Курс: <span style={{ wordBreak: 'break-word' }}>{intake.courseName}</span></div>
+                      <div>
+                        <CalendarOutlined /> {formatTime(intake.scheduledTime)}
+                        {intake.actualTime && <span> (Принято в {formatTime(intake.actualTime)})</span>}
+                      </div>
+                    </div>
                   }
                 />
               </List.Item>
             )}
           />
         ) : (
-          <Empty description="Нет приёмов на сегодня" />
+          <Empty description="На сегодня нет запланированных приемов" />
         )}
       </Card>
     </div>

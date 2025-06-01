@@ -37,13 +37,36 @@ const ProfilePage: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [editing, setEditing] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const [form] = Form.useForm();
   const router = useRouter();
   const { message } = App.useApp();
 
   useEffect(() => {
     fetchUserProfile();
+    
+    // Определение мобильного устройства
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkIsMobile);
+    };
   }, []);
+
+  // Эффект для инициализации формы при получении данных профиля
+  useEffect(() => {
+    if (profile) {
+      form.setFieldsValue({
+        name: profile.name,
+        email: profile.email,
+      });
+    }
+  }, [profile, form]);
 
   const fetchUserProfile = async () => {
     try {
@@ -58,10 +81,6 @@ const ProfilePage: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         setProfile(data);
-        form.setFieldsValue({
-          name: data.name,
-          email: data.email,
-        });
       } else if (response.status === 401) {
         router.push('/auth');
       } else {
@@ -146,18 +165,18 @@ const ProfilePage: React.FC = () => {
   }
 
   return (
-    <div style={{ background: '#f0f8ff', minHeight: '100vh', padding: '20px' }}>
-      <Title level={2} style={{ marginBottom: '24px' }}>Профиль пользователя</Title>
+    <div style={{ background: '#f0f8ff', minHeight: '100vh', padding: isMobile ? '10px' : '20px' }}>
+      <Title level={isMobile ? 3 : 2} style={{ marginBottom: '24px' }}>Профиль пользователя</Title>
 
       <Row gutter={[16, 16]}>
         <Col xs={24} md={8}>
           <Card>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <Avatar 
-                size={100} 
+                size={isMobile ? 80 : 100} 
                 style={{ 
                   backgroundColor: '#1890ff',
-                  fontSize: '36px',
+                  fontSize: isMobile ? '28px' : '36px',
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -166,8 +185,8 @@ const ProfilePage: React.FC = () => {
               >
                 {getInitials()}
               </Avatar>
-              <Title level={3}>{profile?.name}</Title>
-              <Text type="secondary">{profile?.email}</Text>
+              <Title level={isMobile ? 4 : 3}>{profile?.name}</Title>
+              <Text type="secondary" style={{ fontSize: isMobile ? '12px' : '14px', wordBreak: 'break-all' }}>{profile?.email}</Text>
             </div>
           </Card>
         </Col>
@@ -182,8 +201,9 @@ const ProfilePage: React.FC = () => {
                     type="text" 
                     icon={<EditOutlined />} 
                     onClick={() => setEditing(true)}
+                    size={isMobile ? 'small' : 'middle'}
                   >
-                    Редактировать
+                    {!isMobile && 'Редактировать'}
                   </Button>
                 )}
               </div>
@@ -194,6 +214,11 @@ const ProfilePage: React.FC = () => {
                 form={form}
                 layout="vertical"
                 onFinish={handleUpdateProfile}
+                size={isMobile ? 'small' : 'middle'}
+                initialValues={{
+                  name: profile?.name,
+                  email: profile?.email
+                }}
               >
                 <Form.Item
                   name="name"
@@ -215,23 +240,24 @@ const ProfilePage: React.FC = () => {
                 </Form.Item>
 
                 <Form.Item>
-                  <Space>
+                  <Space direction={isMobile ? 'vertical' : 'horizontal'} style={{ width: '100%' }}>
                     <Button 
                       type="primary" 
                       htmlType="submit" 
                       icon={<SaveOutlined />}
                       loading={loading}
+                      block={isMobile}
                     >
                       Сохранить
                     </Button>
-                    <Button onClick={() => setEditing(false)}>Отмена</Button>
+                    <Button onClick={() => setEditing(false)} block={isMobile}>Отмена</Button>
                   </Space>
                 </Form.Item>
               </Form>
             ) : (
               <div>
                 <p><strong>Имя пользователя:</strong> {profile?.name}</p>
-                <p><strong>Email:</strong> {profile?.email}</p>
+                <p style={{ wordBreak: 'break-all' }}><strong>Email:</strong> {profile?.email}</p>
               </div>
             )}
           </Card>
@@ -243,7 +269,8 @@ const ProfilePage: React.FC = () => {
               type="primary" 
               icon={<LogoutOutlined />} 
               onClick={handleLogout}
-              size="large"
+              size={isMobile ? 'middle' : 'large'}
+              block={isMobile}
             >
               Выйти из аккаунта
             </Button>
