@@ -3,7 +3,7 @@
 import './globals.css';
 import React, { useState, useEffect } from 'react';
 import { Layout, Menu, ConfigProvider, theme, App } from 'antd';
-import { HomeOutlined, MedicineBoxOutlined, ScheduleOutlined, HistoryOutlined } from '@ant-design/icons';
+import { HomeOutlined, MedicineBoxOutlined, ScheduleOutlined, HistoryOutlined, UserOutlined } from '@ant-design/icons';
 import { usePathname, useRouter } from 'next/navigation';
 import ru_RU from 'antd/locale/ru_RU';
 
@@ -48,6 +48,12 @@ export default function RootLayout({
       icon: <HistoryOutlined />,
       label: 'История',
       onClick: () => router.push('/activity'),
+    },
+    {
+      key: '/profile',
+      icon: <UserOutlined />,
+      label: 'Профиль',
+      onClick: () => router.push('/profile'),
     },
   ];
 

@@ -58,6 +58,21 @@ namespace CureTracker.Controllers
             }
         }
 
+        [HttpPost("logout")]
+        [Authorize]
+        public IActionResult Logout()
+        {
+            // Удаляем cookie с токеном
+            HttpContext.Response.Cookies.Delete("cookies", new CookieOptions
+            {
+                HttpOnly = true,
+                SameSite = SameSiteMode.None,
+                Secure = true
+            });
+
+            return Ok(new { message = "Вы успешно вышли из системы" });
+        }
+
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterUserRequest request)
         {
