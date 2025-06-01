@@ -4,6 +4,8 @@ using CureTracker.Core.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using CureTracker.Contracts.UserContracts;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace CureTracker.Controllers
 {
@@ -18,6 +20,42 @@ namespace CureTracker.Controllers
         {
             _userService = userService;
             _logger = logger;
+        }
+
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<ActionResult<UserResponse>> GetCurrentUser()
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+                {
+                    _logger.LogWarning("Failed to get user ID from token claims");
+                    return Unauthorized();
+                }
+
+                var user = await _userService.GetUserById(userId);
+                if (user == null)
+                {
+                    _logger.LogWarning($"User with ID {userId} not found");
+                    return NotFound();
+                }
+
+                var response = new UserResponse(
+                    user.Id,
+                    user.Name,
+                    user.Email,
+                    user.TelegramId
+                );
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error in GetCurrentUser: {ex.Message}");
+                return StatusCode(500, new { message = "Внутренняя ошибка сервера" });
+            }
         }
 
         [HttpPost("register")]

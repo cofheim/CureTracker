@@ -68,6 +68,32 @@ namespace CureTracker.DataAccess.Repositories
             return logs.Select(MapToDomainModel).ToList();
         }
 
+        public async Task<bool> DeleteByCourseIdAsync(Guid courseId)
+        {
+            try
+            {
+                // Находим все логи, связанные с указанным курсом
+                var logs = await _context.ActionLogs
+                    .Where(a => a.CourseId == courseId)
+                    .ToListAsync();
+                
+                if (logs.Any())
+                {
+                    // Удаляем все найденные логи
+                    _context.ActionLogs.RemoveRange(logs);
+                    await _context.SaveChangesAsync();
+                }
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Логируем ошибку
+                Console.WriteLine($"Ошибка при удалении логов курса {courseId}: {ex.Message}");
+                return false;
+            }
+        }
+
         // Вспомогательные методы для маппинга
         private ActionLog MapToDomainModel(ActionLogEntity entity)
         {

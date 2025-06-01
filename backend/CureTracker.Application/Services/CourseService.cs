@@ -11,15 +11,18 @@ namespace CureTracker.Application.Services
         private readonly ICourseRepository _courseRepository;
         private readonly IIntakeRepository _intakeRepository;
         private readonly IActionLogService _actionLogService;
+        private readonly IActionLogRepository _actionLogRepository;
 
         public CourseService(
             ICourseRepository courseRepository,
             IIntakeRepository intakeRepository,
-            IActionLogService actionLogService)
+            IActionLogService actionLogService,
+            IActionLogRepository actionLogRepository)
         {
             _courseRepository = courseRepository;
             _intakeRepository = intakeRepository;
             _actionLogService = actionLogService;
+            _actionLogRepository = actionLogRepository;
         }
 
         public async Task<List<Course>> GetAllCoursesForUserAsync(Guid userId)
@@ -76,15 +79,26 @@ namespace CureTracker.Application.Services
             if (course == null || course.UserId != userId)
                 return false;
 
+            // Сначала удаляем все связанные логи
+            await _actionLogRepository.DeleteByCourseIdAsync(courseId);
+
+            // Затем удаляем интейки для этого курса
+            var intakes = await _intakeRepository.GetAllByCourseIdAsync(courseId);
+            foreach (var intake in intakes)
+            {
+                await _intakeRepository.DeleteAsync(intake.Id);
+            }
+
+            // И только после этого удаляем сам курс
             var result = await _courseRepository.DeleteAsync(courseId);
             if (result)
             {
-                // Логируем удаление курса
+                // Логируем удаление курса (этот лог не привязан к курсу, так как курс уже удален)
                 await _actionLogService.LogActionAsync(
                     $"Удален курс приёма: {course.Name}",
                     userId,
                     course.MedicineId,
-                    courseId);
+                    null);
             }
 
             return result;
@@ -105,8 +119,9 @@ namespace CureTracker.Application.Services
             var statusName = newStatus switch
             {
                 CourseStatus.Planned => "запланирован",
-                CourseStatus.InProgress => "в процессе",
-                CourseStatus.Done => "завершен",
+                CourseStatus.Active => "в процессе",
+                CourseStatus.Completed => "завершен",
+                CourseStatus.Cancelled => "отменен",
                 _ => newStatus.ToString()
             };
 
@@ -171,13 +186,15 @@ namespace CureTracker.Application.Services
                 {
                     foreach (var time in course.TimesOfTaking)
                     {
+                        // Создаем DateTime с указанием UTC
                         var intakeTime = new DateTime(
                             currentDate.Year,
                             currentDate.Month,
                             currentDate.Day,
                             time.Hour,
                             time.Minute,
-                            0);
+                            0,
+                            DateTimeKind.Utc);
 
                         var intake = Intake.Create(
                             Guid.NewGuid(),
@@ -202,13 +219,61 @@ namespace CureTracker.Application.Services
                 course.MedicineId,
                 courseId);
 
-            // Меняем статус курса на "В процессе"
-            if (course.Status == CourseStatus.Planned)
-            {
-                course = await ChangeCourseStatusAsync(courseId, CourseStatus.InProgress, userId);
-            }
+            // Статус курса НЕ меняется при генерации приемов
+            // Статус курса будет обновляться автоматически фоновой службой CourseStatusUpdateService
+            // в соответствии с текущей датой и датами начала/окончания курса
 
             return course;
+        }
+
+        /// <summary>
+        /// Обновляет статусы курсов на основе текущей даты
+        /// </summary>
+        /// <returns>Количество обновленных курсов</returns>
+        public async Task<int> UpdateCoursesStatusesAsync()
+        {
+            int updatedCount = 0;
+            var utcNow = DateTime.UtcNow.Date;
+            
+            // Получаем все запланированные курсы, у которых дата начала <= текущей дате
+            var plannedCourses = await _courseRepository.GetCoursesByStatusAsync(CourseStatus.Planned);
+            var coursesToUpdate = plannedCourses.Where(c => c.StartDate.Date <= utcNow).ToList();
+            
+            foreach (var course in coursesToUpdate)
+            {
+                try
+                {
+                    // Меняем статус на "В процессе"
+                    await ChangeCourseStatusAsync(course.Id, CourseStatus.Active, course.UserId);
+                    updatedCount++;
+                }
+                catch (Exception ex)
+                {
+                    // Логируем ошибку, но продолжаем обработку остальных курсов
+                    Console.WriteLine($"Ошибка при обновлении статуса курса {course.Id}: {ex.Message}");
+                }
+            }
+            
+            // Также проверяем курсы "В процессе", у которых дата окончания < текущей даты
+            var activeCourses = await _courseRepository.GetCoursesByStatusAsync(CourseStatus.Active);
+            var completedCourses = activeCourses.Where(c => c.EndDate.Date < utcNow).ToList();
+            
+            foreach (var course in completedCourses)
+            {
+                try
+                {
+                    // Меняем статус на "Завершен"
+                    await ChangeCourseStatusAsync(course.Id, CourseStatus.Completed, course.UserId);
+                    updatedCount++;
+                }
+                catch (Exception ex)
+                {
+                    // Логируем ошибку, но продолжаем обработку остальных курсов
+                    Console.WriteLine($"Ошибка при обновлении статуса курса {course.Id}: {ex.Message}");
+                }
+            }
+            
+            return updatedCount;
         }
     }
 }

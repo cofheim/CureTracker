@@ -46,7 +46,7 @@ namespace CureTracker.Application.Services
             if (intake == null || intake.UserId != userId)
                 throw new UnauthorizedAccessException("У вас нет прав на изменение этого приёма");
 
-            // Отмечаем приём как принятый
+            // Отмечаем приём как принятый с использованием UTC времени
             intake.MarkAsTaken(DateTime.UtcNow);
             var updatedIntake = await _intakeRepository.UpdateAsync(intake);
 
@@ -144,9 +144,9 @@ namespace CureTracker.Application.Services
 
         public async Task<Dictionary<DateTime, List<Intake>>> GetCalendarDataAsync(Guid userId, DateTime month)
         {
-            // Получаем первый и последний день месяца
-            var firstDayOfMonth = new DateTime(month.Year, month.Month, 1);
-            var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+            // Получаем первый и последний день месяца с указанием UTC
+            var firstDayOfMonth = new DateTime(month.Year, month.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1).AddHours(23).AddMinutes(59).AddSeconds(59).AddMilliseconds(999);
 
             // Получаем все приёмы за месяц
             var intakes = await _intakeRepository.GetScheduledIntakesByDateRangeAsync(

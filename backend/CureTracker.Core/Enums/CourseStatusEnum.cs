@@ -8,8 +8,9 @@ namespace CureTracker.Core.Enums
         public enum CourseStatus 
         {
             Planned,
-            InProgress,
-            Done
+            Active,
+            Completed,
+            Cancelled
         }
     }
 }

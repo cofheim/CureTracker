@@ -1,5 +1,6 @@
 ﻿using System;
 using CureTracker.Core.Models;
+using static CureTracker.Core.Enums.CourseStatusEnum;
 
 namespace CureTracker.Core.Interfaces
 {
@@ -11,5 +12,6 @@ namespace CureTracker.Core.Interfaces
         Task<Course> UpdateAsync(Course course);
         Task<bool> DeleteAsync(Guid id);
         Task<List<Course>> GetActiveCoursesByUserIdAsync(Guid userId);
+        Task<List<Course>> GetCoursesByStatusAsync(CourseStatus status);
     }
 }

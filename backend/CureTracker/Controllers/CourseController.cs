@@ -63,10 +63,39 @@ namespace CureTracker.Controllers
         {
             var userId = GetUserIdFromClaims();
 
-            // Преобразуем TimeSpan в DateTime для сохранения времен приема
-            var timesOfTaking = request.TimesOfTaking
-                .Select(t => new DateTime(2000, 1, 1, t.Hours, t.Minutes, 0))
-                .ToList();
+            // Преобразуем строковые представления времени в DateTime для сохранения времен приема
+            var timesOfTaking = new List<DateTime>();
+            
+            foreach (var timeStr in request.TimesOfTaking)
+            {
+                try
+                {
+                    // Пытаемся разобрать строку как TimeSpan
+                    if (TimeSpan.TryParse(timeStr, out var timeSpan))
+                    {
+                        // Создаем DateTime с фиксированной датой и временем из TimeSpan, с указанием UTC
+                        timesOfTaking.Add(new DateTime(2000, 1, 1, timeSpan.Hours, timeSpan.Minutes, 0, DateTimeKind.Utc));
+                    }
+                    else
+                    {
+                        // Если не удалось разобрать как TimeSpan, возвращаем ошибку
+                        return BadRequest($"Неверный формат времени: {timeStr}. Используйте формат HH:mm:ss.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest($"Ошибка при обработке времени: {ex.Message}");
+                }
+            }
+
+            // Убедимся, что даты в формате UTC
+            var startDate = request.StartDate.Kind != DateTimeKind.Utc 
+                ? DateTime.SpecifyKind(request.StartDate, DateTimeKind.Utc) 
+                : request.StartDate;
+                
+            var endDate = request.EndDate.Kind != DateTimeKind.Utc 
+                ? DateTime.SpecifyKind(request.EndDate, DateTimeKind.Utc) 
+                : request.EndDate;
 
             var courseResult = Course.Create(
                 Guid.NewGuid(),
@@ -74,8 +103,8 @@ namespace CureTracker.Controllers
                 request.Description,
                 request.TimesADay,
                 timesOfTaking,
-                request.StartDate,
-                request.EndDate,
+                startDate,
+                endDate,
                 request.MedicineId,
                 userId,
                 CourseStatus.Planned,
@@ -103,10 +132,39 @@ namespace CureTracker.Controllers
             if (existingCourse == null)
                 return NotFound();
 
-            // Преобразуем TimeSpan в DateTime для сохранения времен приема
-            var timesOfTaking = request.TimesOfTaking
-                .Select(t => new DateTime(2000, 1, 1, t.Hours, t.Minutes, 0))
-                .ToList();
+            // Преобразуем строковые представления времени в DateTime для сохранения времен приема
+            var timesOfTaking = new List<DateTime>();
+            
+            foreach (var timeStr in request.TimesOfTaking)
+            {
+                try
+                {
+                    // Пытаемся разобрать строку как TimeSpan
+                    if (TimeSpan.TryParse(timeStr, out var timeSpan))
+                    {
+                        // Создаем DateTime с фиксированной датой и временем из TimeSpan, с указанием UTC
+                        timesOfTaking.Add(new DateTime(2000, 1, 1, timeSpan.Hours, timeSpan.Minutes, 0, DateTimeKind.Utc));
+                    }
+                    else
+                    {
+                        // Если не удалось разобрать как TimeSpan, возвращаем ошибку
+                        return BadRequest($"Неверный формат времени: {timeStr}. Используйте формат HH:mm:ss.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest($"Ошибка при обработке времени: {ex.Message}");
+                }
+            }
+
+            // Убедимся, что даты в формате UTC
+            var startDate = request.StartDate.Kind != DateTimeKind.Utc 
+                ? DateTime.SpecifyKind(request.StartDate, DateTimeKind.Utc) 
+                : request.StartDate;
+                
+            var endDate = request.EndDate.Kind != DateTimeKind.Utc 
+                ? DateTime.SpecifyKind(request.EndDate, DateTimeKind.Utc) 
+                : request.EndDate;
 
             var course = new Course(
                 id,
@@ -114,8 +172,8 @@ namespace CureTracker.Controllers
                 request.Description,
                 request.TimesADay,
                 timesOfTaking,
-                request.StartDate,
-                request.EndDate,
+                startDate,
+                endDate,
                 existingCourse.MedicineId,
                 userId,
                 existingCourse.Status,
@@ -127,11 +185,11 @@ namespace CureTracker.Controllers
             var updatedCourse = await _courseService.UpdateCourseAsync(course);
 
             // Перегенерируем интейки для курса, если изменились даты или времена приема
-            if (existingCourse.StartDate != request.StartDate ||
-                existingCourse.EndDate != request.EndDate ||
+            if (existingCourse.StartDate != startDate ||
+                existingCourse.EndDate != endDate ||
                 existingCourse.TimesADay != request.TimesADay ||
                 !existingCourse.TimesOfTaking.Select(t => new TimeSpan(t.Hour, t.Minute, 0))
-                    .SequenceEqual(request.TimesOfTaking))
+                    .SequenceEqual(timesOfTaking.Select(t => new TimeSpan(t.Hour, t.Minute, 0))))
             {
                 await _courseService.GenerateIntakesForCourseAsync(id, userId);
             }

@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using CureTracker.Core.Interfaces;
 using CureTracker.Infrastructure;
 using CureTracker.Extensions;
+using CureTracker.BackgroundServices;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
-
 
 services.AddControllers();
 services.AddEndpointsApiExplorer();
@@ -19,30 +19,37 @@ services.AddDbContext<CureTrackerDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(CureTrackerDbContext)));
 });
 
-
 services.AddScoped<IJwtProvider, JwtProvider>();
 services.AddScoped<IPasswordHasher, PasswordHasher>();
 
-// �����������
 services.AddScoped<IUserRepository, UserRepository>();
 services.AddScoped<IMedicineRepository, MedicineRepository>();
 services.AddScoped<ICourseRepository, CourseRepository>();
 services.AddScoped<IIntakeRepository, IntakeRepository>();
 services.AddScoped<IActionLogRepository, ActionLogRepository>();
 
-
-// �������
 services.AddScoped<IUserService, UserService>();
 services.AddScoped<IMedicineService, MedicineService>();
-builder.Services.AddScoped<ICourseService, CourseService>();
-builder.Services.AddScoped<IIntakeService, IntakeService>();
-builder.Services.AddScoped<IActionLogService, ActionLogService>();
+services.AddScoped<ICourseService, CourseService>();
+services.AddScoped<IIntakeService, IntakeService>();
+services.AddScoped<IActionLogService, ActionLogService>();
 
-
+// Добавляем фоновую службу для обновления статусов курсов
+services.AddHostedService<CourseStatusUpdateService>();
 
 services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
-
 services.AddApiAuthentification(builder.Configuration, services.BuildServiceProvider().GetRequiredService<Microsoft.Extensions.Options.IOptions<JwtOptions>>());
+
+services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 
 var app = builder.Build();
 
@@ -52,19 +59,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
 app.UseHttpsRedirection();
 
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.UseCors(x =>
-{
-    x.WithOrigins("http://localhost:3000")
-     .AllowAnyHeader()
-     .AllowAnyMethod();
-});
 
 app.Run();

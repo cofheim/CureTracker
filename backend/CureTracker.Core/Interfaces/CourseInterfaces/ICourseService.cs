@@ -13,5 +13,6 @@ namespace CureTracker.Core.Interfaces
         Task<List<Course>> GetActiveCoursesForUserAsync(Guid userId);
         Task<Course> ChangeCourseStatusAsync(Guid courseId, CourseStatus newStatus, Guid userId);
         Task<Course> GenerateIntakesForCourseAsync(Guid courseId, Guid userId);
+        Task<int> UpdateCoursesStatusesAsync();
     }
 }

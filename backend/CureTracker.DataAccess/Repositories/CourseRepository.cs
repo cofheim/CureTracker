@@ -81,7 +81,17 @@ namespace CureTracker.DataAccess.Repositories
         public async Task<List<Course>> GetActiveCoursesByUserIdAsync(Guid userId)
         {
             var courses = await _context.Courses
-                .Where(c => c.UserId == userId && c.Status == CourseStatus.InProgress)
+                .Where(c => c.UserId == userId && c.Status == CourseStatus.Active)
+                .Include(c => c.Medicine)
+                .ToListAsync();
+
+            return courses.Select(MapToDomainModel).ToList();
+        }
+
+        public async Task<List<Course>> GetCoursesByStatusAsync(CourseStatus status)
+        {
+            var courses = await _context.Courses
+                .Where(c => c.Status == status)
                 .Include(c => c.Medicine)
                 .ToListAsync();
 

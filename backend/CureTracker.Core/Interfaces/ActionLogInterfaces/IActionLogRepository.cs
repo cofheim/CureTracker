@@ -8,5 +8,6 @@ namespace CureTracker.Core.Interfaces
         Task<ActionLog?> GetByIdAsync(Guid id);
         Task<ActionLog> CreateAsync(ActionLog actionLog);
         Task<List<ActionLog>> GetByRelatedEntityAsync(Guid entityId, string entityType);
+        Task<bool> DeleteByCourseIdAsync(Guid courseId);
     }
 }
