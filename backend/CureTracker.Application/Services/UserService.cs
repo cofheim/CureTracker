@@ -90,5 +90,15 @@ namespace CureTracker.Application.Services
         {
             return await _userRepository.DeleteUser(id);
         }
+
+        public async Task<string> GenerateConnectionCodeAsync(Guid userId)
+        {
+            return await _userRepository.GenerateConnectionCodeAsync(userId);
+        }
+
+        public async Task<User?> GetUserByConnectionCodeAsync(string code)
+        {
+            return await _userRepository.GetUserByConnectionCodeAsync(code);
+        }
     }
 }

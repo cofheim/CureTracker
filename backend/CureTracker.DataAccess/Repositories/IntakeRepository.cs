@@ -103,6 +103,15 @@ namespace CureTracker.DataAccess.Repositories
             return intakes.Select(MapToDomainModel).ToList();
         }
 
+        public async Task<List<Intake>> GetUpcomingIntakesAsync(DateTime startTime, DateTime endTime)
+        {
+            var entities = await _context.Intakes
+                .AsNoTracking()
+                .Where(i => i.ScheduledTime >= startTime && i.ScheduledTime <= endTime && i.Status == IntakeStatus.Scheduled)
+                .ToListAsync();
+            return entities.Select(MapToDomainModel).ToList();
+        }
+
         private Intake MapToDomainModel(IntakeEntity entity)
         {
             var intake = new Intake(

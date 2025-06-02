@@ -6,6 +6,7 @@ using CureTracker.Core.Interfaces;
 using CureTracker.Infrastructure;
 using CureTracker.Extensions;
 using CureTracker.BackgroundServices;
+using CureTracker.TelegramBot;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -34,8 +35,11 @@ services.AddScoped<ICourseService, CourseService>();
 services.AddScoped<IIntakeService, IntakeService>();
 services.AddScoped<IActionLogService, ActionLogService>();
 
+services.AddScoped<TelegramNotificationService>();
+
 // Добавляем фоновую службу для обновления статусов курсов
 services.AddHostedService<CourseStatusUpdateService>();
+services.AddHostedService<IntakeReminderService>();
 
 services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
 services.AddApiAuthentification(builder.Configuration, services.BuildServiceProvider().GetRequiredService<Microsoft.Extensions.Options.IOptions<JwtOptions>>());

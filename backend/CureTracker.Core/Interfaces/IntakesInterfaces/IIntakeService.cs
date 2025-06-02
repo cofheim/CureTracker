@@ -11,5 +11,6 @@ namespace CureTracker.Core.Interfaces
         Task<List<Intake>> GetScheduledIntakesForDateRangeAsync(Guid userId, DateTime startDate, DateTime endDate);
         Task<Dictionary<DateTime, List<Intake>>> GetCalendarDataAsync(Guid userId, DateTime month);
         Task<List<Intake>> GetUserIntakesForCalendarAsync(Guid userId, DateTime startDate, DateTime endDate);
+        Task<List<Intake>> GetUpcomingIntakesAsync(DateTime startTime, DateTime endTime);
     }
 }

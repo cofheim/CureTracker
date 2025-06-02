@@ -179,5 +179,10 @@ namespace CureTracker.Application.Services
 
             return calendarData;
         }
+
+        public async Task<List<Intake>> GetUpcomingIntakesAsync(DateTime startTime, DateTime endTime)
+        {
+            return await _intakeRepository.GetUpcomingIntakesAsync(startTime, endTime);
+        }
     }
 }

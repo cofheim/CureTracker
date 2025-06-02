@@ -8,13 +8,12 @@ import { usePathname, useRouter } from 'next/navigation';
 import ru_RU from 'antd/locale/ru_RU';
 import { ThemeProvider, useTheme } from '../lib/ThemeContext';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
+import { Inter } from 'next/font/google';
+import { AuthProvider } from '../lib/contexts/AuthContext';
 
 const { Header, Content, Sider } = Layout;
 
-// export const metadata: Metadata = { // Metadata не может быть экспортирована из клиентского компонента
-// title: "CureTracker",
-// description: "Ваш персональный трекер приема лекарств",
-// };
+const inter = Inter({ subsets: ['latin'] });
 
 // Компонент для кнопки переключения темы
 const ThemeToggle: React.FC = () => {
@@ -212,14 +211,16 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>CureTracker</title>
       </head>
-      <body style={{ margin: 0, padding: 0 }}>
-        <AntdRegistry>
-          <ThemeProvider>
-            <AppLayout>
-              {children}
-            </AppLayout>
-          </ThemeProvider>
-        </AntdRegistry>
+      <body style={{ margin: 0, padding: 0 }} className={inter.className}>
+        <AuthProvider>
+          <AntdRegistry>
+            <ThemeProvider>
+              <AppLayout>
+                {children}
+              </AppLayout>
+            </ThemeProvider>
+          </AntdRegistry>
+        </AuthProvider>
       </body>
     </html>
   );

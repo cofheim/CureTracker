@@ -46,6 +46,14 @@ namespace CureTracker.DataAccess.Repositories
             return userEntity != null ? MapEntityToDomain(userEntity) : null;
         }
 
+        public async Task<User?> GetUserByConnectionCodeAsync(string code)
+        {
+            var entity = await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.ConnectionCode == code);
+            return entity == null ? null : MapEntityToDomain(entity);
+        }
+
         public async Task<Guid> CreateUser(User user)
         {
             var userEntity = new UserEntity
@@ -89,6 +97,18 @@ namespace CureTracker.DataAccess.Repositories
         {
             await _context.Users.Where(u => u.Id == id).ExecuteDeleteAsync();
             return id;
+        }
+
+        public async Task<string> GenerateConnectionCodeAsync(Guid userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+                throw new Exception($"Пользователь с ID {userId} не найден");
+
+            var code = Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
+            user.ConnectionCode = code;
+            await _context.SaveChangesAsync();
+            return code;
         }
 
         // Вспомогательный метод для преобразования сущности в core-модель

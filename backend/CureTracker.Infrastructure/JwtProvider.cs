@@ -14,13 +14,20 @@ namespace CureTracker.Infrastructure
 
         public string GenerateToken(User user)
         {
-            Claim[] claims = [new(ClaimTypes.NameIdentifier, user.Id.ToString())];
+            Claim[] claims = 
+            {
+                new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new(JwtRegisteredClaimNames.Email, user.Email),
+                new(ClaimTypes.Name, user.Name)
+            };
 
             var signingCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecretKey)),
                 SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
+                issuer: _options.Issuer,
+                audience: _options.Audience,
                 claims: claims,
                 signingCredentials: signingCredentials,
                 expires: DateTime.UtcNow.AddHours(_options.ExpiresHours));

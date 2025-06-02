@@ -31,6 +31,7 @@
         public string Email { get; set; }
         public string PasswordHash { get; set; }
         public long? TelegramId { get; set; } // ID пользователя в Telegram
+        public string? ConnectionCode { get; set; } // Временный код для связи с Telegram
         public List<Medicine> Medicines { get; private set; } = new List<Medicine>(); // лекарства, которые использует пользователь
 
         public static User Create(Guid id, string userName, string email, string passwordHash)

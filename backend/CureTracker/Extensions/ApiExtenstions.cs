@@ -3,6 +3,8 @@ using CureTracker.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace CureTracker.Extensions
 {
@@ -13,6 +15,8 @@ namespace CureTracker.Extensions
             IConfiguration configuration,
             IOptions<JwtOptions> jwtOptions)
         {
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
                 {
@@ -23,7 +27,9 @@ namespace CureTracker.Extensions
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(jwtOptions.Value.SecretKey))
+                            Encoding.UTF8.GetBytes(jwtOptions.Value.SecretKey)),
+                        NameClaimType = JwtRegisteredClaimNames.Sub,
+                        RoleClaimType = ClaimTypes.Role
                     };
 
                     options.Events = new JwtBearerEvents

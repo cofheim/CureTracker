@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CureTracker.Application", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CureTracker.Infrastructure", "CureTracker.Infrastructure\CureTracker.Infrastructure.csproj", "{BC4B540A-0BDB-4BAC-963F-84FD9ABD645D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CureTracker.TelegramBot", "CureTracker.TelegramBot\CureTracker.TelegramBot.csproj", "{70FFBF08-5AC7-4545-A2B9-61BA3C06F210}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{BC4B540A-0BDB-4BAC-963F-84FD9ABD645D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC4B540A-0BDB-4BAC-963F-84FD9ABD645D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC4B540A-0BDB-4BAC-963F-84FD9ABD645D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70FFBF08-5AC7-4545-A2B9-61BA3C06F210}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70FFBF08-5AC7-4545-A2B9-61BA3C06F210}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70FFBF08-5AC7-4545-A2B9-61BA3C06F210}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70FFBF08-5AC7-4545-A2B9-61BA3C06F210}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

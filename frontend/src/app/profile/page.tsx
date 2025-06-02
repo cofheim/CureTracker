@@ -25,6 +25,8 @@ import {
 } from '@ant-design/icons';
 import { API_BASE_URL } from '../../lib/apiConfig';
 import { useTheme } from '../../lib/ThemeContext';
+import axios from 'axios';
+import { useAuth } from '@/lib/contexts/AuthContext';
 
 const { Title, Text } = Typography;
 
@@ -35,14 +37,23 @@ interface UserProfile {
 }
 
 const ProfilePage: React.FC = () => {
+  const { user, loading } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
   const [editing, setEditing] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [form] = Form.useForm();
   const router = useRouter();
   const { message } = App.useApp();
   const { theme } = useTheme();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [connectionCode, setConnectionCode] = useState<string | null>(null);
+  const [isGeneratingCode, setIsGeneratingCode] = useState(false);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/auth?redirect=/profile');
+    }
+  }, [user, loading, router]);
 
   useEffect(() => {
     fetchUserProfile();
@@ -60,15 +71,14 @@ const ProfilePage: React.FC = () => {
     };
   }, []);
 
-  // Эффект для инициализации формы при получении данных профиля
   useEffect(() => {
-    if (profile) {
+    if (user) {
       form.setFieldsValue({
-        name: profile.name,
-        email: profile.email,
+        name: user.name,
+        email: user.email,
       });
     }
-  }, [profile, form]);
+  }, [user, form]);
 
   const fetchUserProfile = async () => {
     try {
@@ -91,41 +101,57 @@ const ProfilePage: React.FC = () => {
     } catch (error) {
       console.error('Error fetching profile:', error);
       message.error('Произошла ошибка при загрузке профиля');
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleUpdateProfile = async (values: any) => {
+  const onFinish = async (values: any) => {
+    setIsSubmitting(true);
     try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/User/update-profile`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: values.name,
-          email: values.email,
-        }),
-        credentials: 'include',
+      await axios.put('/api/user/update-profile', {
+        name: values.name,
+        email: values.email,
       });
-
-      if (response.ok) {
-        message.success('Профиль успешно обновлен');
-        setEditing(false);
-        fetchUserProfile();
-      } else if (response.status === 409) {
-        message.error('Этот email уже используется другим пользователем');
-      } else {
-        const errorData = await response.json();
-        message.error(errorData.message || 'Не удалось обновить профиль');
-      }
+      message.success('Профиль успешно обновлен');
     } catch (error) {
-      console.error('Error updating profile:', error);
-      message.error('Произошла ошибка при обновлении профиля');
+      message.error('Ошибка при обновлении профиля');
+      console.error(error);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGenerateCode = async () => {
+    console.log('[ProfilePage] Attempting to generate code. Current user state:', user);
+    if (!user || !user.id) {
+      message.error('Информация о пользователе еще не загружена. Пожалуйста, подождите.');
+      console.warn('[ProfilePage] User or user.id is missing.', user);
+      return;
+    }
+    setIsGeneratingCode(true);
+    try {
+      console.log(`[ProfilePage] Sending request to: ${API_BASE_URL}/User/generate-connection-code`);
+      const response = await axios.post(`${API_BASE_URL}/User/generate-connection-code`, {}, { withCredentials: true });
+      setConnectionCode(response.data);
+      message.success('Код для подключения Telegram сгенерирован');
+    } catch (error: any) {
+      console.error('[ProfilePage] Error generating code:', error);
+      if (error.response) {
+        console.error('[ProfilePage] Error response data:', error.response.data);
+        console.error('[ProfilePage] Error response status:', error.response.status);
+        console.error('[ProfilePage] Error response headers:', error.response.headers);
+        if (error.response.status === 401) {
+          message.error('Ошибка авторизации. Пожалуйста, войдите в систему снова.');
+        } else {
+          message.error(`Ошибка при генерации кода: ${error.response.data?.message || error.message}`);
+        }
+      } else if (error.request) {
+        console.error('[ProfilePage] Error request:', error.request);
+        message.error('Ошибка сети или сервер недоступен.');
+      } else {
+        message.error('Произошла неизвестная ошибка.');
+      }
+    } finally {
+      setIsGeneratingCode(false);
     }
   };
 
@@ -218,7 +244,7 @@ const ProfilePage: React.FC = () => {
               <Form
                 form={form}
                 layout="vertical"
-                onFinish={handleUpdateProfile}
+                onFinish={onFinish}
                 size={isMobile ? 'small' : 'middle'}
                 initialValues={{
                   name: profile?.name,
@@ -250,7 +276,7 @@ const ProfilePage: React.FC = () => {
                       type="primary" 
                       htmlType="submit" 
                       icon={<SaveOutlined />}
-                      loading={loading}
+                      loading={isSubmitting}
                       block={isMobile}
                     >
                       Сохранить
@@ -279,6 +305,27 @@ const ProfilePage: React.FC = () => {
             >
               Выйти из аккаунта
             </Button>
+          </Card>
+
+          <Card style={{ marginTop: 16 }} title="Подключение к Telegram">
+            <Text>Подключите ваш аккаунт к Telegram, чтобы получать напоминания о приеме лекарств.</Text>
+            <Button 
+              onClick={handleGenerateCode} 
+              loading={isGeneratingCode} 
+              disabled={!user || !user.id || isGeneratingCode}
+              style={{ marginTop: 16, marginRight: 16 }}
+            >
+              Сгенерировать код подключения
+            </Button>
+            {connectionCode && (
+              <div style={{ marginTop: 16 }}>
+                <Text strong>Ваш код подключения:</Text>
+                <Text code style={{ fontSize: 18, padding: 8, background: '#f5f5f5' }}>{connectionCode}</Text>
+                <Text style={{ display: 'block', marginTop: 8 }}>
+                  Отправьте этот код нашему боту в Telegram, чтобы связать аккаунт.
+                </Text>
+              </div>
+            )}
           </Card>
         </Col>
       </Row>

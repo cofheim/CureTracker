@@ -14,4 +14,6 @@ public interface IUserService
     Task Register(string userName, string email, string password);
     Task<Guid> UpdateUser(User user);
     Task<Guid> UpdateUserTelegramId(Guid userId, long telegramId);
+    Task<User?> GetUserByConnectionCodeAsync(string code);
+    Task<string> GenerateConnectionCodeAsync(Guid userId);
 }

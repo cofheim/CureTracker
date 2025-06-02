@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using CureTracker.Contracts.UserContracts;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace CureTracker.Controllers
 {
@@ -245,6 +246,67 @@ namespace CureTracker.Controllers
                 _logger.LogError($"Error in UpdateProfile: {ex.Message}");
                 return StatusCode(500, new { message = "Внутренняя ошибка сервера" });
             }
+        }
+
+        [HttpPost("generate-connection-code")]
+        [Authorize]
+        public async Task<ActionResult<string>> GenerateConnectionCode()
+        {
+            _logger.LogInformation($"[Controller Action] GenerateConnectionCode called for authenticated user.");
+            
+            Guid userIdFromClaims;
+            try
+            {
+                userIdFromClaims = GetUserIdFromClaims();
+                _logger.LogInformation($"[Controller Action] userIdFromClaims: {userIdFromClaims}");
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning($"[Controller Action] GetUserIdFromClaims failed: {ex.Message}");
+                return Unauthorized("Ошибка авторизации: " + ex.Message);
+            }
+            
+            try
+            {
+                _logger.LogInformation($"[Controller Action] Calling _userService.GenerateConnectionCodeAsync with userId: {userIdFromClaims}");
+                var code = await _userService.GenerateConnectionCodeAsync(userIdFromClaims);
+                _logger.LogInformation($"[Controller Action] Successfully generated code: {code} for userId: {userIdFromClaims}");
+                return Ok(code);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"[Controller Action] Error in GenerateConnectionCodeAsync for userId {userIdFromClaims}: {ex.Message}");
+                // Check if it's the specific "User not found" exception from the repository/service
+                if (ex.Message.Contains("Пользователь с ID") && ex.Message.Contains("не найден"))
+                {
+                    return NotFound(ex.Message); // Return 404 if user not found
+                }
+                return StatusCode(500, "Внутренняя ошибка сервера при генерации кода.");
+            }
+        }
+
+        private Guid GetUserIdFromClaims()
+        {
+            _logger.LogInformation("[GetUserIdFromClaims] Attempting to get User ID using ClaimTypes.NameIdentifier. Available claims:");
+            foreach (var claim in User.Claims) // Оставим логирование всех claims для справки
+            {
+                _logger.LogInformation($"[GetUserIdFromClaims] Claim Type: {claim.Type}, Value: {claim.Value}");
+            }
+
+            var userIdClaimValue = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaimValue))
+            {
+                _logger.LogWarning("[GetUserIdFromClaims] ClaimTypes.NameIdentifier claim is missing or empty.");
+                throw new UnauthorizedAccessException("Не удалось определить идентификатор пользователя (отсутствует ClaimTypes.NameIdentifier).");
+            }
+            if (!Guid.TryParse(userIdClaimValue, out var userId))
+            {
+                _logger.LogWarning($"[GetUserIdFromClaims] ClaimTypes.NameIdentifier value is not a valid Guid. Value: {userIdClaimValue}");
+                throw new UnauthorizedAccessException($"Не удалось определить идентификатор пользователя (неверный формат ClaimTypes.NameIdentifier: {userIdClaimValue}).");
+            }
+            _logger.LogInformation($"[GetUserIdFromClaims] Successfully parsed ClaimTypes.NameIdentifier to userId: {userId}");
+            return userId;
         }
     }
 }

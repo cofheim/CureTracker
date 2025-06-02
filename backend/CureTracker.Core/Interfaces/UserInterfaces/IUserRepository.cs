@@ -12,5 +12,7 @@ namespace CureTracker.Core.Interfaces
         Task<Guid> UpdateUser(User user);
         Task<Guid> UpdateUserTelegramId(Guid userId, long telegramId);
         Task<Guid> DeleteUser(Guid id);
+        Task<string> GenerateConnectionCodeAsync(Guid userId);
+        Task<User?> GetUserByConnectionCodeAsync(string code);
     }
 }
