@@ -47,7 +47,9 @@ namespace CureTracker.Controllers
                     user.Id,
                     user.Name,
                     user.Email,
-                    user.TelegramId
+                    user.TelegramId,
+                    user.ConnectionCode,
+                    user.TimeZoneId
                 );
 
                 return Ok(response);
@@ -80,7 +82,7 @@ namespace CureTracker.Controllers
             try
             {
                 _logger.LogInformation($"Attempting to register user with email: {request.Email}");
-                await _userService.Register(request.UserName, request.Email, request.Password);
+                await _userService.Register(request.UserName, request.Email, request.Password, request.TimeZoneId);
                 _logger.LogInformation($"Successfully registered user with email: {request.Email}");
                 return Ok();
             }
@@ -121,7 +123,9 @@ namespace CureTracker.Controllers
                 u.Id,
                 u.Name,
                 u.Email,
-                u.TelegramId
+                u.TelegramId,
+                u.ConnectionCode,
+                u.TimeZoneId
             )).ToList();
 
             return Ok(response);
@@ -139,7 +143,9 @@ namespace CureTracker.Controllers
                 user.Id,
                 user.Name,
                 user.Email,
-                user.TelegramId
+                user.TelegramId,
+                user.ConnectionCode,
+                user.TimeZoneId
             );
 
             return Ok(response);
@@ -235,6 +241,7 @@ namespace CureTracker.Controllers
                 // Обновляем данные профиля
                 user.Name = request.Name;
                 user.Email = request.Email;
+                user.TimeZoneId = request.TimeZoneId;
 
                 // Сохраняем изменения
                 await _userService.UpdateUser(user);

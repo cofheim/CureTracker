@@ -8,6 +8,7 @@ type User = {
   name: string;
   email: string;
   telegramId?: number;
+  timeZoneId?: string;
 };
 
 type AuthContextType = {

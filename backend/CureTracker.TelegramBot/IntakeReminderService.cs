@@ -64,7 +64,26 @@ namespace CureTracker.TelegramBot
                 {
                     var course = await courseService.GetCourseByIdAsync(intake.CourseId, intake.UserId);
                     var medicineName = course?.Medicine?.Name ?? "неизвестное лекарство";
-                    var message = $"Напоминание: пора принять {medicineName}. Время: {intake.ScheduledTime:HH:mm}.";
+                    
+                    DateTime displayTime = intake.ScheduledTime; // По умолчанию UTC
+                    if (!string.IsNullOrEmpty(user.TimeZoneId))
+                    {
+                        try
+                        {
+                            TimeZoneInfo userTimeZone = TimeZoneInfo.FindSystemTimeZoneById(user.TimeZoneId);
+                            displayTime = TimeZoneInfo.ConvertTimeFromUtc(intake.ScheduledTime, userTimeZone);
+                        }
+                        catch (TimeZoneNotFoundException)
+                        {
+                            _logger.LogWarning($"Часовой пояс с ID '{user.TimeZoneId}' для пользователя {user.Id} не найден. Используется UTC.");
+                        }
+                        catch (InvalidTimeZoneException)
+                        {
+                             _logger.LogWarning($"Часовой пояс с ID '{user.TimeZoneId}' для пользователя {user.Id} поврежден. Используется UTC.");
+                        }
+                    }
+                    
+                    var message = $"Напоминание: пора принять {medicineName}. Время: {displayTime:HH:mm}.";
                     await telegramService.SendNotificationAsync(user.TelegramId.Value, message, intake.Id);
                 }
             }

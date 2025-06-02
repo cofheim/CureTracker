@@ -18,7 +18,7 @@ namespace CureTracker.Application.Services
             _jwtProvider = jwtProvider;
         }
 
-        public async Task Register(string userName, string email, string password)
+        public async Task Register(string userName, string email, string password, string? timeZoneId)
         {
             var existingUser = await _userRepository.GetUserByEmail(email);
             if (existingUser != null)
@@ -27,7 +27,7 @@ namespace CureTracker.Application.Services
             }
 
             var hashedPassword = _passwordHasher.Generate(password);
-            var user = User.Create(Guid.NewGuid(), userName, email, hashedPassword);
+            var user = User.Create(Guid.NewGuid(), userName, email, hashedPassword, timeZoneId);
             await _userRepository.CreateUser(user);
         }
 

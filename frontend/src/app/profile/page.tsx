@@ -34,6 +34,7 @@ interface UserProfile {
   id: string;
   name: string;
   email: string;
+  timeZoneId?: string;
 }
 
 const ProfilePage: React.FC = () => {
@@ -76,6 +77,7 @@ const ProfilePage: React.FC = () => {
       form.setFieldsValue({
         name: user.name,
         email: user.email,
+        timeZoneId: user.timeZoneId || Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
     }
   }, [user, form]);
@@ -93,6 +95,11 @@ const ProfilePage: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         setProfile(data);
+        form.setFieldsValue({
+          name: data.name,
+          email: data.email,
+          timeZoneId: data.timeZoneId || Intl.DateTimeFormat().resolvedOptions().timeZone,
+        });
       } else if (response.status === 401) {
         router.push('/auth');
       } else {
@@ -107,13 +114,20 @@ const ProfilePage: React.FC = () => {
   const onFinish = async (values: any) => {
     setIsSubmitting(true);
     try {
-      await axios.put('/api/user/update-profile', {
+      await axios.put(`${API_BASE_URL}/User/update-profile`, {
         name: values.name,
         email: values.email,
-      });
+        timeZoneId: values.timeZoneId,
+      }, { withCredentials: true });
       message.success('Профиль успешно обновлен');
-    } catch (error) {
-      message.error('Ошибка при обновлении профиля');
+      setProfile(prevProfile => prevProfile ? { ...prevProfile, ...values } : null);
+      setEditing(false);
+    } catch (error: any) {
+      if (error.response && error.response.data && error.response.data.message) {
+        message.error(`Ошибка при обновлении профиля: ${error.response.data.message}`);
+      } else {
+        message.error('Ошибка при обновлении профиля');
+      }
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -248,28 +262,31 @@ const ProfilePage: React.FC = () => {
                 size={isMobile ? 'small' : 'middle'}
                 initialValues={{
                   name: profile?.name,
-                  email: profile?.email
+                  email: profile?.email,
+                  timeZoneId: profile?.timeZoneId || Intl.DateTimeFormat().resolvedOptions().timeZone,
                 }}
               >
                 <Form.Item
+                  label="Имя"
                   name="name"
-                  label="Имя пользователя"
-                  rules={[{ required: true, message: 'Пожалуйста, введите имя пользователя' }]}
+                  rules={[{ required: true, message: 'Пожалуйста, введите ваше имя!' }]}
                 >
-                  <Input prefix={<UserOutlined />} placeholder="Имя пользователя" />
+                  <Input prefix={<UserOutlined />} />
                 </Form.Item>
-
                 <Form.Item
-                  name="email"
                   label="Email"
-                  rules={[
-                    { required: true, message: 'Пожалуйста, введите email' },
-                    { type: 'email', message: 'Пожалуйста, введите корректный email' }
-                  ]}
+                  name="email"
+                  rules={[{ required: true, message: 'Пожалуйста, введите ваш Email!' }, { type: 'email', message: 'Введите корректный Email!' }]}
                 >
-                  <Input prefix={<MailOutlined />} placeholder="Email" />
+                  <Input prefix={<MailOutlined />} />
                 </Form.Item>
-
+                <Form.Item
+                  label="Часовой пояс (IANA)"
+                  name="timeZoneId"
+                  tooltip="Например, Europe/Moscow или America/New_York. Ваш текущий: Intl.DateTimeFormat().resolvedOptions().timeZone"
+                >
+                  <Input placeholder="Например, Europe/Moscow" />
+                </Form.Item>
                 <Form.Item>
                   <Space direction={isMobile ? 'vertical' : 'horizontal'} style={{ width: '100%' }}>
                     <Button 
@@ -286,10 +303,20 @@ const ProfilePage: React.FC = () => {
                 </Form.Item>
               </Form>
             ) : (
-              <div>
-                <p><strong>Имя пользователя:</strong> {profile?.name}</p>
-                <p style={{ wordBreak: 'break-all' }}><strong>Email:</strong> {profile?.email}</p>
-              </div>
+              <>
+                <Row gutter={[16, 16]} style={{ marginBottom: '16px' }}>
+                  <Col span={isMobile ? 24 : 8}><Text strong>Имя:</Text></Col>
+                  <Col span={isMobile ? 24 : 16}><Text>{profile?.name}</Text></Col>
+                </Row>
+                <Row gutter={[16, 16]} style={{ marginBottom: '16px' }}>
+                  <Col span={isMobile ? 24 : 8}><Text strong>Email:</Text></Col>
+                  <Col span={isMobile ? 24 : 16}><Text>{profile?.email}</Text></Col>
+                </Row>
+                <Row gutter={[16, 16]}>
+                  <Col span={isMobile ? 24 : 8}><Text strong>Часовой пояс:</Text></Col>
+                  <Col span={isMobile ? 24 : 16}><Text>{profile?.timeZoneId || 'Не указан'}</Text></Col>
+                </Row>
+              </>
             )}
           </Card>
 

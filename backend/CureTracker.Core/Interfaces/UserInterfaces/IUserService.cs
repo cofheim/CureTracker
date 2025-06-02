@@ -11,7 +11,7 @@ public interface IUserService
     Task<User?> GetUserById(Guid id);
     Task<User?> GetUserByTelegramId(long telegramId);
     Task<string> Login(string email, string password);
-    Task Register(string userName, string email, string password);
+    Task Register(string userName, string email, string password, string? timeZoneId);
     Task<Guid> UpdateUser(User user);
     Task<Guid> UpdateUserTelegramId(Guid userId, long telegramId);
     Task<User?> GetUserByConnectionCodeAsync(string code);

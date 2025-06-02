@@ -213,13 +213,13 @@ export default function RootLayout({
       </head>
       <body style={{ margin: 0, padding: 0 }} className={inter.className}>
         <AuthProvider>
-          <AntdRegistry>
-            <ThemeProvider>
-              <AppLayout>
-                {children}
-              </AppLayout>
-            </ThemeProvider>
-          </AntdRegistry>
+        <AntdRegistry>
+          <ThemeProvider>
+            <AppLayout>
+              {children}
+            </AppLayout>
+          </ThemeProvider>
+        </AntdRegistry>
         </AuthProvider>
       </body>
     </html>

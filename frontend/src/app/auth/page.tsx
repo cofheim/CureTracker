@@ -44,6 +44,7 @@ const AuthPage: React.FC = () => {
   const onFinishRegister = async (values: any) => {
     setLoading(true);
     try {
+      const timeZoneId = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const response = await fetch(`${API_BASE_URL}/User/register`, {
         method: 'POST',
         headers: {
@@ -52,7 +53,8 @@ const AuthPage: React.FC = () => {
         body: JSON.stringify({ 
           userName: values.userName, 
           email: values.email, 
-          password: values.password 
+          password: values.password,
+          timeZoneId: timeZoneId
         }),
         credentials: 'include',
       });
