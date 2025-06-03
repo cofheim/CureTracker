@@ -80,14 +80,12 @@ namespace CureTracker.DataAccess.Repositories
         {
             try
             {
-                // Находим все логи, связанные с указанным курсом
                 var logs = await _context.ActionLogs
                     .Where(a => a.CourseId == courseId)
                     .ToListAsync();
                 
                 if (logs.Any())
                 {
-                    // Удаляем все найденные логи
                     _context.ActionLogs.RemoveRange(logs);
                     await _context.SaveChangesAsync();
                 }
@@ -96,7 +94,6 @@ namespace CureTracker.DataAccess.Repositories
             }
             catch (Exception ex)
             {
-                // Логируем ошибку
                 Console.WriteLine($"Ошибка при удалении логов курса {courseId}: {ex.Message}");
                 return false;
             }
@@ -118,10 +115,7 @@ namespace CureTracker.DataAccess.Repositories
             }
             catch (Exception ex)
             {
-                // Логируем ошибку или обрабатываем ее соответствующим образом
                 Console.WriteLine($"Ошибка при удалении логов для лекарства {medicineId}: {ex.Message}");
-                // В зависимости от требований, здесь можно пробросить исключение дальше
-                // throw; 
             }
         }
 
@@ -141,7 +135,6 @@ namespace CureTracker.DataAccess.Repositories
             }
         }
 
-        // Вспомогательные методы для маппинга
         private ActionLog MapToDomainModel(ActionLogEntity entity)
         {
             var actionLog = new ActionLog(

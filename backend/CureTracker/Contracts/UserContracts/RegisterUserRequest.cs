@@ -2,5 +2,5 @@
 
 namespace CureTracker.Contracts.UserContracts
 {
-    public record RegisterUserRequest([Required] string UserName, string Password, string Email, string? TimeZoneId);
+    public record RegisterUserRequest([Required] string UserName, string Password, string Email, [Required] string CountryCode);
 }

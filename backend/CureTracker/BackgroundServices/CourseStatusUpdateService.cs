@@ -9,7 +9,7 @@ namespace CureTracker.BackgroundServices
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<CourseStatusUpdateService> _logger;
-        private readonly TimeSpan _updateInterval = TimeSpan.FromHours(1); // Обновление каждый час
+        private readonly TimeSpan _updateInterval = TimeSpan.FromHours(1);
 
         public CourseStatusUpdateService(
             IServiceProvider serviceProvider,
@@ -35,19 +35,15 @@ namespace CureTracker.BackgroundServices
                     _logger.LogError(ex, "Ошибка при обновлении статусов курсов");
                 }
 
-                // Ждем до следующего обновления
                 await Task.Delay(_updateInterval, stoppingToken);
             }
         }
 
         private async Task UpdateCoursesStatusesAsync()
         {
-            // Создаем новый скоуп для DI
             using var scope = _serviceProvider.CreateScope();
-            // Получаем сервис курсов из DI
             var courseService = scope.ServiceProvider.GetRequiredService<ICourseService>();
             
-            // Обновляем статусы курсов
             int updatedCount = await courseService.UpdateCoursesStatusesAsync();
             
             if (updatedCount > 0)

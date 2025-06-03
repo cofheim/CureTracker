@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "@ant-design/nextjs-registry": "^1.0.2",
-    "axios": "^1.9.0"
+    "@types/country-list": "^2.1.4",
+    "axios": "^1.9.0",
+    "country-list": "^2.3.0"
   }
 }

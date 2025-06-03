@@ -21,7 +21,6 @@ namespace CureTracker.Application.Services
 
         public async Task<List<Intake>> GetIntakesForCourseAsync(Guid courseId, Guid userId)
         {
-            // Проверяем доступ к курсу
             var course = await _courseRepository.GetByIdAsync(courseId);
             if (course == null || course.UserId != userId)
                 throw new UnauthorizedAccessException("У вас нет прав на просмотр этого курса");
@@ -33,7 +32,6 @@ namespace CureTracker.Application.Services
         {
             var intake = await _intakeRepository.GetByIdAsync(intakeId);
 
-            // Проверка доступа - пользователь может получить только свои приёмы
             if (intake == null || intake.UserId != userId)
                 return null;
 
@@ -46,15 +44,12 @@ namespace CureTracker.Application.Services
             if (intake == null || intake.UserId != userId)
                 throw new UnauthorizedAccessException("У вас нет прав на изменение этого приёма");
 
-            // Отмечаем приём как принятый с использованием UTC времени
             intake.MarkAsTaken(DateTime.UtcNow);
             var updatedIntake = await _intakeRepository.UpdateAsync(intake);
 
-            // Обновляем статистику курса
             var course = await _courseRepository.GetByIdAsync(intake.CourseId);
             if (course != null)
             {
-                // Увеличиваем счетчик принятых доз
                 var updatedCourse = new Course(
                     course.Id,
                     course.Name,
@@ -74,7 +69,6 @@ namespace CureTracker.Application.Services
                 await _courseRepository.UpdateAsync(updatedCourse);
             }
 
-            // Логируем принятие лекарства
             await _actionLogService.LogActionAsync(
                 $"Принято лекарство по курсу {course?.Name}",
                 userId,
@@ -91,21 +85,15 @@ namespace CureTracker.Application.Services
             if (intake == null || intake.UserId != userId)
                 throw new UnauthorizedAccessException("У вас нет прав на изменение этого приёма");
 
-            // Отмечаем приём как пропущенный
             intake.MarkAsSkipped();
 
-            // Обновляем прием в БД с установкой статуса
             var updatedIntake = await _intakeRepository.UpdateAsync(intake);
 
-            // Добавляем причину пропуска через прямое обновление в БД
-            // Для этого нужно добавить новый метод в IIntakeRepository и его реализацию
             await _intakeRepository.SetSkipReasonAsync(intakeId, skipReason);
 
-            // Обновляем статистику курса
             var course = await _courseRepository.GetByIdAsync(intake.CourseId);
             if (course != null)
             {
-                // Увеличиваем счетчик пропущенных доз
                 var updatedCourse = new Course(
                     course.Id,
                     course.Name,
@@ -125,7 +113,6 @@ namespace CureTracker.Application.Services
                 await _courseRepository.UpdateAsync(updatedCourse);
             }
 
-            // Логируем пропуск лекарства
             await _actionLogService.LogActionAsync(
                 $"Пропущен приём лекарства по курсу {course?.Name}" +
                 (!string.IsNullOrEmpty(skipReason) ? $" по причине: {skipReason}" : ""),
@@ -144,7 +131,6 @@ namespace CureTracker.Application.Services
 
         public async Task<List<Intake>> GetUserIntakesForCalendarAsync(Guid userId, DateTime startDate, DateTime endDate)
         {
-            // Убедимся, что startDate это начало дня, а endDate - конец дня, для корректного запроса в БД
             var startOfDay = startDate.Date;
             var endOfDay = endDate.Date.AddDays(1).AddTicks(-1);
             return await _intakeRepository.GetAllUserIntakesForPeriodAsync(userId, startOfDay, endOfDay);
@@ -152,17 +138,14 @@ namespace CureTracker.Application.Services
 
         public async Task<Dictionary<DateTime, List<Intake>>> GetCalendarDataAsync(Guid userId, DateTime month)
         {
-            // Получаем первый и последний день месяца с указанием UTC
             var firstDayOfMonth = new DateTime(month.Year, month.Month, 1, 0, 0, 0, DateTimeKind.Utc);
             var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1).AddHours(23).AddMinutes(59).AddSeconds(59).AddMilliseconds(999);
 
-            // Получаем все приёмы за месяц
             var intakes = await _intakeRepository.GetScheduledIntakesByDateRangeAsync(
                 userId,
                 firstDayOfMonth,
                 lastDayOfMonth);
 
-            // Группируем по датам
             var calendarData = new Dictionary<DateTime, List<Intake>>();
 
             foreach (var intake in intakes)

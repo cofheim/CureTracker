@@ -30,26 +30,27 @@
         public string Name { get; set; }
         public string Email { get; set; }
         public string PasswordHash { get; set; }
-        public long? TelegramId { get; set; } // ID пользователя в Telegram
-        public string? ConnectionCode { get; set; } // Временный код для связи с Telegram
-        public string? TimeZoneId { get; set; } // Часовой пояс пользователя
-        public List<Medicine> Medicines { get; private set; } = new List<Medicine>(); // лекарства, которые использует пользователь
+        public long? TelegramId { get; set; }
+        public string? ConnectionCode { get; set; } 
+        public string? TimeZoneId { get; set; } 
+        public string? CountryCode { get; set; } 
+        public List<Medicine> Medicines { get; private set; } = new List<Medicine>();
 
-        // Конструктор для UserRepository.MapEntityToDomain и других внутренних нужд
-        // Мы не хотим, чтобы TimeZoneId был обязательным в основном конструкторе, используемом при создании User.Create
-        public User(Guid id, string name, string email, string passwordHash, long? telegramId, string? connectionCode, string? timeZoneId)
-            : this(id, name, email, passwordHash) // Вызываем основной конструктор
+   
+        public User(Guid id, string name, string email, string passwordHash, long? telegramId, string? connectionCode, string? timeZoneId, string? countryCode)
+            : this(id, name, email, passwordHash)
         {
             TelegramId = telegramId;
             ConnectionCode = connectionCode;
             TimeZoneId = timeZoneId;
+            CountryCode = countryCode;
         }
         
-        public static User Create(Guid id, string userName, string email, string passwordHash, string? timeZoneId = null) // Добавили опциональный timeZoneId
+        public static User Create(Guid id, string userName, string email, string passwordHash, string? timeZoneId = null, string? countryCode = null) // Добавили опциональный timeZoneId и countryCode
         {
-            // return new User(id, userName, email, passwordHash); // Старый вызов
             var user = new User(id, userName, email, passwordHash);
-            user.TimeZoneId = timeZoneId; // Устанавливаем TimeZoneId
+            user.TimeZoneId = timeZoneId; 
+            user.CountryCode = countryCode; 
             return user;
         }
     }

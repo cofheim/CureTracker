@@ -36,7 +36,6 @@ namespace CureTracker.TelegramBot
             {
                 var inlineKeyboard = new InlineKeyboardMarkup(new[]
                 {
-                    // first row
                     new []
                     {
                         InlineKeyboardButton.WithCallbackData(text: "Принято", callbackData: $"intake_taken_{intakeId}"),
@@ -63,7 +62,7 @@ namespace CureTracker.TelegramBot
             _logger.LogInformation("Запуск получения обновлений от Telegram (StartReceiving)");
             var receiverOptions = new ReceiverOptions
             {
-                AllowedUpdates = Array.Empty<UpdateType>() // Получать все типы обновлений
+                AllowedUpdates = Array.Empty<UpdateType>() 
             };
             _botClient.StartReceiving(
                 updateHandler: UpdateHandler,
@@ -91,18 +90,36 @@ namespace CureTracker.TelegramBot
                 }
                 else
                 {
-                    // Предполагаем, что пользователь ввел код связи
                     var code = text.Trim();
                     var user = await _userService.GetUserByConnectionCodeAsync(code);
                     if (user != null)
                     {
-                        await _userService.UpdateUserTelegramId(user.Id, chatId);
-                        await _botClient.SendMessage(
-                            chatId: chatId,
-                            text: "Ваш аккаунт успешно связан с CureTracker! Теперь вы будете получать напоминания о приеме лекарств.",
-                            replyMarkup: new ReplyKeyboardRemove(),
-                            cancellationToken: cancellationToken);
-                        _logger.LogInformation($"Аккаунт пользователя {user.Id} связан с Telegram ID {chatId}");
+                        try
+                        {
+                            await _userService.UpdateUserTelegramId(user.Id, chatId);
+                            await _botClient.SendMessage(
+                                chatId: chatId,
+                                text: "Ваш аккаунт успешно связан с CureTracker! Теперь вы будете получать напоминания о приеме лекарств.",
+                                replyMarkup: new ReplyKeyboardRemove(),
+                                cancellationToken: cancellationToken);
+                            _logger.LogInformation($"Аккаунт пользователя {user.Id} связан с Telegram ID {chatId}");
+                        }
+                        catch (Core.Exceptions.TelegramIdAlreadyLinkedException ex)
+                        {
+                            _logger.LogWarning(ex, $"Попытка привязать уже связанный Telegram ID {chatId} к пользователю {user.Id}");
+                            await _botClient.SendMessage(
+                                chatId: chatId,
+                                text: "Этот Telegram-аккаунт уже привязан к другому пользователю в системе. Если вы хотите привязать его к текущему аккаунту CureTracker, сначала отвяжите его от предыдущего в настройках того аккаунта или обратитесь в поддержку.",
+                                cancellationToken: cancellationToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, $"Ошибка при обновлении Telegram ID для пользователя {user.Id}");
+                            await _botClient.SendMessage(
+                                chatId: chatId,
+                                text: "Произошла ошибка при попытке связать ваш аккаунт. Пожалуйста, попробуйте позже или обратитесь в поддержку.",
+                                cancellationToken: cancellationToken);
+                        }
                     }
                     else
                     {
@@ -132,7 +149,7 @@ namespace CureTracker.TelegramBot
                     return;
                 }
 
-                var action = parts[1]; // "taken" or "skipped"
+                var action = parts[1];
                 if (!Guid.TryParse(parts[2], out var intakeId))
                 {
                     await _botClient.AnswerCallbackQuery(callbackQuery.Id, "Ошибка: Неверный ID приема.", cancellationToken: cancellationToken);
@@ -152,7 +169,7 @@ namespace CureTracker.TelegramBot
                         return;
                     }
 
-                    var intake = await _intakeService.GetIntakeByIdAsync(intakeId, appUser.Id); // Используем appUser.Id
+                    var intake = await _intakeService.GetIntakeByIdAsync(intakeId, appUser.Id);
                     
                     if (intake == null)
                     {

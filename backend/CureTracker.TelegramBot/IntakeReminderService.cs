@@ -9,7 +9,7 @@ namespace CureTracker.TelegramBot
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<IntakeReminderService> _logger;
-        private readonly TimeSpan _checkInterval = TimeSpan.FromMinutes(5); // Проверка каждые 5 минут
+        private readonly TimeSpan _checkInterval = TimeSpan.FromMinutes(5);
 
         public IntakeReminderService(
             IServiceProvider serviceProvider,
@@ -26,7 +26,6 @@ namespace CureTracker.TelegramBot
             using var scope = _serviceProvider.CreateScope();
             var telegramService = scope.ServiceProvider.GetRequiredService<TelegramNotificationService>();
             
-            // Запускаем получение обновлений от Telegram в отдельной задаче
             Task.Run(() => telegramService.StartReceivingUpdatesAsync(stoppingToken), stoppingToken);
 
             while (!stoppingToken.IsCancellationRequested)
@@ -54,7 +53,6 @@ namespace CureTracker.TelegramBot
             var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
             var courseService = scope.ServiceProvider.GetRequiredService<ICourseService>();
 
-            // Получаем все предстоящие приемы в ближайшие 10 минут
             var upcomingIntakes = await intakeService.GetUpcomingIntakesAsync(DateTime.UtcNow, DateTime.UtcNow.AddMinutes(10));
 
             foreach (var intake in upcomingIntakes)
@@ -65,7 +63,7 @@ namespace CureTracker.TelegramBot
                     var course = await courseService.GetCourseByIdAsync(intake.CourseId, intake.UserId);
                     var medicineName = course?.Medicine?.Name ?? "неизвестное лекарство";
                     
-                    DateTime displayTime = intake.ScheduledTime; // По умолчанию UTC
+                    DateTime displayTime = intake.ScheduledTime;
                     if (!string.IsNullOrEmpty(user.TimeZoneId))
                     {
                         try

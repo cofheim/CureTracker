@@ -20,14 +20,12 @@
         }
 
         public Guid Id { get; }
-        public string Description { get; private set; } // описание действия
-        public DateTime Timestamp { get; private set; } // время действия
+        public string Description { get; private set; }
+        public DateTime Timestamp { get; private set; }
 
-        // связь с пользователем
         public Guid UserId { get; private set; }
         public User? User { get; private set; }
 
-        // опциональные связи с другими сущностями
         public Guid? MedicineId { get; private set; }
         public Medicine? Medicine { get; private set; }
 

@@ -14,11 +14,9 @@ namespace CureTracker.DataAccess.Entities
         public MedicineType Type { get; set; } = MedicineType.Other;
 
 
-        // связь с пользователем
-        public Guid UserId { get; set; } // ID пользователя
-        public UserEntity? User { get; set; }  // Навигационное свойство
+        public Guid UserId { get; set; }
+        public UserEntity? User { get; set; } 
 
-        // связь с курсами
         public List<CourseEntity> Courses { get; set; } = new List<CourseEntity>();
     }
 }

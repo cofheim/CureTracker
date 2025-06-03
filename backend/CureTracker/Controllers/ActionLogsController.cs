@@ -30,7 +30,6 @@ namespace CureTracker.Controllers
                 request.PageSize
             );
 
-            // Здесь можно добавить информацию о пагинации, если она нужна
             var response = logs.Select(MapToActionLogResponse).ToList();
             return Ok(response);
         }
@@ -70,7 +69,6 @@ namespace CureTracker.Controllers
         {
             var userId = GetUserIdFromClaims();
 
-            // Проверка на валидность типа сущности
             if (!IsValidEntityType(request.EntityType))
                 return BadRequest($"Invalid entity type: {request.EntityType}. Valid types are: medicine, course, intake");
 
@@ -79,7 +77,6 @@ namespace CureTracker.Controllers
             return Ok(response);
         }
 
-        // Вспомогательные методы
         private Guid GetUserIdFromClaims()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

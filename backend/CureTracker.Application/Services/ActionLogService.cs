@@ -36,7 +36,6 @@ namespace CureTracker.Application.Services
         {
             var logs = await _actionLogRepository.GetByRelatedEntityAsync(entityId, entityType);
 
-            // Фильтруем по userId для безопасности
             return logs.Where(log => log.UserId == userId).ToList();
         }
     }

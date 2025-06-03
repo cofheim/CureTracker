@@ -17,6 +17,7 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
+  refetchUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -46,8 +47,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const fetchCurrentUserDetails = async () => {
-    console.log('[AuthContext] Attempting to fetch current user details...');
+  const refetchUser = async () => {
+    console.log('[AuthContext] Attempting to refetch user details...');
     try {
       const response = await axios.get(`${API_BASE_URL}/User/me`, { withCredentials: true });
       console.log('[AuthContext] Fetched user details:', response.data);
@@ -63,7 +64,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     console.log('[AuthContext] useEffect for initial user fetch triggered.');
-    fetchCurrentUserDetails();
+    refetchUser();
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -79,7 +80,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       document.cookie = `cookies=${token}; path=/; secure; samesite=none`;
       console.log('[AuthContext] Cookie set. Current document.cookie:', document.cookie);
-      await fetchCurrentUserDetails();
+      await refetchUser();
       console.log('[AuthContext] Navigating to /profile after login.');
       router.push('/profile');
     } catch (error) {
@@ -118,7 +119,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   console.log('[AuthContext] AuthProvider rendering. Current user:', user, 'Loading:', loading);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, register }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register, refetchUser }}>
       {children}
     </AuthContext.Provider>
   );

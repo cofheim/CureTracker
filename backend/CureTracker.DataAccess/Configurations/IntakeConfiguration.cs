@@ -15,13 +15,11 @@ namespace CureTracker.DataAccess.Configurations
             builder.Property(k => k.Status).IsRequired().HasConversion<string>();
             builder.Property(k => k.SkipReason).HasMaxLength(250);
 
-            // Связь с курсом
             builder.HasOne(i => i.Course)
                   .WithMany(c => c.Intakes)
                   .HasForeignKey(i => i.CourseId)
                   .IsRequired();
 
-            // Связь с пользователем
             builder.HasOne(i => i.User)
                   .WithMany()
                   .HasForeignKey(i => i.UserId)

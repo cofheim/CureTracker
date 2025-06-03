@@ -20,15 +20,13 @@ namespace CureTracker.Core.Models
         }
 
         public Guid Id { get; }
-        public DateTime ScheduledTime { get; private set; } // запланированное время приема
-        public DateTime? ActualTime { get; private set; } // фактическое время приема (null если пропущено)
-        public IntakeStatus Status { get; private set; } // статус приема: запланирован, принят, пропущен
+        public DateTime ScheduledTime { get; private set; } 
+        public DateTime? ActualTime { get; private set; } 
+        public IntakeStatus Status { get; private set; } 
 
-        // связь с курсом
         public Guid CourseId { get; private set; }
         public Course? Course { get; private set; }
 
-        // связь с пользователем
         public Guid UserId { get; private set; }
         public User? User { get; private set; }
 

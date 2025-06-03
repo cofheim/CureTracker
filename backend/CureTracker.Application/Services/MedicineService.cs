@@ -35,7 +35,6 @@ namespace CureTracker.Application.Services
         {
             var medicineId = await _medicineRepository.Create(medicine);
             
-            // Логируем создание лекарства
             await _actionLogService.LogActionAsync(
                 $"Создано новое лекарство: {medicine.Name}",
                 medicine.UserId,
@@ -73,7 +72,6 @@ namespace CureTracker.Application.Services
                 type,
                 userId);
                 
-            // Логируем обновление лекарства
             await _actionLogService.LogActionAsync(
                 $"Обновлено лекарство: {name}",
                 userId,
@@ -94,7 +92,6 @@ namespace CureTracker.Application.Services
             
             var medicineId = await _medicineRepository.Delete(id);
             
-            // Логируем удаление лекарства
             await _actionLogService.LogActionAsync(
                 $"Удалено лекарство: {medicine.Name}",
                 medicine.UserId,

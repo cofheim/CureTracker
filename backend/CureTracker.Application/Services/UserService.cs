@@ -10,15 +10,21 @@ namespace CureTracker.Application.Services
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IJwtProvider _jwtProvider;
+        private readonly ITimeZoneService _timeZoneService;
 
-        public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher, IJwtProvider jwtProvider)
+        public UserService(
+            IUserRepository userRepository,
+            IPasswordHasher passwordHasher,
+            IJwtProvider jwtProvider,
+            ITimeZoneService timeZoneService)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _jwtProvider = jwtProvider;
+            _timeZoneService = timeZoneService;
         }
 
-        public async Task Register(string userName, string email, string password, string? timeZoneId)
+        public async Task Register(string userName, string email, string password, string countryCode)
         {
             var existingUser = await _userRepository.GetUserByEmail(email);
             if (existingUser != null)
@@ -27,7 +33,9 @@ namespace CureTracker.Application.Services
             }
 
             var hashedPassword = _passwordHasher.Generate(password);
-            var user = User.Create(Guid.NewGuid(), userName, email, hashedPassword, timeZoneId);
+            var timeZoneId = _timeZoneService.GetTimeZoneByCountryCode(countryCode);
+            
+            var user = User.Create(Guid.NewGuid(), userName, email, hashedPassword, timeZoneId, countryCode);
             await _userRepository.CreateUser(user);
         }
 
@@ -83,6 +91,18 @@ namespace CureTracker.Application.Services
 
         public async Task<Guid> UpdateUserTelegramId(Guid userId, long telegramId)
         {
+            var existingUserWithTelegramId = await _userRepository.GetUserByTelegramId(telegramId);
+            if (existingUserWithTelegramId != null && existingUserWithTelegramId.Id != userId)
+            {
+                throw new TelegramIdAlreadyLinkedException(telegramId);
+            }
+
+            var currentUser = await _userRepository.GetUserById(userId);
+            if (currentUser != null && currentUser.TelegramId == telegramId)
+            {
+                return userId;
+            }
+
             return await _userRepository.UpdateUserTelegramId(userId, telegramId);
         }
 
@@ -99,6 +119,26 @@ namespace CureTracker.Application.Services
         public async Task<User?> GetUserByConnectionCodeAsync(string code)
         {
             return await _userRepository.GetUserByConnectionCodeAsync(code);
+        }
+
+        public async Task UpdateProfileAsync(Guid userId, string name, string email, string? countryCode)
+        {
+            var user = await _userRepository.GetUserById(userId);
+            if (user == null)
+            {
+                throw new UserNotFoundException($"User with ID {userId} not found.");
+            }
+
+            user.Name = name;
+            user.Email = email;
+
+            if (!string.IsNullOrWhiteSpace(countryCode))
+            {
+                user.CountryCode = countryCode;
+                user.TimeZoneId = _timeZoneService.GetTimeZoneByCountryCode(countryCode);
+            }
+
+            await _userRepository.UpdateUser(user);
         }
     }
 }

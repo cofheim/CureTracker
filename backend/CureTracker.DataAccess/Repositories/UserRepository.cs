@@ -63,7 +63,8 @@ namespace CureTracker.DataAccess.Repositories
                 Email = user.Email,
                 PasswordHash = user.PasswordHash,
                 TelegramId = user.TelegramId,
-                TimeZoneId = user.TimeZoneId
+                TimeZoneId = user.TimeZoneId,
+                CountryCode = user.CountryCode
             };
 
             await _context.Users.AddAsync(userEntity);
@@ -81,7 +82,8 @@ namespace CureTracker.DataAccess.Repositories
                     .SetProperty(u => u.Email, u => user.Email)
                     .SetProperty(u => u.PasswordHash, u => user.PasswordHash)
                     .SetProperty(u => u.TelegramId, u => user.TelegramId)
-                    .SetProperty(u => u.TimeZoneId, u => user.TimeZoneId));
+                    .SetProperty(u => u.TimeZoneId, u => user.TimeZoneId)
+                    .SetProperty(u => u.CountryCode, u => user.CountryCode));
 
             return user.Id;
         }
@@ -113,10 +115,9 @@ namespace CureTracker.DataAccess.Repositories
             return code;
         }
 
-        // Вспомогательный метод для преобразования сущности в core-модель
         private User MapEntityToDomain(UserEntity entity)
         {
-            return new User(entity.Id, entity.Name, entity.Email, entity.PasswordHash, entity.TelegramId, entity.ConnectionCode, entity.TimeZoneId);
+            return new User(entity.Id, entity.Name, entity.Email, entity.PasswordHash, entity.TelegramId, entity.ConnectionCode, entity.TimeZoneId, entity.CountryCode);
         }
     }
 }

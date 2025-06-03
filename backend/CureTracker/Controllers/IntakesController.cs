@@ -76,12 +76,7 @@ namespace CureTracker.Controllers
         {
             var userId = GetUserIdFromClaims();
 
-            // Важно: Если StartDate и EndDate приходят от клиента, они могут быть Local.
-            // Их следует преобразовать в UTC перед передачей в сервис, если сервис ожидает UTC
-            // или если репозиторий будет использовать их с timestamptz.
-            // Предположим, что сервис/репозиторий сам обрабатывает DateTimeKind или ожидает UTC.
-            // Если нет, то здесь нужно добавить .ToUniversalTime() или настроить Model Binding.
-            // Для безопасности, если Kind не указан или Local, конвертируем в UTC.
+ 
             var startDateUtc = request.StartDate.Kind == DateTimeKind.Unspecified || request.StartDate.Kind == DateTimeKind.Local
                 ? request.StartDate.ToUniversalTime()
                 : request.StartDate;
@@ -92,8 +87,8 @@ namespace CureTracker.Controllers
 
             var intakes = await _intakeService.GetScheduledIntakesForDateRangeAsync(
                 userId,
-                startDateUtc, // Передаем UTC
-                endDateUtc    // Передаем UTC
+                startDateUtc, 
+                endDateUtc   
             );
 
             var response = intakes.Select(MapToIntakeResponse).ToList();
@@ -108,11 +103,8 @@ namespace CureTracker.Controllers
 
             var userId = GetUserIdFromClaims();
 
-            // Первый день указанного месяца в UTC
             var firstDayOfMonthUtc = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
-            // Последний день указанного месяца в UTC (конец дня)
             var lastDayOfMonthUtc = firstDayOfMonthUtc.AddMonths(1).AddDays(-1);
-             // Устанавливаем время на конец дня для lastDayOfMonthUtc
             lastDayOfMonthUtc = new DateTime(lastDayOfMonthUtc.Year, lastDayOfMonthUtc.Month, lastDayOfMonthUtc.Day, 23, 59, 59, 999, DateTimeKind.Utc);
 
 
@@ -123,9 +115,9 @@ namespace CureTracker.Controllers
             );
 
             var calendarData = intakes
-                .GroupBy(i => i.ScheduledTime.Date) // Группировка по дате (время отбрасывается)
+                .GroupBy(i => i.ScheduledTime.Date) 
                 .ToDictionary(
-                    g => g.Key.ToString("yyyy-MM-dd"), // Ключ - дата без времени
+                    g => g.Key.ToString("yyyy-MM-dd"),
                     g => g.Select(MapToIntakeResponse).ToList()
                 );
 
@@ -137,10 +129,8 @@ namespace CureTracker.Controllers
         {
             var userId = GetUserIdFromClaims();
             
-            // Определяем начало и конец СЕГОДНЯШНЕГО ДНЯ в UTC
-            DateTime todayUtcStart = DateTime.UtcNow.Date; // Полночь UTC текущего дня
-            // Конец текущего дня UTC (23:59:59.9999999)
-            DateTime todayUtcEnd = todayUtcStart.AddDays(1).AddSeconds(-1); // Более точный способ получить конец дня
+            DateTime todayUtcStart = DateTime.UtcNow.Date; 
+            DateTime todayUtcEnd = todayUtcStart.AddDays(1).AddSeconds(-1);
 
             var intakes = await _intakeService.GetScheduledIntakesForDateRangeAsync(
                 userId,
@@ -161,7 +151,6 @@ namespace CureTracker.Controllers
             return Ok(response);
         }
 
-        // Вспомогательные методы
         private Guid GetUserIdFromClaims()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
@@ -178,7 +167,7 @@ namespace CureTracker.Controllers
                 intake.ScheduledTime,
                 intake.ActualTime,
                 intake.Status.ToString(),
-                null, // SkipReason отсутствует в модели Core
+                null,
                 intake.CourseId,
                 intake.Course?.Name ?? string.Empty,
                 intake.Course?.Medicine?.Name ?? string.Empty

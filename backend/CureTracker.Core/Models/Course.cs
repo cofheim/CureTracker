@@ -40,24 +40,21 @@ namespace CureTracker.Core.Models
         public Guid Id { get; }
         public string Name { get; private set; } = string.Empty;
         public string Description { get; private set; } = string.Empty;
-        public int TimesADay { get; private set; } = 0; // сколько раз в день
-        public List<DateTime> TimesOfTaking { get; private set; } = new List<DateTime>(); // времена приёма лекарства
-        public DateTime StartDate { get; private set; } = DateTime.UtcNow; // время начала приёма
-        public DateTime EndDate { get; private set; } = DateTime.UtcNow.AddDays(1); // время конца приёма
-        public CourseStatus Status { get; private set; } = CourseStatus.Planned; // статус курса: запланирован, в процессе и т.д.
-        public IntakeFrequency IntakeFrequency { get; private set; } = IntakeFrequency.Daily; // как часто принимать лекарство
-        public int TakenDosesCount { get; private set; } = 0; // количество принятых доз
-        public int SkippedDosesCount { get; private set; } = 0; // количество пропущенных доз
+        public int TimesADay { get; private set; } = 0; 
+        public List<DateTime> TimesOfTaking { get; private set; } = new List<DateTime>(); 
+        public DateTime StartDate { get; private set; } = DateTime.UtcNow;
+        public DateTime EndDate { get; private set; } = DateTime.UtcNow.AddDays(1); 
+        public CourseStatus Status { get; private set; } = CourseStatus.Planned;
+        public IntakeFrequency IntakeFrequency { get; private set; } = IntakeFrequency.Daily; 
+        public int TakenDosesCount { get; private set; } = 0;
+        public int SkippedDosesCount { get; private set; } = 0;
 
-        // связь с лекарством
         public Guid MedicineId { get; private set; }
         public Medicine? Medicine { get; private set; }
 
-        // связь с пользователем
         public Guid UserId { get; private set; }
         public User? User { get; private set; }
 
-        // связь с приемами лекарств
         public List<Intake> Intakes { get; private set; } = new List<Intake>();
 
         public static (Course Course, string Error) Create(Guid id,

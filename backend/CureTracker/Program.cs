@@ -37,7 +37,8 @@ services.AddScoped<IActionLogService, ActionLogService>();
 
 services.AddScoped<TelegramNotificationService>();
 
-// Добавляем фоновую службу для обновления статусов курсов
+services.AddApplicationServices();
+
 services.AddHostedService<CourseStatusUpdateService>();
 services.AddHostedService<IntakeReminderService>();
 

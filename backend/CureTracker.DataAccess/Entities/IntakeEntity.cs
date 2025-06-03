@@ -10,11 +10,9 @@ namespace CureTracker.DataAccess.Entities
         public IntakeStatus Status { get; set; }
         public string? SkipReason { get; set; }
 
-        // связь с курсом
         public Guid CourseId { get; set; }
         public CourseEntity? Course { get; set; }
 
-        // связь с пользователем
         public Guid UserId { get; set; }
         public UserEntity? User { get; set; }
     }

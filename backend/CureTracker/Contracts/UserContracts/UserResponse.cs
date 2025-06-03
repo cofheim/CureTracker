@@ -5,5 +5,6 @@
         string Email, 
         long? TelegramId,
         string? ConnectionCode,
-        string? TimeZoneId);
+        string? TimeZoneId,
+        string? CountryCode);
 }

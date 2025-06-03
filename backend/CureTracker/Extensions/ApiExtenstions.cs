@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using CureTracker.Application.Services;
 using CureTracker.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
@@ -10,6 +11,11 @@ namespace CureTracker.Extensions
 {
     public static class ApiExtenstions
     {
+        public static void AddApplicationServices(this IServiceCollection services)
+        {
+            services.AddScoped<ITimeZoneService, TimeZoneService>();
+        }
+
         public static void AddApiAuthentification(
             this IServiceCollection services, 
             IConfiguration configuration,

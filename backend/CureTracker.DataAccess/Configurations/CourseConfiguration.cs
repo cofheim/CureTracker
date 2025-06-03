@@ -22,7 +22,6 @@ namespace CureTracker.DataAccess.Configurations
             builder.Property(k => k.TakenDosesCount).IsRequired();
             builder.Property(k => k.SkippedDosesCount).IsRequired();
 
-            // Конвертация списка DateTime в JSON для хранения в БД
             var property = builder.Property(c => c.TimesOfTaking)
                 .HasConversion(
                     v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
@@ -36,19 +35,16 @@ namespace CureTracker.DataAccess.Configurations
                 c => c.ToList()
             ));
 
-            // Связь с лекарством
             builder.HasOne(c => c.Medicine)
                   .WithMany()
                   .HasForeignKey(c => c.MedicineId)
                   .IsRequired();
 
-            // Связь с пользователем
             builder.HasOne(c => c.User)
                   .WithMany()
                   .HasForeignKey(c => c.UserId)
                   .IsRequired();
 
-            // Связь с приемами лекарств
             builder.HasMany(c => c.Intakes)
                   .WithOne(i => i.Course)
                   .HasForeignKey(i => i.CourseId);

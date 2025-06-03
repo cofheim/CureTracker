@@ -96,7 +96,7 @@ namespace CureTracker.DataAccess.Repositories
                             i.ScheduledTime >= startDate && 
                             i.ScheduledTime <= endDate)
                 .Include(i => i.Course)
-                    .ThenInclude(c => c!.Medicine) // Добавляем явное указание non-null, если c может быть null, или обрабатываем null
+                    .ThenInclude(c => c!.Medicine)
                 .OrderBy(i => i.ScheduledTime)
                 .ToListAsync();
 
@@ -123,7 +123,6 @@ namespace CureTracker.DataAccess.Repositories
                 entity.UserId
             );
             
-            // Устанавливаем связанные объекты, если они загружены
             if (entity.Course != null)
             {
                 var course = new Course(
@@ -142,7 +141,6 @@ namespace CureTracker.DataAccess.Repositories
                     entity.Course.SkippedDosesCount
                 );
                 
-                // Устанавливаем лекарство для курса, если оно загружено
                 if (entity.Course.Medicine != null)
                 {
                     var medicine = new Medicine(
@@ -155,11 +153,9 @@ namespace CureTracker.DataAccess.Repositories
                         entity.Course.Medicine.UserId
                     );
                     
-                    // Устанавливаем лекарство для курса через рефлексию, так как свойство Medicine в Course имеет приватный сеттер
                     typeof(Course).GetProperty("Medicine")?.SetValue(course, medicine);
                 }
                 
-                // Устанавливаем курс для приема через рефлексию, так как свойство Course в Intake имеет приватный сеттер
                 typeof(Intake).GetProperty("Course")?.SetValue(intake, course);
             }
             

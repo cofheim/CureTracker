@@ -28,21 +28,18 @@ namespace CureTracker.Core.Models
         public Guid Id { get; }
         public string Name { get; private set; } = string.Empty;
         public string Description { get; private set; } = string.Empty;
-        public int DosagePerTake { get; private set; } = 0; // доза за 1 приём
-        public string StorageConditions { get; private set; } = string.Empty; // условия хранения
-        public MedicineType Type { get; private set; } = MedicineType.Other; // форма лекарства
+        public int DosagePerTake { get; private set; } = 0; 
+        public string StorageConditions { get; private set; } = string.Empty; 
+        public MedicineType Type { get; private set; } = MedicineType.Other; 
 
 
-        // связь с пользователем
-        public Guid UserId { get; private set; } // ID пользователя
-        public User? User { get; private set; }  // Навигационное свойство
+        public Guid UserId { get; private set; } 
+        public User? User { get; private set; }
 
-        // связь с курсами
-        public List<Course> Courses { get; private set; } = new List<Course>(); // курсы приема этого лекарства
+        public List<Course> Courses { get; private set; } = new List<Course>();
 
 
 
-        // создание лекарства с валидацией
         public static (Medicine Medicine, string Error) Create(Guid id,
             string name,
             string description,

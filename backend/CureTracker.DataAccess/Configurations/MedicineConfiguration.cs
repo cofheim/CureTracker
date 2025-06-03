@@ -24,7 +24,6 @@ namespace CureTracker.DataAccess.Configurations
                   .HasForeignKey(m => m.UserId)
                   .IsRequired();
 
-            // Связь с курсами
             builder.HasMany(m => m.Courses)
                   .WithOne(c => c.Medicine)
                   .HasForeignKey(c => c.MedicineId);

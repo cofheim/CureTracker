@@ -18,15 +18,12 @@ namespace CureTracker.DataAccess.Entities
         public int TakenDosesCount { get; set; } = 0;
         public int SkippedDosesCount { get; set; } = 0;
 
-        // связь с лекарством
         public Guid MedicineId { get; set; }
         public MedicineEntity? Medicine { get; set; }
 
-        // связь с пользователем
         public Guid UserId { get; set; }
         public UserEntity? User { get; set; }
 
-        // связь с приемами лекарств
         public List<IntakeEntity> Intakes { get; set; } = new List<IntakeEntity>();
     }
 } 

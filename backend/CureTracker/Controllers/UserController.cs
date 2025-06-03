@@ -49,7 +49,8 @@ namespace CureTracker.Controllers
                     user.Email,
                     user.TelegramId,
                     user.ConnectionCode,
-                    user.TimeZoneId
+                    user.TimeZoneId,
+                    user.CountryCode
                 );
 
                 return Ok(response);
@@ -65,7 +66,6 @@ namespace CureTracker.Controllers
         [Authorize]
         public IActionResult Logout()
         {
-            // Удаляем cookie с токеном
             HttpContext.Response.Cookies.Delete("cookies", new CookieOptions
             {
                 HttpOnly = true,
@@ -82,7 +82,7 @@ namespace CureTracker.Controllers
             try
             {
                 _logger.LogInformation($"Attempting to register user with email: {request.Email}");
-                await _userService.Register(request.UserName, request.Email, request.Password, request.TimeZoneId);
+                await _userService.Register(request.UserName, request.Email, request.Password, request.CountryCode);
                 _logger.LogInformation($"Successfully registered user with email: {request.Email}");
                 return Ok();
             }
@@ -125,7 +125,8 @@ namespace CureTracker.Controllers
                 u.Email,
                 u.TelegramId,
                 u.ConnectionCode,
-                u.TimeZoneId
+                u.TimeZoneId,
+                u.CountryCode
             )).ToList();
 
             return Ok(response);
@@ -145,7 +146,8 @@ namespace CureTracker.Controllers
                 user.Email,
                 user.TelegramId,
                 user.ConnectionCode,
-                user.TimeZoneId
+                user.TimeZoneId,
+                user.CountryCode
             );
 
             return Ok(response);
@@ -179,7 +181,6 @@ namespace CureTracker.Controllers
             if (existingUser == null)
                 return NotFound();
 
-            // Обновляем свойства существующего пользователя
             existingUser.Name = request.Name;
             existingUser.Email = request.Email;
             existingUser.PasswordHash = request.PasswordHash;
@@ -212,46 +213,29 @@ namespace CureTracker.Controllers
         [Authorize]
         public async Task<ActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
         {
+            _logger.LogInformation($"Attempting to update profile for user. Requested Name: {request.Name}, Email: {request.Email}, CountryCode: {request.CountryCode}");
+            var userId = GetUserIdFromClaims();
+            
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
-                {
-                    _logger.LogWarning("Failed to get user ID from token claims");
-                    return Unauthorized();
-                }
-
-                var user = await _userService.GetUserById(userId);
-                if (user == null)
-                {
-                    _logger.LogWarning($"User with ID {userId} not found");
-                    return NotFound();
-                }
-
-                // Проверяем, не занят ли email другим пользователем
-                if (user.Email != request.Email)
-                {
-                    var existingUser = await _userService.GetUserByEmail(request.Email);
-                    if (existingUser != null && existingUser.Id != userId)
-                    {
-                        return Conflict(new { message = "Этот email уже используется другим пользователем" });
-                    }
-                }
-
-                // Обновляем данные профиля
-                user.Name = request.Name;
-                user.Email = request.Email;
-                user.TimeZoneId = request.TimeZoneId;
-
-                // Сохраняем изменения
-                await _userService.UpdateUser(user);
-
+                await _userService.UpdateProfileAsync(userId, request.Name, request.Email, request.CountryCode);
+                _logger.LogInformation($"Successfully updated profile for user ID: {userId}");
                 return Ok(new { message = "Профиль успешно обновлен" });
+            }
+            catch (UserNotFoundException ex)
+            {
+                _logger.LogWarning(ex.Message);
+                return NotFound(new { message = ex.Message });
+            }
+            catch (DuplicateEmailException ex)
+            {
+                 _logger.LogWarning($"Update profile failed for user ID: {userId}. Duplicate email: {ex.Email}");
+                return Conflict(new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error in UpdateProfile: {ex.Message}");
-                return StatusCode(500, new { message = "Внутренняя ошибка сервера" });
+                _logger.LogError(ex, $"Error updating profile for user ID: {userId}");
+                return StatusCode(500, new { message = "Произошла ошибка при обновлении профиля", details = ex.Message });
             }
         }
 
@@ -283,10 +267,9 @@ namespace CureTracker.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"[Controller Action] Error in GenerateConnectionCodeAsync for userId {userIdFromClaims}: {ex.Message}");
-                // Check if it's the specific "User not found" exception from the repository/service
                 if (ex.Message.Contains("Пользователь с ID") && ex.Message.Contains("не найден"))
                 {
-                    return NotFound(ex.Message); // Return 404 if user not found
+                    return NotFound(ex.Message);
                 }
                 return StatusCode(500, "Внутренняя ошибка сервера при генерации кода.");
             }
@@ -295,7 +278,7 @@ namespace CureTracker.Controllers
         private Guid GetUserIdFromClaims()
         {
             _logger.LogInformation("[GetUserIdFromClaims] Attempting to get User ID using ClaimTypes.NameIdentifier. Available claims:");
-            foreach (var claim in User.Claims) // Оставим логирование всех claims для справки
+            foreach (var claim in User.Claims)
             {
                 _logger.LogInformation($"[GetUserIdFromClaims] Claim Type: {claim.Type}, Value: {claim.Value}");
             }

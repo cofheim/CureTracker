@@ -63,24 +63,19 @@ namespace CureTracker.Controllers
         {
             var userId = GetUserIdFromClaims();
 
-            // Преобразуем строковые представления времени в DateTime для сохранения времен приема
             var timesOfTaking = new List<DateTime>();
             
             foreach (var timeStr in request.TimesOfTaking)
             {
                 try
                 {
-                    // Пытаемся разобрать строку как TimeSpan
                     if (TimeSpan.TryParse(timeStr, out var timeSpan))
                     {
-                        // Создаем DateTime как локальное время сервера
                         var localTime = new DateTime(2000, 1, 1, timeSpan.Hours, timeSpan.Minutes, 0, DateTimeKind.Local);
-                        // Конвертируем в UTC для сохранения и дальнейшей работы
                         timesOfTaking.Add(localTime.ToUniversalTime());
                     }
                     else
                     {
-                        // Если не удалось разобрать как TimeSpan, возвращаем ошибку
                         return BadRequest($"Неверный формат времени: {timeStr}. Используйте формат HH:mm:ss.");
                     }
                 }
@@ -90,7 +85,6 @@ namespace CureTracker.Controllers
                 }
             }
 
-            // Убедимся, что даты в формате UTC
             var startDate = request.StartDate.Kind != DateTimeKind.Utc 
                 ? DateTime.SpecifyKind(request.StartDate, DateTimeKind.Utc) 
                 : request.StartDate;
@@ -118,7 +112,6 @@ namespace CureTracker.Controllers
 
             var createdCourse = await _courseService.CreateCourseAsync(courseResult.Course);
 
-            // Генерируем интейки для курса
             await _courseService.GenerateIntakesForCourseAsync(createdCourse, userId);
 
             var response = MapToCourseResponse(createdCourse);
@@ -134,24 +127,19 @@ namespace CureTracker.Controllers
             if (existingCourse == null)
                 return NotFound();
 
-            // Преобразуем строковые представления времени в DateTime для сохранения времен приема
             var timesOfTaking = new List<DateTime>();
             
             foreach (var timeStr in request.TimesOfTaking)
             {
                 try
                 {
-                    // Пытаемся разобрать строку как TimeSpan
                     if (TimeSpan.TryParse(timeStr, out var timeSpan))
                     {
-                        // Создаем DateTime как локальное время сервера
                         var localTime = new DateTime(2000, 1, 1, timeSpan.Hours, timeSpan.Minutes, 0, DateTimeKind.Local);
-                        // Конвертируем в UTC для сохранения и дальнейшей работы
                         timesOfTaking.Add(localTime.ToUniversalTime());
                     }
                     else
                     {
-                        // Если не удалось разобрать как TimeSpan, возвращаем ошибку
                         return BadRequest($"Неверный формат времени: {timeStr}. Используйте формат HH:mm:ss.");
                     }
                 }
@@ -161,7 +149,6 @@ namespace CureTracker.Controllers
                 }
             }
 
-            // Убедимся, что даты в формате UTC
             var startDate = request.StartDate.Kind != DateTimeKind.Utc 
                 ? DateTime.SpecifyKind(request.StartDate, DateTimeKind.Utc) 
                 : request.StartDate;
@@ -188,7 +175,6 @@ namespace CureTracker.Controllers
 
             var updatedCourse = await _courseService.UpdateCourseAsync(course);
 
-            // Перегенерируем интейки для курса, если изменились даты, времена приема, лекарство или частота
             if (existingCourse.StartDate.Date != startDate.Date || 
                 existingCourse.EndDate.Date != endDate.Date ||
                 existingCourse.TimesADay != request.TimesADay ||
@@ -245,7 +231,6 @@ namespace CureTracker.Controllers
             return Ok(response);
         }
 
-        // Вспомогательные методы
         private Guid GetUserIdFromClaims()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
@@ -281,7 +266,7 @@ namespace CureTracker.Controllers
                 intake.ScheduledTime,
                 intake.ActualTime,
                 intake.Status.ToString(),
-                null, // SkipReason отсутствует в модели Core
+                null,
                 intake.CourseId,
                 intake.Course?.Name ?? string.Empty,
                 intake.Course?.Medicine?.Name ?? string.Empty

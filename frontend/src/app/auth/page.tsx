@@ -1,19 +1,24 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Form, Input, Button, Tabs, Card, Row, Col, Typography, App } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
+import React, { useState, useMemo } from 'react';
+import { Form, Input, Button, Tabs, Card, Row, Col, Typography, App, Select } from 'antd';
+import { UserOutlined, LockOutlined, MailOutlined, GlobalOutlined } from '@ant-design/icons';
 import Head from 'next/head';
 import { useRouter } from 'next/navigation';
 import { API_BASE_URL } from '../../lib/apiConfig';
+import countryList from 'country-list';
 
 // const { TabPane } = Tabs; // TabPane больше не нужен при использовании items prop
 const { Title } = Typography;
+const { Option } = Select; // Для использования в Select
 
 const AuthPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { message } = App.useApp();
+
+  // Получаем и мемоизируем список стран
+  const countries = useMemo(() => countryList.getData(), []);
 
   const onFinishLogin = async (values: any) => {
     setLoading(true);
@@ -44,7 +49,6 @@ const AuthPage: React.FC = () => {
   const onFinishRegister = async (values: any) => {
     setLoading(true);
     try {
-      const timeZoneId = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const response = await fetch(`${API_BASE_URL}/User/register`, {
         method: 'POST',
         headers: {
@@ -54,7 +58,7 @@ const AuthPage: React.FC = () => {
           userName: values.userName, 
           email: values.email, 
           password: values.password,
-          timeZoneId: timeZoneId
+          countryCode: values.countryCode
         }),
         credentials: 'include',
       });
@@ -145,6 +149,25 @@ const AuthPage: React.FC = () => {
         ]}
       >
         <Input.Password prefix={<LockOutlined />} placeholder="Подтвердите пароль" />
+      </Form.Item>
+      <Form.Item
+        name="countryCode"
+        rules={[{ required: true, message: 'Пожалуйста, выберите вашу страну!' }]}
+      >
+        <Select
+          showSearch
+          placeholder="Выберите страну"
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option?.children?.toString().toLowerCase().includes(input.toLowerCase()) ?? false
+          }
+        >
+          {countries.map(country => (
+            <Option key={country.code} value={country.code}>
+              {country.name}
+            </Option>
+          ))}
+        </Select>
       </Form.Item>
       <Form.Item>
         <Button type="primary" htmlType="submit" loading={loading} block style={{ background: '#1890ff', borderColor: '#1890ff' }}>
