@@ -15,7 +15,7 @@ import {
   Form,
   Input,
   Space,
-  Select, // Добавлено
+  Select, 
 } from 'antd';
 import {
   UserOutlined,
@@ -23,30 +23,30 @@ import {
   LogoutOutlined,
   EditOutlined,
   SaveOutlined,
-  GlobalOutlined, // Добавлено
-  CopyOutlined // Для кнопки копирования
+  GlobalOutlined, 
+  CopyOutlined 
 } from '@ant-design/icons';
 import { API_BASE_URL } from '../../lib/apiConfig';
 import { useTheme } from '../../lib/ThemeContext';
 import axios from 'axios';
 import { useAuth } from '@/lib/contexts/AuthContext';
-import countryList from 'country-list'; // Добавлено
-import Head from 'next/head'; // Для заголовка страницы
+import countryList from 'country-list'; 
+import Head from 'next/head'; 
 
 const { Title, Text } = Typography;
-const { Option } = Select; // Добавлено
+const { Option } = Select; 
 
 interface UserProfile {
   id: string;
   name: string;
   email: string;
   timeZoneId?: string;
-  countryCode?: string; // Добавлено
-  connectionCode?: string; // Добавлено для отображения сгенерированного кода
+  countryCode?: string; 
+  connectionCode?: string; 
 }
 
 const ProfilePage: React.FC = () => {
-  const { user, loading: authLoading, refetchUser } = useAuth(); // Добавлено refetchUser
+  const { user, loading: authLoading, refetchUser } = useAuth(); 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [editing, setEditing] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
@@ -56,9 +56,9 @@ const ProfilePage: React.FC = () => {
   const { theme } = useTheme();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingCode, setIsGeneratingCode] = useState(false);
-  const [pageLoading, setPageLoading] = useState<boolean>(true); // Состояние для общей загрузки страницы
+  const [pageLoading, setPageLoading] = useState<boolean>(true);
 
-  const countries = useMemo(() => countryList.getData(), []); // Инициализация списка стран
+  const countries = useMemo(() => countryList.getData(), []); 
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -69,7 +69,7 @@ const ProfilePage: React.FC = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       setPageLoading(true);
-      if (user) { // Убедимся, что user загружен из AuthContext
+      if (user) { 
         await fetchUserProfile();
       }
       setPageLoading(false);
@@ -84,20 +84,20 @@ const ProfilePage: React.FC = () => {
     return () => {
       window.removeEventListener('resize', checkIsMobile);
     };
-  }, [user]); // Добавляем user в зависимости
+  }, [user]); 
 
   useEffect(() => {
-    if (profile) { // Используем profile вместо user для установки значений формы
+    if (profile) { 
       form.setFieldsValue({
         name: profile.name,
         email: profile.email,
         countryCode: profile.countryCode,
       });
     }
-  }, [profile, form, editing]); // Добавляем editing в зависимости, чтобы форма сбрасывалась корректно
+  }, [profile, form, editing]);
 
   const fetchUserProfile = async () => {
-    if (!user?.id) return; // Не выполняем запрос, если нет user.id
+    if (!user?.id) return; 
     try {
       const response = await axios.get<UserProfile>(`${API_BASE_URL}/User/me`, {
         withCredentials: true,
@@ -124,19 +124,18 @@ const ProfilePage: React.FC = () => {
       await axios.put(`${API_BASE_URL}/User/update-profile`, {
         name: values.name,
         email: values.email,
-        countryCode: values.countryCode, // Передаем countryCode
+        countryCode: values.countryCode, 
       }, { withCredentials: true });
       message.success('Профиль успешно обновлен');
-      // Обновляем локальное состояние профиля и данные в AuthContext
       const updatedProfile = { 
-        ...(profile || {}), // Берем текущий профиль или пустой объект
-        id: user!.id, // user.id должен быть здесь
+        ...(profile || {}),
+        id: user!.id, 
         name: values.name, 
         email: values.email, 
         countryCode: values.countryCode 
       };
-      setProfile(updatedProfile as UserProfile); // Приводим к UserProfile
-      if (refetchUser) refetchUser(); // Обновляем данные пользователя в AuthContext
+      setProfile(updatedProfile as UserProfile); 
+      if (refetchUser) refetchUser(); 
       setEditing(false);
     } catch (error: any) {
       if (error.response && error.response.data && error.response.data.message) {
@@ -186,7 +185,6 @@ const ProfilePage: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    // ... (код без изменений)
     try {
       const response = await fetch(`${API_BASE_URL}/User/logout`, {
         method: 'POST',
@@ -223,8 +221,8 @@ const ProfilePage: React.FC = () => {
     );
   }
 
-  if (!user && !authLoading) { // Если пользователь не авторизован и загрузка завершена
-    return null; // Или показать сообщение/редирект, если router.push не успел сработать
+  if (!user && !authLoading) { 
+    return null;
   }
   
   const cardBackgroundColor = theme === 'dark' ? '#1e1e1e' : '#ffffff';
@@ -292,8 +290,8 @@ const ProfilePage: React.FC = () => {
                       </Button>
                       <Button onClick={() => {
                         setEditing(false); 
-                        form.resetFields(); // Сброс изменений при отмене
-                        if (profile) { // Восстановление исходных значений
+                        form.resetFields();
+                        if (profile) { 
                            form.setFieldsValue({
                             name: profile.name,
                             email: profile.email,

@@ -7,7 +7,6 @@ import { useTheme } from '../../lib/ThemeContext';
 
 const { Title, Text } = Typography;
 
-// Интерфейсы для типизации данных
 interface Intake {
   id: string;
   scheduledTime: string;
@@ -54,7 +53,6 @@ const Dashboard: React.FC = () => {
     fetchTodayIntakes();
     fetchActiveCourses();
     
-    // Определение мобильного устройства
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
@@ -107,7 +105,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Функция для отметки приема как принятого
   const handleMarkAsTaken = async (intakeId: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/Intakes/${intakeId}/take`, {
@@ -119,7 +116,6 @@ const Dashboard: React.FC = () => {
       });
 
       if (response.ok) {
-        // Обновляем данные после успешного обновления
         fetchTodayIntakes();
         fetchActiveCourses();
       }
@@ -128,7 +124,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Функция для отметки приема как пропущенного
   const handleMarkAsSkipped = async (intakeId: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/Intakes/${intakeId}/skip`, {
@@ -141,7 +136,7 @@ const Dashboard: React.FC = () => {
       });
 
       if (response.ok) {
-        // Обновляем данные после успешного обновления
+      
         fetchTodayIntakes();
         fetchActiveCourses();
       }
@@ -150,7 +145,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Получение цвета для статуса приема
   const getStatusColor = (status: IntakeStatus) => {
     switch (status) {
       case IntakeStatus.Taken:
@@ -166,7 +160,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Получение русского названия для статуса приема
   const getStatusLabel = (status: IntakeStatus) => {
     switch (status) {
       case IntakeStatus.Taken:
@@ -182,21 +175,17 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Форматирование времени
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  // Расчет общего количества доз для курса
   const calculateTotalDoses = (course: Course) => {
     const startDate = new Date(course.startDate);
     const endDate = new Date(course.endDate);
     
-    // Количество дней в курсе
     const daysDiff = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
     
-    // Расчет количества доз в зависимости от частоты приема
     let totalDoses = 0;
     
     switch (course.intakeFrequency) {

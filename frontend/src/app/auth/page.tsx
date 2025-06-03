@@ -8,16 +8,14 @@ import { useRouter } from 'next/navigation';
 import { API_BASE_URL } from '../../lib/apiConfig';
 import countryList from 'country-list';
 
-// const { TabPane } = Tabs; // TabPane больше не нужен при использовании items prop
 const { Title } = Typography;
-const { Option } = Select; // Для использования в Select
+const { Option } = Select; 
 
 const AuthPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { message } = App.useApp();
 
-  // Получаем и мемоизируем список стран
   const countries = useMemo(() => countryList.getData(), []);
 
   const onFinishLogin = async (values: any) => {

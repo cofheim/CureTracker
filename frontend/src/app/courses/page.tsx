@@ -11,7 +11,6 @@ import utc from 'dayjs/plugin/utc';
 import { useTheme } from '../../lib/ThemeContext';
 import ThemeWrapper from '../components/ThemeWrapper';
 
-// Подключаем плагин UTC для dayjs
 dayjs.extend(utc);
 
 const { Title, Text } = Typography;
@@ -19,13 +18,12 @@ const { Option } = Select;
 const { RangePicker } = DatePicker;
 const { Search } = Input;
 
-// Интерфейсы для типизации данных
 interface Course {
   id: string;
   name: string;
   description: string;
   timesADay: number;
-  timesOfTaking: string[]; // Будем хранить в формате ISO строк для простоты
+  timesOfTaking: string[]; 
   startDate: string;
   endDate: string;
   status: CourseStatus;
@@ -68,18 +66,15 @@ const CoursesPage: React.FC = () => {
   const { message, modal } = App.useApp();
   const { theme } = useTheme();
 
-  // Состояния для фильтрации и поиска
   const [searchText, setSearchText] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<CourseStatus | null>(null);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
 
-  // Загрузка списка курсов и лекарств при монтировании компонента
   useEffect(() => {
     fetchCourses();
     fetchMedicines();
   }, []);
 
-  // Применение фильтров при изменении курсов или параметров фильтрации
   useEffect(() => {
     applyCourseFilters();
   }, [courses, searchText, statusFilter]);
@@ -87,7 +82,6 @@ const CoursesPage: React.FC = () => {
   const applyCourseFilters = () => {
     let tempFilteredCourses = [...courses];
 
-    // Фильтр по текстовому поиску (название курса, название лекарства)
     if (searchText) {
       const lowerSearchText = searchText.toLowerCase();
       tempFilteredCourses = tempFilteredCourses.filter(course =>
@@ -96,7 +90,6 @@ const CoursesPage: React.FC = () => {
       );
     }
 
-    // Фильтр по статусу
     if (statusFilter) {
       tempFilteredCourses = tempFilteredCourses.filter(course => course.status === statusFilter);
     }
@@ -109,17 +102,14 @@ const CoursesPage: React.FC = () => {
     setStatusFilter(null);
   };
 
-  // Обработчик изменения текста поиска
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
   };
 
-  // Обработчик изменения фильтра по статусу
   const handleStatusFilterChange = (value: CourseStatus | null) => {
     setStatusFilter(value);
   };
 
-  // Функция для загрузки списка курсов с API
   const fetchCourses = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/Courses`, {
@@ -134,7 +124,6 @@ const CoursesPage: React.FC = () => {
         const data = await response.json();
         setCourses(data);
       } else if (response.status === 401) {
-        // Если пользователь не авторизован, перенаправляем на страницу входа
         router.push('/auth');
       } else {
         message.error('Не удалось загрузить список курсов');
@@ -147,7 +136,6 @@ const CoursesPage: React.FC = () => {
     }
   };
 
-  // Функция для загрузки списка лекарств с API
   const fetchMedicines = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/Medicine`, {
@@ -161,7 +149,7 @@ const CoursesPage: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         setMedicines(data);
-      } else if (response.status !== 401) { // Игнорируем 401, т.к. fetchCourses уже обрабатывает это
+      } else if (response.status !== 401) {
         message.error('Не удалось загрузить список лекарств');
       }
     } catch (error) {
@@ -170,9 +158,7 @@ const CoursesPage: React.FC = () => {
     }
   };
 
-  // Обработчик отправки формы (создание/редактирование курса)
   const handleSubmit = async (values: any) => {
-    // Проверяем, есть ли лекарства
     if (medicines.length === 0) {
       message.warning('Сначала добавьте хотя бы одно лекарство');
       router.push('/medicines');
@@ -181,12 +167,10 @@ const CoursesPage: React.FC = () => {
 
     setLoading(true);
     try {
-      // Преобразуем времена приема в строки формата "HH:mm:ss"
       const timesOfTaking = values.timesOfTaking.map((time: any) => {
         return time.format('HH:mm:ss');
       });
 
-      // Преобразуем даты в формат ISO с указанием UTC
       const startDate = values.dateRange[0].startOf('day').toISOString();
       const endDate = values.dateRange[1].startOf('day').toISOString();
 
@@ -218,14 +202,12 @@ const CoursesPage: React.FC = () => {
         credentials: 'include',
       });
 
-      // Получаем текст ответа
       const responseText = await response.text();
       console.log('Ответ сервера:', responseText);
       
       let errorData;
       
       try {
-        // Пытаемся распарсить ответ как JSON
         errorData = responseText ? JSON.parse(responseText) : {};
       } catch (e) {
         console.error('Не удалось распарсить ответ как JSON:', responseText);
@@ -242,9 +224,7 @@ const CoursesPage: React.FC = () => {
         form.resetFields();
         fetchCourses();
       } else {
-        // Улучшенная обработка ошибок
         if (errorData.errors) {
-          // Если есть детальные ошибки валидации
           const errorMessages = Object.entries(errorData.errors)
             .map(([field, errors]) => `${field}: ${(errors as string[]).join(', ')}`)
             .join('\n');
@@ -264,7 +244,6 @@ const CoursesPage: React.FC = () => {
     }
   };
 
-  // Обработчик удаления курса
   const handleDelete = async (id: string) => {
     setLoading(true);
     try {
@@ -280,21 +259,17 @@ const CoursesPage: React.FC = () => {
         message.success('Курс успешно удален');
         fetchCourses();
       } else {
-        // Получаем текст ответа
         const responseText = await response.text();
         console.error('Ошибка при удалении курса:', responseText);
         
         let errorMessage = 'Не удалось удалить курс';
         
-        // Проверяем, не пустой ли ответ
         if (responseText && responseText.trim() !== '') {
           try {
-            // Пытаемся распарсить ответ как JSON
             const errorData = JSON.parse(responseText);
             errorMessage = errorData.message || errorData.title || errorMessage;
           } catch (parseError) {
             console.error('Ошибка при парсинге JSON:', parseError);
-            // Если не удалось распарсить JSON, используем текст ответа как сообщение об ошибке
             errorMessage = responseText || errorMessage;
           }
         }
@@ -309,7 +284,6 @@ const CoursesPage: React.FC = () => {
     }
   };
 
-  // Обработчик изменения статуса курса
   const handleStatusChange = async (id: string, status: CourseStatus) => {
     setLoading(true);
     try {
@@ -337,38 +311,30 @@ const CoursesPage: React.FC = () => {
     }
   };
 
-  // Обработчик открытия модального окна для редактирования
   const handleEdit = (course: Course) => {
     setEditingCourse(course);
     
-    // Преобразуем данные курса в формат для формы
     const timesOfTaking = course.timesOfTaking.map((timeStr: any) => {
-      // Парсим строку времени в формате ISO или другом формате
       let hours = 0;
       let minutes = 0;
       
       try {
-        // Пытаемся обработать разные форматы времени
         if (typeof timeStr === 'string') {
-          // Если это строка в формате ISO
           if (timeStr.includes('T')) {
             const date = new Date(timeStr);
             hours = date.getHours();
             minutes = date.getMinutes();
           } else {
-            // Если это строка в формате HH:mm:ss
             const parts = timeStr.split(':');
             hours = parseInt(parts[0], 10);
             minutes = parseInt(parts[1], 10);
           }
         } else if (timeStr instanceof Date) {
-          // Если это объект Date
           hours = timeStr.getHours();
           minutes = timeStr.getMinutes();
         }
       } catch (e) {
         console.error('Ошибка при парсинге времени:', timeStr, e);
-        // Используем значения по умолчанию
       }
       
       return dayjs().hour(hours).minute(minutes);
@@ -386,9 +352,7 @@ const CoursesPage: React.FC = () => {
     setModalVisible(true);
   };
 
-  // Обработчик открытия модального окна для создания
   const handleAdd = () => {
-    // Проверяем, есть ли лекарства
     if (medicines.length === 0) {
       modal.confirm({
         title: 'Нет доступных лекарств',
@@ -403,18 +367,16 @@ const CoursesPage: React.FC = () => {
     setEditingCourse(null);
     form.resetFields();
     
-    // Устанавливаем значения по умолчанию
     form.setFieldsValue({
-      timesOfTaking: [dayjs().hour(9).minute(0)], // По умолчанию 9:00
-      dateRange: [dayjs(), dayjs().add(7, 'day')], // По умолчанию неделя
+      timesOfTaking: [dayjs().hour(9).minute(0)], 
+      dateRange: [dayjs(), dayjs().add(7, 'day')], 
       intakeFrequency: IntakeFrequency.Daily,
-      medicineId: medicines[0]?.id // Первое лекарство по умолчанию
+      medicineId: medicines[0]?.id 
     });
     
     setModalVisible(true);
   };
 
-  // Получение цвета для статуса курса
   const getStatusColor = (status: CourseStatus) => {
     switch (status) {
       case CourseStatus.Active:
@@ -428,7 +390,6 @@ const CoursesPage: React.FC = () => {
     }
   };
 
-  // Получение русского названия для статуса курса
   const getStatusLabel = (status: CourseStatus) => {
     switch (status) {
       case CourseStatus.Active:
@@ -442,7 +403,6 @@ const CoursesPage: React.FC = () => {
     }
   };
 
-  // Получение русского названия для частоты приема
   const getFrequencyLabel = (frequency: IntakeFrequency) => {
     switch (frequency) {
       case IntakeFrequency.Daily:
@@ -456,7 +416,6 @@ const CoursesPage: React.FC = () => {
     }
   };
 
-  // Определение колонок для таблицы
   const columns = [
     {
       title: 'Название',
@@ -566,7 +525,6 @@ const CoursesPage: React.FC = () => {
     },
   ];
 
-  // Определяем цвет фона в зависимости от темы
   const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f8ff';
 
   return (

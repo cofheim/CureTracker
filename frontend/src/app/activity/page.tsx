@@ -15,10 +15,8 @@ const { Option } = Select;
 const { RangePicker } = DatePicker;
 const { Search } = Input;
 
-// Локализация dayjs
 dayjs.locale('ru');
 
-// Интерфейсы для типизации данных
 interface ActionLog {
   id: string;
   description: string;
@@ -69,8 +67,6 @@ const ActivityPage: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         setLogs(data);
-        // Если бы у нас был заголовок с общим количеством логов, мы бы установили его здесь
-        // setTotalLogs(response.headers.get('X-Total-Count') || data.length);
         setTotalLogs(data.length);
       } else if (response.status === 401) {
         router.push('/auth');
@@ -88,7 +84,6 @@ const ActivityPage: React.FC = () => {
   const applyFilters = () => {
     let filtered = [...logs];
 
-    // Фильтр по типу сущности
     if (entityType && entityId) {
       switch (entityType) {
         case 'medicine':
@@ -102,7 +97,6 @@ const ActivityPage: React.FC = () => {
           break;
       }
     } else if (entityType) {
-      // Фильтр только по типу без конкретного ID
       switch (entityType) {
         case 'medicine':
           filtered = filtered.filter(log => log.medicineId !== null);
@@ -116,7 +110,6 @@ const ActivityPage: React.FC = () => {
       }
     }
 
-    // Фильтр по тексту
     if (searchText) {
       const lowerSearchText = searchText.toLowerCase();
       filtered = filtered.filter(log => 
@@ -126,7 +119,6 @@ const ActivityPage: React.FC = () => {
       );
     }
 
-    // Фильтр по дате
     if (dateRange[0] && dateRange[1]) {
       const startDate = dateRange[0].startOf('day');
       const endDate = dateRange[1].endOf('day');
@@ -176,7 +168,6 @@ const ActivityPage: React.FC = () => {
         </Tag>
       );
     } else if (log.intakeId) {
-      // Для Intake пока оставляем ID, т.к. нет отдельной страницы и имени
       return (
         <Tag color="orange">
           Прием: {log.intakeId}
@@ -221,7 +212,6 @@ const ActivityPage: React.FC = () => {
     },
   ];
 
-  // Определяем цвет фона в зависимости от темы
   const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f8ff';
 
   return (

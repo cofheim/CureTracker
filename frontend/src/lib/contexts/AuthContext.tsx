@@ -26,7 +26,6 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// Функция для простого декодирования JWT payload (не для проверки подписи!)
 function decodeJwtPayload(token: string) {
   try {
     const base64Url = token.split('.')[1];

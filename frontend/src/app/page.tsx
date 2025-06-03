@@ -5,33 +5,27 @@ import { useRouter } from 'next/navigation';
 import { Spin, Typography, Button, Row, Col, Card, Space, App, Divider, Modal } from 'antd';
 import { LogoutOutlined, MedicineBoxOutlined, ScheduleOutlined, HistoryOutlined } from '@ant-design/icons';
 import Head from 'next/head';
-import { API_BASE_URL } from '../lib/apiConfig'; // Предполагаем, что apiConfig.ts на один уровень выше
+import { API_BASE_URL } from '../lib/apiConfig';
 import Dashboard from './components/Dashboard';
 import { useTheme } from '../lib/ThemeContext';
 
 const { Title, Text, Paragraph } = Typography;
 
-// Это временная заглушка для состояния аутентификации
-// В реальном приложении это будет управляться через Context, Redux, Zustand или проверкой cookie на сервере/запросом к API
 const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null); // null - состояние загрузки
   const [userData, setUserData] = useState<any>(null); // Данные пользователя, если есть
   const router = useRouter();
 
   useEffect(() => {
-    // Пытаемся получить информацию о текущем пользователе, чтобы проверить аутентификацию
-    // Бэкенд должен иметь эндпоинт, который возвращает данные пользователя, если токен валиден
-    // или 401, если нет.
-    // Например, GET /User/me или подобный
+
     const checkAuth = async () => {
       try {
-        // Важно: для этого запроса credentials: 'include' необходим, чтобы cookie передавались
         const response = await fetch(`${API_BASE_URL}/User/me`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
             },
-            credentials: 'include', // ВАЖНО для отправки cookie
+            credentials: 'include', 
         });
 
         if (response.ok) {
@@ -45,8 +39,7 @@ const useAuth = () => {
       } catch (error) {
         console.error("Auth check failed:", error);
         setIsAuthenticated(false);
-        // Можно добавить обработку, если API недоступен
-        router.push('/auth'); // В случае ошибки сети тоже редирект на /auth
+        router.push('/auth'); 
       }
     };
 
@@ -59,13 +52,12 @@ const useAuth = () => {
 const HomePage: React.FC = () => {
   const { isAuthenticated, userData } = useAuth();
   const router = useRouter();
-  const { message, modal } = App.useApp(); // Используем App.useApp() вместо message.useMessage()
+  const { message, modal } = App.useApp(); 
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const { theme } = useTheme();
   const [specialMessageVisible, setSpecialMessageVisible] = useState<boolean>(false);
 
   useEffect(() => {
-    // Определение мобильного устройства
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
@@ -78,7 +70,6 @@ const HomePage: React.FC = () => {
     };
   }, []);
 
-  // Показываем специальное сообщение для конкретного пользователя
   useEffect(() => {
     if (userData && userData.email === 'christina.brysina@yandex.ru') {
       setSpecialMessageVisible(true);
@@ -101,7 +92,6 @@ const HomePage: React.FC = () => {
         console.error("Logout error:", error);
     }
     
-    // После выхода (успешного или нет), клиент должен быть перенаправлен на страницу входа
     router.push('/auth');
   };
 
@@ -114,11 +104,9 @@ const HomePage: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-    // Редирект уже должен был произойти в useAuth, но на всякий случай
     return null; 
   }
 
-  // Определяем цвет фона в зависимости от темы
   const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f8ff';
 
   return (
@@ -132,7 +120,7 @@ const HomePage: React.FC = () => {
           Добро пожаловать в CureTracker, {userData?.name}!
         </Title>
         
-        {/* Добавляем дашборд */}
+        
         <Dashboard />
         
         <Divider />
@@ -193,7 +181,6 @@ const HomePage: React.FC = () => {
         </Row>
       </div>
 
-      {/* Специальное модальное окно для конкретного пользователя */}
       <Modal
         title="Персональное сообщение"
         open={specialMessageVisible}

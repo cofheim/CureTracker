@@ -12,7 +12,6 @@ import type { ColumnsType } from 'antd/es/table';
 
 const { Title, Text } = Typography;
 
-// Интерфейсы для типизации данных
 interface Intake {
   id: string;
   scheduledTime: string;
@@ -64,32 +63,26 @@ const CourseDetailsPage: React.FC = () => {
   const [calendarData, setCalendarData] = useState<Record<string, Intake[]>>({});
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
-  // Загрузка данных о курсе и приемах при монтировании компонента
   useEffect(() => {
     fetchCourseDetails();
     fetchIntakes();
     fetchCalendarData();
   }, [courseId]);
 
-  // Проверка размера экрана при монтировании и изменении размера окна
   useEffect(() => {
     const checkIfMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
     
-    // Проверяем при монтировании
     checkIfMobile();
     
-    // Добавляем слушатель изменения размера окна
     window.addEventListener('resize', checkIfMobile);
     
-    // Очищаем слушатель при размонтировании
     return () => {
       window.removeEventListener('resize', checkIfMobile);
     };
   }, []);
 
-  // Функция для загрузки данных о курсе
   const fetchCourseDetails = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/Courses/${courseId}`, {
@@ -116,7 +109,6 @@ const CourseDetailsPage: React.FC = () => {
     }
   };
 
-  // Функция для загрузки приемов лекарств
   const fetchIntakes = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/Courses/${courseId}/intakes`, {
@@ -141,7 +133,6 @@ const CourseDetailsPage: React.FC = () => {
     }
   };
 
-  // Функция для загрузки данных календаря
   const fetchCalendarData = async () => {
     try {
       const currentDate = new Date();
@@ -158,7 +149,6 @@ const CourseDetailsPage: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        // Фильтруем данные только для текущего курса
         const filteredData: Record<string, Intake[]> = {};
         for (const [date, dayIntakes] of Object.entries(data)) {
           const courseIntakes = (dayIntakes as Intake[]).filter(intake => intake.courseId === courseId);
@@ -174,7 +164,6 @@ const CourseDetailsPage: React.FC = () => {
     }
   };
 
-  // Функция для отметки приема как принятого
   const handleMarkAsTaken = async (intakeId: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/Intakes/${intakeId}/take`, {
@@ -200,14 +189,12 @@ const CourseDetailsPage: React.FC = () => {
     }
   };
 
-  // Функция для открытия модального окна пропуска приема
   const handleOpenSkipModal = (intakeId: string) => {
     setCurrentIntakeId(intakeId);
     setSkipReason('');
     setSkipModalVisible(true);
   };
 
-  // Функция для отметки приема как пропущенного
   const handleMarkAsSkipped = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/Intakes/${currentIntakeId}/skip`, {
@@ -235,7 +222,6 @@ const CourseDetailsPage: React.FC = () => {
     }
   };
 
-  // Получение цвета для статуса приема
   const getStatusColor = (status: IntakeStatus) => {
     switch (status) {
       case IntakeStatus.Taken:
@@ -251,7 +237,6 @@ const CourseDetailsPage: React.FC = () => {
     }
   };
 
-  // Получение русского названия для статуса приема
   const getStatusLabel = (status: IntakeStatus) => {
     switch (status) {
       case IntakeStatus.Taken:
@@ -267,10 +252,8 @@ const CourseDetailsPage: React.FC = () => {
     }
   };
 
-  // Определяем цвет фона в зависимости от темы
   const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f8ff';
 
-  // Определение колонок для таблицы
   const columns: ColumnsType<Intake> = [
     {
       title: 'Дата и время',
@@ -341,7 +324,6 @@ const CourseDetailsPage: React.FC = () => {
     },
   ];
 
-  // Функция для отображения дат в календаре
   const dateCellRender = (date: dayjs.Dayjs) => {
     const dateStr = date.format('YYYY-MM-DD');
     const dayIntakes = calendarData[dateStr] || [];

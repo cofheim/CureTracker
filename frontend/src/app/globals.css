@@ -98,53 +98,43 @@ a {
   }
 }
 
-/* Стили для адаптивности на мобильных устройствах */
 @media screen and (max-width: 768px) {
-  /* Улучшение читабельности текста */
   body {
     -webkit-text-size-adjust: 100%;
   }
 
-  /* Предотвращение горизонтального скролла */
   .ant-table-wrapper {
     overflow-x: auto;
   }
 
-  /* Адаптация таблиц для мобильных устройств */
   .ant-table {
     font-size: 12px;
   }
 
-  /* Улучшение отображения форм */
   .ant-form-item {
     margin-bottom: 12px;
   }
 
-  /* Улучшение отображения кнопок на мобильных устройствах */
   .ant-btn {
     padding: 4px 12px;
     font-size: 12px;
   }
 
-  /* Улучшение отображения списков */
   .ant-list-item {
     padding: 8px;
   }
 
-  /* Улучшение отображения длинных слов */
   p, h1, h2, h3, h4, h5, h6, span, div {
     word-wrap: break-word;
     overflow-wrap: break-word;
   }
 }
 
-/* Глобальные стили для темной темы */
 body[data-theme='dark'] {
   background-color: var(--background);
   color: var(--text-color);
 }
 
-/* Темная тема для компонентов */
 body[data-theme='dark'] .ant-card {
   background-color: var(--card-background);
   border-color: var(--border-color);
@@ -219,7 +209,6 @@ body[data-theme='dark'] .ant-divider-inner-text {
   color: var(--text-color);
 }
 
-/* Таблицы в темной теме */
 body[data-theme='dark'] .ant-table {
   background-color: var(--card-background);
   color: var(--text-color);
@@ -248,7 +237,6 @@ body[data-theme='dark'] .ant-table-row-expand-icon {
   color: var(--text-color);
 }
 
-/* Модальные окна в темной теме */
 body[data-theme='dark'] .ant-modal-content,
 body[data-theme='dark'] .ant-modal-header {
   background-color: var(--modal-background);
@@ -263,7 +251,6 @@ body[data-theme='dark'] .ant-modal-close-x {
   color: var(--text-secondary);
 }
 
-/* Выпадающие списки в темной теме */
 body[data-theme='dark'] .ant-select-dropdown {
   background-color: var(--dropdown-bg);
 }
@@ -281,7 +268,6 @@ body[data-theme='dark'] .ant-select-item-option-active:not(.ant-select-item-opti
   background-color: var(--table-row-hover);
 }
 
-/* Селект в темной теме */
 body[data-theme='dark'] .ant-select-selector {
   background-color: var(--card-background) !important;
   border-color: var(--border-color) !important;
@@ -296,13 +282,11 @@ body[data-theme='dark'] .ant-select-arrow {
   color: var(--text-secondary);
 }
 
-/* Тэги в темной теме */
 body[data-theme='dark'] .ant-tag {
   background-color: var(--tag-default-bg);
   border-color: var(--border-color);
 }
 
-/* Уведомления в темной теме */
 body[data-theme='dark'] .ant-notification-notice {
   background-color: var(--notification-bg);
   border-color: var(--border-color);
@@ -316,7 +300,6 @@ body[data-theme='dark'] .ant-notification-notice-description {
   color: var(--text-secondary);
 }
 
-/* Popover в темной теме */
 body[data-theme='dark'] .ant-popover-inner {
   background-color: var(--popover-bg);
 }
@@ -334,13 +317,11 @@ body[data-theme='dark'] .ant-popover-arrow-content {
   background-color: var(--popover-bg);
 }
 
-/* Tooltip в темной теме */
 body[data-theme='dark'] .ant-tooltip-inner {
   background-color: var(--tooltip-bg);
   color: var(--tooltip-color);
 }
 
-/* Переопределение стилей для компонентов в темной теме */
 .theme-toggle-button {
   position: fixed;
   bottom: 20px;

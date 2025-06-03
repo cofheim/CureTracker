@@ -73,8 +73,6 @@ const MedicineDetailsPage: React.FC = () => {
   };
 
   const handleEdit = () => {
-    // В будущем можно реализовать редактирование через модальное окно
-    // или перенаправление на страницу редактирования
     message.info('Функция редактирования будет доступна в ближайшее время');
   };
 
@@ -122,7 +120,6 @@ const MedicineDetailsPage: React.FC = () => {
     return typeLabels[type] || type;
   };
 
-  // Определяем цвет фона в зависимости от темы
   const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f8ff';
 
   return (

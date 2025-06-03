@@ -1,4 +1,4 @@
-'use client'; // Если используем ConfigProvider, layout должен быть клиентским или использовать AntdRegistry
+'use client';
 
 import './globals.css';
 import React, { useState, useEffect } from 'react';
@@ -15,7 +15,6 @@ const { Header, Content, Sider } = Layout;
 
 const inter = Inter({ subsets: ['latin'] });
 
-// Компонент для кнопки переключения темы
 const ThemeToggle: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   
@@ -29,7 +28,6 @@ const ThemeToggle: React.FC = () => {
   );
 };
 
-// Основной компонент макета
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
   const router = useRouter();
@@ -39,7 +37,6 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isAuthPage = pathname === '/auth';
   const { theme } = useTheme();
 
-  // Определение мобильного устройства при загрузке и изменении размера окна
   useEffect(() => {
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -48,13 +45,10 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       }
     };
 
-    // Проверяем при первой загрузке
     checkIsMobile();
 
-    // Добавляем слушатель изменения размера окна
     window.addEventListener('resize', checkIsMobile);
 
-    // Очистка слушателя при размонтировании компонента
     return () => {
       window.removeEventListener('resize', checkIsMobile);
     };
@@ -153,7 +147,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     style={{ fontSize: '18px' }}
                   />
                   <div style={{ fontSize: '18px', fontWeight: 'bold' }}>CureTracker</div>
-                  <div style={{ width: '32px' }}></div> {/* Для выравнивания заголовка по центру */}
+                  <div style={{ width: '32px' }}></div> 
                 </Header>
                 <Drawer
                   title="Меню"
@@ -175,10 +169,10 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 collapsible
                 collapsed={collapsed}
                 onCollapse={(value) => setCollapsed(value)}
-                theme={theme === 'dark' ? 'dark' : 'dark'} // Боковое меню всегда темное для контраста
+                theme={theme === 'dark' ? 'dark' : 'dark'} 
               >
                 <Menu
-                  theme={theme === 'dark' ? 'dark' : 'dark'} // Меню всегда темное для контраста
+                  theme={theme === 'dark' ? 'dark' : 'dark'} 
                   mode="inline"
                   selectedKeys={[pathname]}
                   items={menuItems}

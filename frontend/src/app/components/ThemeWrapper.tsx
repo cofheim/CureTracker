@@ -8,10 +8,7 @@ interface ThemeWrapperProps {
   children: ReactNode;
 }
 
-/**
- * Компонент-обертка для применения текущей темы к любым компонентам
- * Используется для компонентов, которые не имеют прямого доступа к контексту темы
- */
+
 const ThemeWrapper: React.FC<ThemeWrapperProps> = ({ children }) => {
   const { theme } = useTheme();
 

@@ -28,7 +28,7 @@ interface Intake {
 const CalendarPage: React.FC = () => {
   const [intakes, setIntakes] = useState<Intake[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [currentDate, setCurrentDate] = useState(dayjs()); // Текущий отображаемый месяц/год
+  const [currentDate, setCurrentDate] = useState(dayjs());
   const router = useRouter();
   const { message } = App.useApp();
   const { theme } = useTheme();
@@ -86,7 +86,7 @@ const CalendarPage: React.FC = () => {
   
   const handlePanelChange = (date: dayjs.Dayjs, mode: string) => {
     setCurrentDate(date);
-    if (mode === 'month') { // Загружаем данные только при смене месяца/года
+    if (mode === 'month') {
         fetchIntakesForMonth(date);
     }
   };
@@ -102,7 +102,7 @@ const CalendarPage: React.FC = () => {
           <Calendar 
             dateCellRender={dateCellRender} 
             onPanelChange={handlePanelChange}
-            onSelect={(date) => setCurrentDate(date)} // Обновляем currentDate при выборе даты, чтобы инициировать загрузку, если нужно
+            onSelect={(date) => setCurrentDate(date)}
           />
         }
       </div>

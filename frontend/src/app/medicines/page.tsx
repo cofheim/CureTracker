@@ -13,7 +13,6 @@ import ThemeWrapper from '../components/ThemeWrapper';
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-// Интерфейсы для типизации данных
 interface Medicine {
   id: string;
   name: string;
@@ -43,30 +42,24 @@ const MedicinesPage: React.FC = () => {
   const { theme } = useTheme();
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
-  // Проверка размера экрана при монтировании и изменении размера окна
   useEffect(() => {
     const checkIfMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
     
-    // Проверяем при монтировании
     checkIfMobile();
     
-    // Добавляем слушатель изменения размера окна
     window.addEventListener('resize', checkIfMobile);
     
-    // Очищаем слушатель при размонтировании
     return () => {
       window.removeEventListener('resize', checkIfMobile);
     };
   }, []);
 
-  // Загрузка списка лекарств при монтировании компонента
   useEffect(() => {
     fetchMedicines();
   }, []);
 
-  // Функция для загрузки списка лекарств с API
   const fetchMedicines = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/Medicine`, {
@@ -81,7 +74,7 @@ const MedicinesPage: React.FC = () => {
         const data = await response.json();
         setMedicines(data);
       } else if (response.status === 401) {
-        // Если пользователь не авторизован, перенаправляем на страницу входа
+        // Если пользовательне авторизован, перенаправляем на страницу входа
         router.push('/auth');
       } else {
         message.error('Не удалось загрузить список лекарств');
@@ -94,7 +87,6 @@ const MedicinesPage: React.FC = () => {
     }
   };
 
-  // Обработчик отправки формы (создание/редактирование лекарства)
   const handleSubmit = async (values: any) => {
     setLoading(true);
     try {
@@ -134,7 +126,6 @@ const MedicinesPage: React.FC = () => {
     }
   };
 
-  // Обработчик удаления лекарства
   const handleDelete = async (id: string) => {
     setLoading(true);
     try {
@@ -161,7 +152,6 @@ const MedicinesPage: React.FC = () => {
     }
   };
 
-  // Обработчик открытия модального окна для редактирования
   const handleEdit = (medicine: Medicine) => {
     setEditingMedicine(medicine);
     form.setFieldsValue({
@@ -174,14 +164,12 @@ const MedicinesPage: React.FC = () => {
     setModalVisible(true);
   };
 
-  // Обработчик открытия модального окна для создания
   const handleAdd = () => {
     setEditingMedicine(null);
     form.resetFields();
     setModalVisible(true);
   };
 
-  // Определение колонок для таблицы
   const columns: ColumnsType<Medicine> = [
     {
       title: 'Название',
@@ -196,7 +184,6 @@ const MedicinesPage: React.FC = () => {
       dataIndex: 'description',
       key: 'description',
       ellipsis: true,
-      // Скрываем колонку на мобильных устройствах
       className: isMobile ? 'hidden-column' : '',
     },
     {
@@ -209,7 +196,6 @@ const MedicinesPage: React.FC = () => {
       title: 'Условия хранения',
       dataIndex: 'storageConditions',
       key: 'storageConditions',
-      // Скрываем колонку на мобильных устройствах
       className: isMobile ? 'hidden-column' : '',
     },
     {
@@ -263,7 +249,6 @@ const MedicinesPage: React.FC = () => {
     },
   ];
 
-  // Определяем цвет фона в зависимости от темы
   const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f8ff';
 
   return (
