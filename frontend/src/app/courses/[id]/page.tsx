@@ -5,10 +5,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { Table, Button, Typography, Space, Tag, Modal, Input, Spin, App, Tabs, Calendar, Badge } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, ArrowLeftOutlined, CalendarOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { API_BASE_URL } from '../../../lib/apiConfig';
 import { useTheme } from '../../../lib/ThemeContext';
 import ThemeWrapper from '../../components/ThemeWrapper';
 import type { ColumnsType } from 'antd/es/table';
+
+dayjs.extend(utc);
 
 const { Title, Text } = Typography;
 
@@ -257,13 +260,10 @@ const CourseDetailsPage: React.FC = () => {
   const columns: ColumnsType<Intake> = [
     {
       title: 'Дата и время',
+      dataIndex: 'scheduledTime',
       key: 'scheduledTime',
-      render: (record: Intake) => (
-        <>{new Date(record.scheduledTime).toLocaleString()}</>
-      ),
-      sorter: (a: Intake, b: Intake) => 
-        new Date(a.scheduledTime).getTime() - new Date(b.scheduledTime).getTime(),
-      defaultSortOrder: 'ascend' as 'ascend',
+      render: (text: string) => dayjs.utc(text).format('DD.MM.YYYY, HH:mm:ss'),
+      sorter: (a: Intake, b: Intake) => dayjs(a.scheduledTime).unix() - dayjs(b.scheduledTime).unix(),
     },
     {
       title: 'Лекарство',
@@ -288,11 +288,9 @@ const CourseDetailsPage: React.FC = () => {
     },
     {
       title: 'Фактическое время',
+      dataIndex: 'actualTime',
       key: 'actualTime',
-      render: (record: Intake) => (
-        <>{record.actualTime ? new Date(record.actualTime).toLocaleString() : '-'}</>
-      ),
-      className: isMobile ? 'hidden-column' : '',
+      render: (text: string | null) => text ? dayjs.utc(text).format('DD.MM.YYYY, HH:mm:ss') : '-',
     },
     {
       title: 'Действия',
@@ -368,7 +366,7 @@ const CourseDetailsPage: React.FC = () => {
                   <Space direction="vertical" size="small">
                     <Text>Лекарство: <strong>{course.medicineName}</strong></Text>
                     <Text>Описание: {course.description || 'Нет описания'}</Text>
-                    <Text>Период: {dayjs(course.startDate).format('DD.MM.YYYY')} - {dayjs(course.endDate).format('DD.MM.YYYY')}</Text>
+                    <Text>Период: {dayjs.utc(course.startDate).format('DD.MM.YYYY')} - {dayjs.utc(course.endDate).format('DD.MM.YYYY')}</Text>
                     <Text>Частота приема: {course.intakeFrequency === 'Daily' ? 'Ежедневно' : 
                                           course.intakeFrequency === 'Weekly' ? 'Еженедельно' : 'Ежемесячно'}</Text>
                     <Text>Количество приемов в день: {course.timesADay}</Text>

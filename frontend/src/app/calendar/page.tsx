@@ -5,12 +5,14 @@ import { Calendar, Badge, Spin, Typography, Row, Col, Select, Button, App } from
 import type { BadgeProps } from 'antd';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
+import utc from 'dayjs/plugin/utc';
 import { API_BASE_URL } from '../../lib/apiConfig';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '../../lib/ThemeContext';
 import ThemeWrapper from '../components/ThemeWrapper';
 
 dayjs.locale('ru');
+dayjs.extend(utc);
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -39,8 +41,8 @@ const CalendarPage: React.FC = () => {
 
   const fetchIntakesForMonth = async (date: dayjs.Dayjs) => {
     setLoading(true);
-    const startDate = date.startOf('month').toISOString();
-    const endDate = date.endOf('month').toISOString();
+    const startDate = dayjs.utc(date).startOf('month').toISOString();
+    const endDate = dayjs.utc(date).endOf('month').toISOString();
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/Intakes/calendar/range?StartDate=${startDate}&EndDate=${endDate}`, {
@@ -68,7 +70,7 @@ const CalendarPage: React.FC = () => {
   };
 
   const getListData = (value: dayjs.Dayjs) => {
-    return intakes.filter(intake => dayjs(intake.scheduledTime).isSame(value, 'day'));
+    return intakes.filter(intake => dayjs.utc(intake.scheduledTime).isSame(value, 'day'));
   };
 
   const dateCellRender = (value: dayjs.Dayjs) => {
@@ -77,7 +79,7 @@ const CalendarPage: React.FC = () => {
       <ul className="events" style={{ margin: 0, padding: 0, listStyle: 'none' }}>
         {listData.map((item) => (
           <li key={item.id} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>
-            <Badge status={item.status as BadgeProps['status']} text={`${dayjs(item.scheduledTime).format('HH:mm')} ${item.medicineName}`} />
+            <Badge status={item.status as BadgeProps['status']} text={`${dayjs.utc(item.scheduledTime).format('HH:mm')} ${item.medicineName}`} />
           </li>
         ))}
       </ul>

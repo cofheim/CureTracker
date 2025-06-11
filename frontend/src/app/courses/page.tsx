@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Key } from 'react';
 import { Table, Button, Modal, Form, Input, DatePicker, Select, Typography, Space, Spin, Popconfirm, Tag, TimePicker, InputNumber, App, Card, Row, Col } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, CalendarOutlined, MedicineBoxOutlined, ReloadOutlined, FilterOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
@@ -171,8 +171,8 @@ const CoursesPage: React.FC = () => {
         return time.format('HH:mm:ss');
       });
 
-      const startDate = values.dateRange[0].startOf('day').toISOString();
-      const endDate = values.dateRange[1].startOf('day').toISOString();
+      const startDate = dayjs.utc(values.dateRange[0]).startOf('day').toISOString();
+      const endDate = dayjs.utc(values.dateRange[1]).startOf('day').toISOString();
 
       const payload = {
         name: values.name,
@@ -430,11 +430,8 @@ const CoursesPage: React.FC = () => {
     {
       title: 'Период',
       key: 'period',
-      render: (_: any, record: Course) => (
-        <>
-          {new Date(record.startDate).toLocaleDateString()} - {new Date(record.endDate).toLocaleDateString()}
-        </>
-      ),
+      render: (_: any, course: Course) => `${dayjs.utc(course.startDate).format('DD.MM.YYYY')} - ${dayjs.utc(course.endDate).format('DD.MM.YYYY')}`,
+      sorter: (a: Course, b: Course) => dayjs(a.startDate).unix() - dayjs(b.startDate).unix(),
     },
     {
       title: 'Приемов в день',
@@ -451,23 +448,18 @@ const CoursesPage: React.FC = () => {
       title: 'Статус',
       dataIndex: 'status',
       key: 'status',
-      render: (status: CourseStatus) => (
-        <Tag color={getStatusColor(status)}>
-          {getStatusLabel(status)}
-        </Tag>
-      ),
+      render: (status: CourseStatus) => <Tag color={getStatusColor(status)}>{getStatusLabel(status)}</Tag>,
+      sorter: (a: Course, b: Course) => a.status.localeCompare(b.status),
+      filters: Object.values(CourseStatus).map(status => ({ text: getStatusLabel(status), value: status })),
+      onFilter: (value: Key | boolean, record: Course) => record.status === value,
+      filteredValue: statusFilter ? [statusFilter] : null,
     },
     {
-      title: 'Прогресс',
-      key: 'progress',
-      render: (_: any, record: Course) => {
-        const total = record.takenDosesCount + record.skippedDosesCount;
-        return (
-          <>
-            {record.takenDosesCount} принято / {record.skippedDosesCount} пропущено
-          </>
-        );
-      },
+      title: 'Принято / Пропущено',
+      dataIndex: 'doses',
+      key: 'doses',
+      render: (_: any, course: Course) => `${course.takenDosesCount} / ${course.skippedDosesCount}`,
+      sorter: (a: Course, b: Course) => (a.takenDosesCount + a.skippedDosesCount) - (b.takenDosesCount + b.skippedDosesCount),
     },
     {
       title: 'Действия',

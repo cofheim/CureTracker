@@ -71,8 +71,8 @@ namespace CureTracker.Controllers
                 {
                     if (TimeSpan.TryParse(timeStr, out var timeSpan))
                     {
-                        var localTime = new DateTime(2000, 1, 1, timeSpan.Hours, timeSpan.Minutes, 0, DateTimeKind.Local);
-                        timesOfTaking.Add(localTime.ToUniversalTime());
+                        var timeAsDateTime = new DateTime(2000, 1, 1, timeSpan.Hours, timeSpan.Minutes, 0, DateTimeKind.Unspecified);
+                        timesOfTaking.Add(timeAsDateTime);
                     }
                     else
                     {
@@ -85,13 +85,8 @@ namespace CureTracker.Controllers
                 }
             }
 
-            var startDate = request.StartDate.Kind != DateTimeKind.Utc 
-                ? DateTime.SpecifyKind(request.StartDate, DateTimeKind.Utc) 
-                : request.StartDate;
-                
-            var endDate = request.EndDate.Kind != DateTimeKind.Utc 
-                ? DateTime.SpecifyKind(request.EndDate, DateTimeKind.Utc) 
-                : request.EndDate;
+            var startDate = new DateTime(request.StartDate.Year, request.StartDate.Month, request.StartDate.Day, 0, 0, 0, DateTimeKind.Utc);
+            var endDate = new DateTime(request.EndDate.Year, request.EndDate.Month, request.EndDate.Day, 0, 0, 0, DateTimeKind.Utc);
 
             var courseResult = Course.Create(
                 Guid.NewGuid(),
@@ -135,8 +130,8 @@ namespace CureTracker.Controllers
                 {
                     if (TimeSpan.TryParse(timeStr, out var timeSpan))
                     {
-                        var localTime = new DateTime(2000, 1, 1, timeSpan.Hours, timeSpan.Minutes, 0, DateTimeKind.Local);
-                        timesOfTaking.Add(localTime.ToUniversalTime());
+                        var timeAsDateTime = new DateTime(2000, 1, 1, timeSpan.Hours, timeSpan.Minutes, 0, DateTimeKind.Unspecified);
+                        timesOfTaking.Add(timeAsDateTime);
                     }
                     else
                     {
@@ -149,13 +144,8 @@ namespace CureTracker.Controllers
                 }
             }
 
-            var startDate = request.StartDate.Kind != DateTimeKind.Utc 
-                ? DateTime.SpecifyKind(request.StartDate, DateTimeKind.Utc) 
-                : request.StartDate;
-                
-            var endDate = request.EndDate.Kind != DateTimeKind.Utc 
-                ? DateTime.SpecifyKind(request.EndDate, DateTimeKind.Utc) 
-                : request.EndDate;
+            var startDate = new DateTime(request.StartDate.Year, request.StartDate.Month, request.StartDate.Day, 0, 0, 0, DateTimeKind.Utc);
+            var endDate = new DateTime(request.EndDate.Year, request.EndDate.Month, request.EndDate.Day, 0, 0, 0, DateTimeKind.Utc);
 
             var course = new Course(
                 id,

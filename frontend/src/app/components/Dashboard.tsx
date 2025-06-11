@@ -4,6 +4,10 @@ import { CheckCircleOutlined, CloseCircleOutlined, CalendarOutlined } from '@ant
 import { API_BASE_URL } from '../../lib/apiConfig';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '../../lib/ThemeContext';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 
 const { Title, Text } = Typography;
 
@@ -176,15 +180,14 @@ const Dashboard: React.FC = () => {
   };
 
   const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return dayjs.utc(dateString).format('HH:mm');
   };
 
   const calculateTotalDoses = (course: Course) => {
-    const startDate = new Date(course.startDate);
-    const endDate = new Date(course.endDate);
+    const startDate = dayjs.utc(course.startDate);
+    const endDate = dayjs.utc(course.endDate);
     
-    const daysDiff = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const daysDiff = endDate.diff(startDate, 'day') + 1;
     
     let totalDoses = 0;
     
