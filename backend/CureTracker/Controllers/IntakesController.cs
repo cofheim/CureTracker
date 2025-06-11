@@ -13,33 +13,37 @@ namespace CureTracker.Controllers
     public class IntakesController : ControllerBase
     {
         private readonly IIntakeService _intakeService;
+        private readonly IUserService _userService;
 
-        public IntakesController(IIntakeService intakeService)
+        public IntakesController(IIntakeService intakeService, IUserService userService)
         {
             _intakeService = intakeService;
+            _userService = userService;
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<IntakeResponse>> GetIntakeById(Guid id)
         {
             var userId = GetUserIdFromClaims();
+            var userTimeZone = await GetUserTimeZoneInfo(userId);
             var intake = await _intakeService.GetIntakeByIdAsync(id, userId);
 
             if (intake == null)
                 return NotFound();
 
-            return Ok(MapToIntakeResponse(intake));
+            return Ok(MapToIntakeResponse(intake, userTimeZone));
         }
 
         [HttpPost("{id}/take")]
         public async Task<ActionResult<IntakeResponse>> MarkIntakeAsTaken(Guid id)
         {
             var userId = GetUserIdFromClaims();
+            var userTimeZone = await GetUserTimeZoneInfo(userId);
 
             try
             {
                 var updatedIntake = await _intakeService.MarkIntakeAsTakenAsync(id, userId);
-                return Ok(MapToIntakeResponse(updatedIntake));
+                return Ok(MapToIntakeResponse(updatedIntake, userTimeZone));
             }
             catch (UnauthorizedAccessException)
             {
@@ -55,11 +59,12 @@ namespace CureTracker.Controllers
         public async Task<ActionResult<IntakeResponse>> MarkIntakeAsSkipped(Guid id, MarkIntakeAsSkippedRequest request)
         {
             var userId = GetUserIdFromClaims();
+            var userTimeZone = await GetUserTimeZoneInfo(userId);
 
             try
             {
                 var updatedIntake = await _intakeService.MarkIntakeAsSkippedAsync(id, request.SkipReason, userId);
-                return Ok(MapToIntakeResponse(updatedIntake));
+                return Ok(MapToIntakeResponse(updatedIntake, userTimeZone));
             }
             catch (UnauthorizedAccessException)
             {
@@ -75,8 +80,8 @@ namespace CureTracker.Controllers
         public async Task<ActionResult<List<IntakeResponse>>> GetIntakesByDateRange([FromQuery] IntakesByDateRangeRequest request)
         {
             var userId = GetUserIdFromClaims();
+            var userTimeZone = await GetUserTimeZoneInfo(userId);
 
- 
             var startDateUtc = request.StartDate.Kind == DateTimeKind.Unspecified || request.StartDate.Kind == DateTimeKind.Local
                 ? request.StartDate.ToUniversalTime()
                 : request.StartDate;
@@ -84,14 +89,13 @@ namespace CureTracker.Controllers
                 ? request.EndDate.ToUniversalTime()
                 : request.EndDate;
 
-
             var intakes = await _intakeService.GetScheduledIntakesForDateRangeAsync(
                 userId,
                 startDateUtc, 
                 endDateUtc   
             );
 
-            var response = intakes.Select(MapToIntakeResponse).ToList();
+            var response = intakes.Select(i => MapToIntakeResponse(i, userTimeZone)).ToList();
             return Ok(response);
         }
 
@@ -102,11 +106,11 @@ namespace CureTracker.Controllers
                 return BadRequest("Invalid year or month");
 
             var userId = GetUserIdFromClaims();
+            var userTimeZone = await GetUserTimeZoneInfo(userId);
 
             var firstDayOfMonthUtc = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
             var lastDayOfMonthUtc = firstDayOfMonthUtc.AddMonths(1).AddDays(-1);
             lastDayOfMonthUtc = new DateTime(lastDayOfMonthUtc.Year, lastDayOfMonthUtc.Month, lastDayOfMonthUtc.Day, 23, 59, 59, 999, DateTimeKind.Utc);
-
 
             var intakes = await _intakeService.GetScheduledIntakesForDateRangeAsync(
                 userId,
@@ -115,10 +119,10 @@ namespace CureTracker.Controllers
             );
 
             var calendarData = intakes
-                .GroupBy(i => i.ScheduledTime.Date) 
+                .GroupBy(i => TimeZoneInfo.ConvertTimeFromUtc(i.ScheduledTime, userTimeZone).Date) 
                 .ToDictionary(
                     g => g.Key.ToString("yyyy-MM-dd"),
-                    g => g.Select(MapToIntakeResponse).ToList()
+                    g => g.Select(i => MapToIntakeResponse(i, userTimeZone)).ToList()
                 );
 
             return Ok(calendarData);
@@ -128,6 +132,7 @@ namespace CureTracker.Controllers
         public async Task<ActionResult<List<IntakeResponse>>> GetTodayIntakes()
         {
             var userId = GetUserIdFromClaims();
+            var userTimeZone = await GetUserTimeZoneInfo(userId);
             
             DateTime todayUtcStart = DateTime.UtcNow.Date; 
             DateTime todayUtcEnd = todayUtcStart.AddDays(1).AddSeconds(-1);
@@ -138,7 +143,7 @@ namespace CureTracker.Controllers
                 todayUtcEnd
             );
 
-            var response = intakes.Select(MapToIntakeResponse).ToList();
+            var response = intakes.Select(i => MapToIntakeResponse(i, userTimeZone)).ToList();
             return Ok(response);
         }
 
@@ -146,8 +151,9 @@ namespace CureTracker.Controllers
         public async Task<ActionResult<List<IntakeResponse>>> GetUserIntakesForCalendar([FromQuery] CalendarIntakesRequest request)
         {
             var userId = GetUserIdFromClaims();
+            var userTimeZone = await GetUserTimeZoneInfo(userId);
             var intakes = await _intakeService.GetUserIntakesForCalendarAsync(userId, request.StartDate, request.EndDate);
-            var response = intakes.Select(MapToIntakeResponse).ToList();
+            var response = intakes.Select(i => MapToIntakeResponse(i, userTimeZone)).ToList();
             return Ok(response);
         }
 
@@ -160,12 +166,34 @@ namespace CureTracker.Controllers
             return userId;
         }
 
-        private IntakeResponse MapToIntakeResponse(Intake intake)
+        private async Task<TimeZoneInfo> GetUserTimeZoneInfo(Guid userId)
         {
+            var user = await _userService.GetUserById(userId);
+            if (user != null && !string.IsNullOrEmpty(user.TimeZoneId))
+            {
+                try
+                {
+                    return TimeZoneInfo.FindSystemTimeZoneById(user.TimeZoneId);
+                }
+                catch (TimeZoneNotFoundException)
+                {
+                    // Fallback to UTC if timezone is not found
+                }
+            }
+            return TimeZoneInfo.Utc;
+        }
+
+        private IntakeResponse MapToIntakeResponse(Intake intake, TimeZoneInfo userTimeZone)
+        {
+            var scheduledTimeLocal = TimeZoneInfo.ConvertTimeFromUtc(intake.ScheduledTime, userTimeZone);
+            var actualTimeLocal = intake.ActualTime.HasValue
+                ? TimeZoneInfo.ConvertTimeFromUtc(intake.ActualTime.Value, userTimeZone)
+                : (DateTime?)null;
+
             return new IntakeResponse(
                 intake.Id,
-                intake.ScheduledTime,
-                intake.ActualTime,
+                scheduledTimeLocal,
+                actualTimeLocal,
                 intake.Status.ToString(),
                 null,
                 intake.CourseId,

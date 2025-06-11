@@ -17,22 +17,26 @@ namespace CureTracker.Controllers
     {
         private readonly ICourseService _courseService;
         private readonly IIntakeService _intakeService;
+        private readonly IUserService _userService;
 
         public CoursesController(
             ICourseService courseService,
-            IIntakeService intakeService)
+            IIntakeService intakeService,
+            IUserService userService)
         {
             _courseService = courseService;
             _intakeService = intakeService;
+            _userService = userService;
         }
 
         [HttpGet]
         public async Task<ActionResult<List<CourseResponse>>> GetAllCourses()
         {
             var userId = GetUserIdFromClaims();
+            var userTimeZone = await GetUserTimeZoneInfo(userId);
             var courses = await _courseService.GetAllCoursesForUserAsync(userId);
 
-            var response = courses.Select(MapToCourseResponse).ToList();
+            var response = courses.Select(c => MapToCourseResponse(c, userTimeZone)).ToList();
             return Ok(response);
         }
 
@@ -40,9 +44,10 @@ namespace CureTracker.Controllers
         public async Task<ActionResult<List<CourseResponse>>> GetActiveCourses()
         {
             var userId = GetUserIdFromClaims();
+            var userTimeZone = await GetUserTimeZoneInfo(userId);
             var courses = await _courseService.GetActiveCoursesForUserAsync(userId);
 
-            var response = courses.Select(MapToCourseResponse).ToList();
+            var response = courses.Select(c => MapToCourseResponse(c, userTimeZone)).ToList();
             return Ok(response);
         }
 
@@ -50,12 +55,13 @@ namespace CureTracker.Controllers
         public async Task<ActionResult<CourseResponse>> GetCourseById(Guid id)
         {
             var userId = GetUserIdFromClaims();
+            var userTimeZone = await GetUserTimeZoneInfo(userId);
             var course = await _courseService.GetCourseByIdAsync(id, userId);
 
             if (course == null)
                 return NotFound();
 
-            return Ok(MapToCourseResponse(course));
+            return Ok(MapToCourseResponse(course, userTimeZone));
         }
 
         [HttpPost]
@@ -108,8 +114,9 @@ namespace CureTracker.Controllers
             var createdCourse = await _courseService.CreateCourseAsync(courseResult.Course);
 
             await _courseService.GenerateIntakesForCourseAsync(createdCourse, userId);
-
-            var response = MapToCourseResponse(createdCourse);
+            
+            var userTimeZone = await GetUserTimeZoneInfo(userId);
+            var response = MapToCourseResponse(createdCourse, userTimeZone);
             return CreatedAtAction(nameof(GetCourseById), new { id = response.Id }, response);
         }
 
@@ -175,7 +182,8 @@ namespace CureTracker.Controllers
                 await _courseService.GenerateIntakesForCourseAsync(updatedCourse, userId);
             }
 
-            var response = MapToCourseResponse(updatedCourse);
+            var userTimeZone = await GetUserTimeZoneInfo(userId);
+            var response = MapToCourseResponse(updatedCourse, userTimeZone);
             return Ok(response);
         }
 
@@ -183,6 +191,7 @@ namespace CureTracker.Controllers
         public async Task<ActionResult<CourseResponse>> UpdateCourseStatus(Guid id, UpdateCourseStatusRequest request)
         {
             var userId = GetUserIdFromClaims();
+            var userTimeZone = await GetUserTimeZoneInfo(userId);
 
             var existingCourse = await _courseService.GetCourseByIdAsync(id, userId);
             if (existingCourse == null)
@@ -190,7 +199,7 @@ namespace CureTracker.Controllers
 
             var updatedCourse = await _courseService.ChangeCourseStatusAsync(id, request.Status, userId);
 
-            var response = MapToCourseResponse(updatedCourse);
+            var response = MapToCourseResponse(updatedCourse, userTimeZone);
             return Ok(response);
         }
 
@@ -210,6 +219,7 @@ namespace CureTracker.Controllers
         public async Task<ActionResult<List<IntakeResponse>>> GetCourseIntakes(Guid id)
         {
             var userId = GetUserIdFromClaims();
+            var userTimeZone = await GetUserTimeZoneInfo(userId);
 
             var course = await _courseService.GetCourseByIdAsync(id, userId);
             if (course == null)
@@ -217,7 +227,7 @@ namespace CureTracker.Controllers
 
             var intakes = await _intakeService.GetIntakesForCourseAsync(id, userId);
 
-            var response = intakes.Select(MapToIntakeResponse).ToList();
+            var response = intakes.Select(i => MapToIntakeResponse(i, userTimeZone)).ToList();
             return Ok(response);
         }
 
@@ -230,14 +240,31 @@ namespace CureTracker.Controllers
             return userId;
         }
 
-        private CourseResponse MapToCourseResponse(Course course)
+        private async Task<TimeZoneInfo> GetUserTimeZoneInfo(Guid userId)
+        {
+            var user = await _userService.GetUserById(userId);
+            if (user != null && !string.IsNullOrEmpty(user.TimeZoneId))
+            {
+                try
+                {
+                    return TimeZoneInfo.FindSystemTimeZoneById(user.TimeZoneId);
+                }
+                catch (TimeZoneNotFoundException)
+                {
+                    // Fallback to UTC if timezone is not found
+                }
+            }
+            return TimeZoneInfo.Utc;
+        }
+
+        private CourseResponse MapToCourseResponse(Course course, TimeZoneInfo userTimeZone)
         {
             return new CourseResponse(
                 course.Id,
                 course.Name,
                 course.Description,
                 course.TimesADay,
-                course.TimesOfTaking,
+                course.TimesOfTaking.Select(t => TimeZoneInfo.ConvertTimeFromUtc(t, userTimeZone)).ToList(),
                 course.StartDate,
                 course.EndDate,
                 course.Status.ToString(),
@@ -249,12 +276,17 @@ namespace CureTracker.Controllers
             );
         }
 
-        private IntakeResponse MapToIntakeResponse(Intake intake)
+        private IntakeResponse MapToIntakeResponse(Intake intake, TimeZoneInfo userTimeZone)
         {
+            var scheduledTimeLocal = TimeZoneInfo.ConvertTimeFromUtc(intake.ScheduledTime, userTimeZone);
+            var actualTimeLocal = intake.ActualTime.HasValue
+                ? TimeZoneInfo.ConvertTimeFromUtc(intake.ActualTime.Value, userTimeZone)
+                : (DateTime?)null;
+
             return new IntakeResponse(
                 intake.Id,
-                intake.ScheduledTime,
-                intake.ActualTime,
+                scheduledTimeLocal,
+                actualTimeLocal,
                 intake.Status.ToString(),
                 null,
                 intake.CourseId,

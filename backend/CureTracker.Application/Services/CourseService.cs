@@ -12,17 +12,20 @@ namespace CureTracker.Application.Services
         private readonly IIntakeRepository _intakeRepository;
         private readonly IActionLogService _actionLogService;
         private readonly IActionLogRepository _actionLogRepository;
+        private readonly IUserService _userService;
 
         public CourseService(
             ICourseRepository courseRepository,
             IIntakeRepository intakeRepository,
             IActionLogService actionLogService,
-            IActionLogRepository actionLogRepository)
+            IActionLogRepository actionLogRepository,
+            IUserService userService)
         {
             _courseRepository = courseRepository;
             _intakeRepository = intakeRepository;
             _actionLogService = actionLogService;
             _actionLogRepository = actionLogRepository;
+            _userService = userService;
         }
 
         public async Task<List<Course>> GetAllCoursesForUserAsync(Guid userId)
@@ -148,6 +151,20 @@ namespace CureTracker.Application.Services
             if (course == null || course.UserId != userId)
                 throw new UnauthorizedAccessException("У вас нет прав на изменение этого курса или курс не найден");
 
+            var user = await _userService.GetUserById(userId);
+            var userTimeZone = TimeZoneInfo.Utc;
+            if (user != null && !string.IsNullOrEmpty(user.TimeZoneId))
+            {
+                try
+                {
+                    userTimeZone = TimeZoneInfo.FindSystemTimeZoneById(user.TimeZoneId);
+                }
+                catch (TimeZoneNotFoundException)
+                {
+                    // Log warning: TimeZoneId from user profile is invalid. Falling back to UTC.
+                }
+            }
+
             var existingIntakes = await _intakeRepository.GetAllByCourseIdAsync(course.Id);
             foreach (var intake in existingIntakes)
             {
@@ -174,14 +191,16 @@ namespace CureTracker.Application.Services
                 {
                     foreach (var time in course.TimesOfTaking)
                     {
-                        var intakeTime = new DateTime(
+                        var localIntakeTime = new DateTime(
                             currentDate.Year,
                             currentDate.Month,
                             currentDate.Day,
                             time.Hour,
                             time.Minute,
                             0,
-                            DateTimeKind.Utc);
+                            DateTimeKind.Unspecified);
+
+                        var intakeTime = TimeZoneInfo.ConvertTimeToUtc(localIntakeTime, userTimeZone);
 
                         IntakeStatus status;
                         if (intakeTime < utcNow)
@@ -214,7 +233,6 @@ namespace CureTracker.Application.Services
                 userId,
                 course.MedicineId,
                 course.Id);
-
         }
 
         public async Task<int> UpdateCoursesStatusesAsync()
