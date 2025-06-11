@@ -86,6 +86,7 @@ namespace CureTracker.TelegramBot
             var intakeService = scope.ServiceProvider.GetRequiredService<IIntakeService>();
             var medicineService = scope.ServiceProvider.GetRequiredService<IMedicineService>();
             var courseService = scope.ServiceProvider.GetRequiredService<ICourseService>();
+            var actionLogService = scope.ServiceProvider.GetRequiredService<IActionLogService>();
 
             if (update.Type == UpdateType.Message && update.Message?.Text != null)
             {
@@ -117,6 +118,9 @@ namespace CureTracker.TelegramBot
                             case "❓ Помощь":
                                 await SendHelpMessage(chatId, cancellationToken);
                                 break;
+                            case "📜 История действий":
+                                await SendActionHistoryOptions(chatId, cancellationToken);
+                                break;
                             default:
                                 await _botClient.SendMessage(chatId, "Неизвестная команда. Пожалуйста, используйте меню.", cancellationToken: cancellationToken);
                                 break;
@@ -138,7 +142,7 @@ namespace CureTracker.TelegramBot
                     {
                         await SendHelpMessage(chatId, cancellationToken);
                     }
-                    else if (text == "💊 Лекарства" || text == "Приёмы на сегодня")
+                    else if (text == "💊 Лекарства" || text == "Приёмы на сегодня" || text == "📜 История действий")
                     {
                          await _botClient.SendMessage(chatId, "Сначала привяжите ваш аккаунт. Нажмите /start, чтобы получить инструкцию.", cancellationToken: cancellationToken);
                     }
@@ -189,7 +193,53 @@ namespace CureTracker.TelegramBot
                 var chatId = callbackQuery.Message.Chat.Id;
                 var callbackData = callbackQuery.Data;
 
+                var user = await userService.GetUserByTelegramId(chatId);
+                if (user == null)
+                {
+                    // Handle unauthenticated user trying to use callbacks for authenticated features
+                    if(callbackData == "how_to_link")
+                    {
+                         await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
+                         await SendLinkingInstructions(chatId, cancellationToken);
+                    }
+                    else
+                    {
+                        await _botClient.AnswerCallbackQuery(callbackQuery.Id, "Пожалуйста, сначала привяжите ваш аккаунт.", showAlert: true, cancellationToken: cancellationToken);
+                    }
+                    return;
+                }
+                
                 _logger.LogInformation($"Получен CallbackQuery от {chatId} с данными: {callbackData}");
+
+                if (callbackData == "history_by_medicine")
+                {
+                    await SendMedicineSelectionForHistory(chatId, user.Id, medicineService, cancellationToken);
+                    await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
+                    return;
+                }
+
+                if (callbackData == "history_by_course")
+                {
+                    await SendCourseSelectionForHistory(chatId, user.Id, courseService, cancellationToken);
+                    await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
+                    return;
+                }
+
+                if (callbackData.StartsWith("history_medicine_"))
+                {
+                    var medicineId = Guid.Parse(callbackData.Split('_')[2]);
+                    await SendActionLogs(chatId, user.Id, "medicine", medicineId, actionLogService, cancellationToken);
+                    await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
+                    return;
+                }
+
+                if (callbackData.StartsWith("history_course_"))
+                {
+                    var courseId = Guid.Parse(callbackData.Split('_')[2]);
+                    await SendActionLogs(chatId, user.Id, "course", courseId, actionLogService, cancellationToken);
+                    await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
+                    return;
+                }
 
                 if (callbackData == "how_to_link")
                 {
@@ -292,7 +342,7 @@ namespace CureTracker.TelegramBot
             var replyKeyboardMarkup = new ReplyKeyboardMarkup(new[]
             {
                 new KeyboardButton[] { "Приёмы на сегодня", "💊 Лекарства" },
-                new KeyboardButton[] { "❓ Помощь" }
+                new KeyboardButton[] { "📜 История действий", "❓ Помощь" }
             })
             {
                 ResizeKeyboard = true
@@ -380,6 +430,67 @@ namespace CureTracker.TelegramBot
                            GetLinkingInstructionsText() + "\n\n" +
                            "Уведомления о приёмах будут приходить автоматически после привязки аккаунта.";
             await _botClient.SendMessage(chatId, helpText, parseMode: ParseMode.Markdown, cancellationToken: cancellationToken);
+        }
+
+        private async Task SendActionHistoryOptions(long chatId, CancellationToken cancellationToken)
+        {
+            var inlineKeyboard = new InlineKeyboardMarkup(new[]
+            {
+                new [] { InlineKeyboardButton.WithCallbackData(text: "По лекарству", callbackData: "history_by_medicine") },
+                new [] { InlineKeyboardButton.WithCallbackData(text: "По курсу", callbackData: "history_by_course") }
+            });
+
+            await _botClient.SendMessage(chatId, "Как вы хотите отфильтровать историю?", replyMarkup: inlineKeyboard, cancellationToken: cancellationToken);
+        }
+
+        private async Task SendMedicineSelectionForHistory(long chatId, Guid userId, IMedicineService medicineService, CancellationToken cancellationToken)
+        {
+            var medicines = await medicineService.GetMedicinesByUserId(userId);
+            if (!medicines.Any())
+            {
+                await _botClient.SendMessage(chatId, "У вас нет добавленных лекарств.", cancellationToken: cancellationToken);
+                return;
+            }
+
+            var buttons = medicines.Select(m => new[] { InlineKeyboardButton.WithCallbackData(text: m.Name, callbackData: $"history_medicine_{m.Id}") }).ToList();
+            var inlineKeyboard = new InlineKeyboardMarkup(buttons);
+
+            await _botClient.SendMessage(chatId, "Выберите лекарство для просмотра истории:", replyMarkup: inlineKeyboard, cancellationToken: cancellationToken);
+        }
+        
+        private async Task SendCourseSelectionForHistory(long chatId, Guid userId, ICourseService courseService, CancellationToken cancellationToken)
+        {
+            var courses = await courseService.GetAllCoursesForUserAsync(userId);
+            if (!courses.Any())
+            {
+                await _botClient.SendMessage(chatId, "У вас нет созданных курсов.", cancellationToken: cancellationToken);
+                return;
+            }
+
+            var buttons = courses.Select(c => new[] { InlineKeyboardButton.WithCallbackData(text: c.Name, callbackData: $"history_course_{c.Id}") }).ToList();
+            var inlineKeyboard = new InlineKeyboardMarkup(buttons);
+
+            await _botClient.SendMessage(chatId, "Выберите курс для просмотра истории:", replyMarkup: inlineKeyboard, cancellationToken: cancellationToken);
+        }
+
+        private async Task SendActionLogs(long chatId, Guid userId, string entityType, Guid entityId, IActionLogService actionLogService, CancellationToken cancellationToken)
+        {
+            var logs = await actionLogService.GetRelatedEntityLogsAsync(entityId, entityType, userId);
+
+            if (!logs.Any())
+            {
+                await _botClient.SendMessage(chatId, "История действий для этого элемента пуста.", cancellationToken: cancellationToken);
+                return;
+            }
+            
+            var messageBuilder = new StringBuilder("История действий:\n");
+            foreach (var log in logs.OrderByDescending(l => l.Timestamp))
+            {
+                var localTime = TimeZoneInfo.ConvertTimeFromUtc(log.Timestamp, TimeZoneInfo.Local);
+                messageBuilder.AppendLine($"`{localTime:dd.MM.yyyy HH:mm}` - {log.Description}");
+            }
+
+            await _botClient.SendMessage(chatId, messageBuilder.ToString(), parseMode: ParseMode.Markdown, cancellationToken: cancellationToken);
         }
 
         private Task ErrorHandler(ITelegramBotClient client, Exception exception, CancellationToken cancellationToken)
