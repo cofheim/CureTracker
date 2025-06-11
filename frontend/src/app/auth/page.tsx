@@ -160,7 +160,7 @@ const AuthPage: React.FC = () => {
             option?.children?.toString().toLowerCase().includes(input.toLowerCase()) ?? false
           }
         >
-          {countries.map(country => (
+          {countries.map((country: { code: string, name: string }) => (
             <Option key={country.code} value={country.code}>
               {country.name}
             </Option>

@@ -31,7 +31,7 @@ import { useTheme } from '../../lib/ThemeContext';
 import axios from 'axios';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import countryList from 'country-list'; 
-import Head from 'next/head'; 
+import Head from 'next/head';
 
 const { Title, Text } = Typography;
 const { Option } = Select; 
@@ -267,22 +267,26 @@ const ProfilePage: React.FC = () => {
                   <Form.Item name="email" label={<Text style={{color: textColor}}>Email</Text>} rules={[{ required: true, message: 'Пожалуйста, введите ваш Email!' }, { type: 'email', message: 'Введите корректный Email!' }]}>
                     <Input prefix={<MailOutlined />} />
                   </Form.Item>
-                  <Form.Item name="countryCode" label={<Text style={{color: textColor}}>Страна</Text>} rules={[{ required: true, message: 'Пожалуйста, выберите вашу страну!' }]}>
-                    <Select
-                      showSearch
-                      placeholder="Выберите страну"
-                      optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        (option?.children?.toString() ?? '').toLowerCase().includes(input.toLowerCase())
-                      }
+                  <Form.Item
+                      name="countryCode"
+                      label={<Text style={{ color: textColor }}>Страна</Text>}
                     >
-                      {countries.map(country => (
-                        <Option key={country.code} value={country.code}>
-                          {country.name}
-                        </Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
+                      <Select
+                        showSearch
+                        placeholder="Выберите страну"
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          option?.children?.toString().toLowerCase().includes(input.toLowerCase()) ?? false
+                        }
+                        style={{ width: '100%' }}
+                      >
+                        {countries.map((country: { code: string, name: string }) => (
+                          <Option key={country.code} value={country.code}>
+                            {country.name}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
                   <Form.Item>
                     <Space>
                       <Button type="primary" htmlType="submit" loading={isSubmitting} icon={<SaveOutlined />}>
@@ -316,7 +320,7 @@ const ProfilePage: React.FC = () => {
                   </Row>
                   <Row gutter={[16,16]} style={{ marginBottom: '20px' }}>
                     <Col span={8}><Text strong style={{color: textColor}}>Страна:</Text></Col>
-                    <Col span={16}><Text style={{color: textColor}}>{profile?.countryCode ? countries.find(c => c.code === profile.countryCode)?.name : 'Не указана'}</Text></Col>
+                    <Col span={16}><Text style={{color: textColor}}>{profile?.countryCode ? countries.find((c: { code: string, name: string }) => c.code === profile.countryCode)?.name : 'Не указана'}</Text></Col>
                   </Row>
                   <Row gutter={[16,16]} style={{ marginBottom: '20px' }}>
                     <Col span={8}><Text strong style={{color: textColor}}>Часовой пояс:</Text></Col>
