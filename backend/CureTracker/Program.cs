@@ -35,12 +35,13 @@ services.AddScoped<ICourseService, CourseService>();
 services.AddScoped<IIntakeService, IntakeService>();
 services.AddScoped<IActionLogService, ActionLogService>();
 
-services.AddScoped<TelegramNotificationService>();
+services.AddSingleton<TelegramNotificationService>();
 
 services.AddApplicationServices();
 
 services.AddHostedService<CourseStatusUpdateService>();
 services.AddHostedService<IntakeReminderService>();
+services.AddHostedService<TelegramBotHostedService>();
 
 services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
 services.AddApiAuthentification(builder.Configuration, services.BuildServiceProvider().GetRequiredService<Microsoft.Extensions.Options.IOptions<JwtOptions>>());

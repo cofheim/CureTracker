@@ -23,11 +23,6 @@ namespace CureTracker.TelegramBot
         {
             _logger.LogInformation("Служба напоминаний о приеме лекарств запущена");
 
-            using var scope = _serviceProvider.CreateScope();
-            var telegramService = scope.ServiceProvider.GetRequiredService<TelegramNotificationService>();
-            
-            Task.Run(() => telegramService.StartReceivingUpdatesAsync(stoppingToken), stoppingToken);
-
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
