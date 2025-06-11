@@ -3,6 +3,11 @@ services:
   postgres:
     image: postgres:15-alpine
     restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -15,6 +20,11 @@ services:
   backend:
     build: ./backend
     restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     #  ports:
     #    - "8081:8080"
     environment:
@@ -28,6 +38,11 @@ services:
   frontend:
     build: ./frontend
     restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     #  ports:
     #    - "3000:3000"
     environment:
@@ -38,6 +53,11 @@ services:
   nginx:
     image: nginx:latest
     restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./certbot/conf:/etc/letsencrypt
@@ -52,6 +72,11 @@ services:
   certbot:
     image: certbot/certbot
     container_name: curetracker_certbot
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
