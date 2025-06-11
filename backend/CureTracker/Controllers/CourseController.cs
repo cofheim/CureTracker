@@ -264,7 +264,7 @@ namespace CureTracker.Controllers
                 course.Name,
                 course.Description,
                 course.TimesADay,
-                course.TimesOfTaking.Select(t => TimeZoneInfo.ConvertTimeFromUtc(t, userTimeZone)).ToList(),
+                course.TimesOfTaking,
                 course.StartDate,
                 course.EndDate,
                 course.Status.ToString(),
