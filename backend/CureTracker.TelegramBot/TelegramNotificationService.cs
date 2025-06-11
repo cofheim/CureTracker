@@ -97,75 +97,89 @@ namespace CureTracker.TelegramBot
 
                 var user = await userService.GetUserByTelegramId(chatId);
 
-                if (text.StartsWith("/start"))
+                if (user != null)
                 {
-                    if (user != null)
+                    // Authenticated User Logic
+                    if (text.StartsWith("/start"))
                     {
                         await SendMainMenu(chatId, $"Добро пожаловать, {user.Name}! Чем я могу помочь?", cancellationToken);
                     }
                     else
                     {
-                        await _botClient.SendMessage(chatId, "Добро пожаловать в CureTracker Bot! Пожалуйста, введите код связи, который вы получили в приложении CureTracker.", cancellationToken: cancellationToken);
+                        switch (text)
+                        {
+                            case "💊 Лекарства":
+                                await SendMedicinesList(chatId, user.Id, medicineService, cancellationToken);
+                                break;
+                            case "Приёмы на сегодня":
+                                await SendTodayIntakes(chatId, user.Id, intakeService, courseService, cancellationToken);
+                                break;
+                            case "❓ Помощь":
+                                await SendHelpMessage(chatId, cancellationToken);
+                                break;
+                            default:
+                                await _botClient.SendMessage(chatId, "Неизвестная команда. Пожалуйста, используйте меню.", cancellationToken: cancellationToken);
+                                break;
+                        }
                     }
                 }
-                else if (user == null)
+                else
                 {
-                    var code = text.Trim();
-                    var userByCode = await userService.GetUserByConnectionCodeAsync(code);
-                    if (userByCode != null)
+                    // Unauthenticated User Logic
+                    if (text.StartsWith("/start"))
                     {
-                        try
+                        var inlineKeyboard = new InlineKeyboardMarkup(new[]
                         {
-                            await userService.UpdateUserTelegramId(userByCode.Id, chatId);
-                            await _botClient.SendMessage(
-                                chatId: chatId,
-                                text: "Ваш аккаунт успешно связан с CureTracker! Теперь вы будете получать напоминания о приеме лекарств.",
-                                cancellationToken: cancellationToken);
-                            await SendMainMenu(chatId, "Чем я могу помочь?", cancellationToken);
-                            _logger.LogInformation($"Аккаунт пользователя {userByCode.Id} связан с Telegram ID {chatId}");
-                        }
-                        catch (Core.Exceptions.TelegramIdAlreadyLinkedException ex)
-                        {
-                            _logger.LogWarning(ex, $"Попытка привязать уже связанный Telegram ID {chatId} к пользователю {userByCode.Id}");
-                            await _botClient.SendMessage(
-                                chatId: chatId,
-                                text: "Этот Telegram-аккаунт уже привязан к другому пользователю в системе. Если вы хотите привязать его к текущему аккаунту CureTracker, сначала отвяжите его от предыдущего в настройках того аккаунта или обратитесь в поддержку.",
-                                cancellationToken: cancellationToken);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, $"Ошибка при обновлении Telegram ID для пользователя {userByCode.Id}");
-                            await _botClient.SendMessage(
-                                chatId: chatId,
-                                text: "Произошла ошибка при попытке связать ваш аккаунт. Пожалуйста, попробуйте позже или обратитесь в поддержку.",
-                                cancellationToken: cancellationToken);
-                        }
+                            InlineKeyboardButton.WithCallbackData(text: "Как привязать аккаунт?", callbackData: "how_to_link")
+                        });
+                        await _botClient.SendMessage(chatId, "Добро пожаловать в CureTracker Bot! Пожалуйста, привяжите ваш аккаунт, чтобы начать.", replyMarkup: inlineKeyboard, cancellationToken: cancellationToken);
+                    }
+                    else if (text == "❓ Помощь")
+                    {
+                        await SendHelpMessage(chatId, cancellationToken);
+                    }
+                    else if (text == "💊 Лекарства" || text == "Приёмы на сегодня")
+                    {
+                         await _botClient.SendMessage(chatId, "Сначала привяжите ваш аккаунт. Нажмите /start, чтобы получить инструкцию.", cancellationToken: cancellationToken);
                     }
                     else
                     {
-                        await _botClient.SendMessage(chatId, "Неверный код. Пожалуйста, проверьте код в приложении CureTracker и попробуйте снова.", cancellationToken: cancellationToken);
-                    }
-                }
-                else // User is authenticated, process menu commands
-                {
-                    switch (text)
-                    {
-                        case "💊 Лекарства":
-                            await SendMedicinesList(chatId, user.Id, medicineService, cancellationToken);
-                            break;
-                        case "Приёмы на сегодня":
-                            await SendTodayIntakes(chatId, user.Id, intakeService, courseService, cancellationToken);
-                            break;
-                        case "❓ Помощь":
-                            await SendHelpMessage(chatId, cancellationToken);
-                            break;
-                        case "🗑️ Очистить чат":
-                            await _botClient.SendMessage(chatId, "История очищена.", replyMarkup: new ReplyKeyboardRemove(), cancellationToken: cancellationToken);
-                            await SendMainMenu(chatId, "Чем я могу помочь?", cancellationToken);
-                            break;
-                        default:
-                            await _botClient.SendMessage(chatId, "Неизвестная команда. Пожалуйста, используйте меню.", cancellationToken: cancellationToken);
-                            break;
+                        // Assume it's a connection code
+                        var code = text.Trim();
+                        var userByCode = await userService.GetUserByConnectionCodeAsync(code);
+                        if (userByCode != null)
+                        {
+                            try
+                            {
+                                await userService.UpdateUserTelegramId(userByCode.Id, chatId);
+                                await _botClient.SendMessage(
+                                    chatId: chatId,
+                                    text: "Ваш аккаунт успешно связан с CureTracker!",
+                                    cancellationToken: cancellationToken);
+                                await SendMainMenu(chatId, "Чем я могу помочь?", cancellationToken);
+                                _logger.LogInformation($"Аккаунт пользователя {userByCode.Id} связан с Telegram ID {chatId}");
+                            }
+                            catch (Core.Exceptions.TelegramIdAlreadyLinkedException ex)
+                            {
+                                _logger.LogWarning(ex, $"Попытка привязать уже связанный Telegram ID {chatId} к пользователю {userByCode.Id}");
+                                await _botClient.SendMessage(
+                                    chatId: chatId,
+                                    text: "Этот Telegram-аккаунт уже привязан к другому пользователю.",
+                                    cancellationToken: cancellationToken);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, $"Ошибка при обновлении Telegram ID для пользователя {userByCode.Id}");
+                                await _botClient.SendMessage(
+                                    chatId: chatId,
+                                    text: "Произошла ошибка при попытке связать ваш аккаунт.",
+                                    cancellationToken: cancellationToken);
+                            }
+                        }
+                        else
+                        {
+                            await _botClient.SendMessage(chatId, "Неверный код. Пожалуйста, проверьте код и попробуйте снова, или нажмите /start для помощи.", cancellationToken: cancellationToken);
+                        }
                     }
                 }
             }
@@ -177,6 +191,13 @@ namespace CureTracker.TelegramBot
 
                 _logger.LogInformation($"Получен CallbackQuery от {chatId} с данными: {callbackData}");
 
+                if (callbackData == "how_to_link")
+                {
+                    await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
+                    await SendLinkingInstructions(chatId, cancellationToken);
+                    return;
+                }
+                
                 if (string.IsNullOrEmpty(callbackData))
                 {
                     await _botClient.AnswerCallbackQuery(callbackQuery.Id, "Ошибка: Пустые данные обратного вызова.", cancellationToken: cancellationToken);
@@ -271,7 +292,7 @@ namespace CureTracker.TelegramBot
             var replyKeyboardMarkup = new ReplyKeyboardMarkup(new[]
             {
                 new KeyboardButton[] { "Приёмы на сегодня", "💊 Лекарства" },
-                new KeyboardButton[] { "❓ Помощь", "🗑️ Очистить чат" }
+                new KeyboardButton[] { "❓ Помощь" }
             })
             {
                 ResizeKeyboard = true
@@ -336,14 +357,28 @@ namespace CureTracker.TelegramBot
             }
         }
 
+        private string GetLinkingInstructionsText()
+        {
+            return "✨ *Как привязать аккаунт?*\n\n" +
+                   "1. Зайдите на сайт CureTracker в ваш профиль.\n" +
+                   "2. Найдите раздел 'Подключение Telegram' и нажмите 'Получить код для подключения'.\n" +
+                   "3. Вы получите уникальный код.\n" +
+                   "4. Отправьте этот код мне прямо в этот чат.";
+        }
+
+        private async Task SendLinkingInstructions(long chatId, CancellationToken cancellationToken)
+        {
+            await _botClient.SendMessage(chatId, GetLinkingInstructionsText(), parseMode: ParseMode.Markdown, cancellationToken: cancellationToken);
+        }
+
         private async Task SendHelpMessage(long chatId, CancellationToken cancellationToken)
         {
             var helpText = "CureTracker - это приложение для контроля за приёмом лекарств.\n\n" +
                            "Используйте кнопки меню для взаимодействия с ботом:\n" +
                            "💊 *Лекарства* - просмотр списка ваших лекарств.\n" +
-                           "*Приёмы на сегодня* - просмотр приёмов на сегодня.\n" +
-                           "🗑️ *Очистить чат* - сброс диалога.\n\n" +
-                           "Уведомления о приёмах будут приходить автоматически.";
+                           "*Приёмы на сегодня* - просмотр приёмов на сегодня.\n\n" +
+                           GetLinkingInstructionsText() + "\n\n" +
+                           "Уведомления о приёмах будут приходить автоматически после привязки аккаунта.";
             await _botClient.SendMessage(chatId, helpText, parseMode: ParseMode.Markdown, cancellationToken: cancellationToken);
         }
 
