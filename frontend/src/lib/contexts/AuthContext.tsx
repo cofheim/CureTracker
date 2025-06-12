@@ -49,7 +49,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const refetchUser = async () => {
     console.log('[AuthContext] Attempting to refetch user details...');
     try {
-      const response = await axios.get(`${API_BASE_URL}/user/me`, { withCredentials: true });
+      const response = await axios.get(`${API_BASE_URL}/User/me`, { withCredentials: true });
       console.log('[AuthContext] Fetched user details:', response.data);
       setUser(response.data);
     } catch (error) {
@@ -69,7 +69,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     console.log('[AuthContext] Attempting login for email:', email);
     try {
-      await axios.post(`${API_BASE_URL}/user/login`, { email, password }, { withCredentials: true });
+      await axios.post(`${API_BASE_URL}/User/login`, { email, password }, { withCredentials: true });
       console.log('[AuthContext] Login successful. Server has set HttpOnly cookie.');
       await refetchUser();
       console.log('[AuthContext] Navigating to /profile after login.');
@@ -83,7 +83,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     console.log('[AuthContext] Attempting logout.');
     try {
-      await axios.post(`${API_BASE_URL}/user/logout`, {}, { withCredentials: true });
+      await axios.post(`${API_BASE_URL}/User/logout`, {}, { withCredentials: true });
       console.log('[AuthContext] Logout request sent. Server has cleared HttpOnly cookie.');
       setUser(null);
       console.log('[AuthContext] User state set to null. Navigating to /auth.');
@@ -97,7 +97,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (name: string, email: string, password: string) => {
     console.log('[AuthContext] Attempting registration for email:', email);
     try {
-      await axios.post(`${API_BASE_URL}/user/register`, { userName: name, email, password });
+      await axios.post(`${API_BASE_URL}/User/register`, { userName: name, email, password }, { withCredentials: true });
       console.log('[AuthContext] Registration successful. Proceeding to login.');
       await login(email, password);
     } catch (error) {

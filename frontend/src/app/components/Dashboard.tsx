@@ -71,7 +71,7 @@ const Dashboard: React.FC = () => {
 
   const fetchTodayIntakes = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/Intakes/today`, {
+      const response = await fetch(`${API_BASE_URL}/Intakes/today`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -92,7 +92,7 @@ const Dashboard: React.FC = () => {
 
   const fetchActiveCourses = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/Courses/active`, {
+      const response = await fetch(`${API_BASE_URL}/Courses/active`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ const Dashboard: React.FC = () => {
 
   const handleMarkAsTaken = async (intakeId: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/Intakes/${intakeId}/take`, {
+      const response = await fetch(`${API_BASE_URL}/Intakes/${intakeId}/take`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -132,7 +132,7 @@ const Dashboard: React.FC = () => {
 
   const handleMarkAsSkipped = async (intakeId: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/Intakes/${intakeId}/skip`, {
+      const response = await fetch(`${API_BASE_URL}/Intakes/${intakeId}/skip`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
