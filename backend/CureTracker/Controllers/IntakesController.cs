@@ -8,7 +8,7 @@ using System.Security.Claims;
 namespace CureTracker.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [Authorize]
     public class IntakesController : ControllerBase
     {
