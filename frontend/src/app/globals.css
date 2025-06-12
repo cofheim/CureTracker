@@ -335,3 +335,25 @@ body[data-theme='dark'] .ant-tooltip-inner {
   justify-content: center;
   box-shadow: var(--shadow);
 }
+
+.theme-dark {
+  background-color: #141414;
+  color: #fff;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  h1, .ant-typography {
+    font-size: 24px !important;
+    word-break: break-word; /* Prevents long words from overflowing */
+    white-space: normal !important; /* Allows text to wrap */
+  }
+
+  h2, .ant-typography {
+    font-size: 20px !important;
+  }
+
+  h3, .ant-typography {
+    font-size: 16px !important;
+  }
+}
