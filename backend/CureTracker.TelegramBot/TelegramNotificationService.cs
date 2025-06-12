@@ -48,11 +48,11 @@ namespace CureTracker.TelegramBot
                 });
 
                 await _botClient.SendMessage(
-                    chatId: chatId,
-                    text: message,
+                    chatId: chatId, 
+                    text: message, 
                     replyMarkup: inlineKeyboard,
                     cancellationToken: default);
-
+                
                 _logger.LogInformation($"Уведомление с кнопками для intakeId {intakeId} успешно отправлено пользователю с ID {chatId}");
             }
             catch (Exception ex)
@@ -66,7 +66,7 @@ namespace CureTracker.TelegramBot
             _logger.LogInformation("Запуск получения обновлений от Telegram (StartReceiving)");
             var receiverOptions = new ReceiverOptions
             {
-                AllowedUpdates = Array.Empty<UpdateType>()
+                AllowedUpdates = Array.Empty<UpdateType>() 
             };
             _botClient.StartReceiving(
                 updateHandler: UpdateHandler,
@@ -155,32 +155,32 @@ namespace CureTracker.TelegramBot
                             try
                             {
                                 await userService.UpdateUserTelegramId(userByCode.Id, chatId);
-                                await _botClient.SendMessage(
-                                    chatId: chatId,
+                            await _botClient.SendMessage(
+                                chatId: chatId,
                                     text: "Ваш аккаунт успешно связан с CureTracker!",
-                                    cancellationToken: cancellationToken);
+                                cancellationToken: cancellationToken);
                                 await SendMainMenu(chatId, "Чем я могу помочь?", cancellationToken);
                                 _logger.LogInformation($"Аккаунт пользователя {userByCode.Id} связан с Telegram ID {chatId}");
-                            }
-                            catch (Core.Exceptions.TelegramIdAlreadyLinkedException ex)
-                            {
-                                _logger.LogWarning(ex, $"Попытка привязать уже связанный Telegram ID {chatId} к пользователю {userByCode.Id}");
-                                await _botClient.SendMessage(
-                                    chatId: chatId,
-                                    text: "Этот Telegram-аккаунт уже привязан к другому пользователю.",
-                                    cancellationToken: cancellationToken);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, $"Ошибка при обновлении Telegram ID для пользователя {userByCode.Id}");
-                                await _botClient.SendMessage(
-                                    chatId: chatId,
-                                    text: "Произошла ошибка при попытке связать ваш аккаунт.",
-                                    cancellationToken: cancellationToken);
-                            }
                         }
-                        else
+                        catch (Core.Exceptions.TelegramIdAlreadyLinkedException ex)
                         {
+                                _logger.LogWarning(ex, $"Попытка привязать уже связанный Telegram ID {chatId} к пользователю {userByCode.Id}");
+                            await _botClient.SendMessage(
+                                chatId: chatId,
+                                    text: "Этот Telegram-аккаунт уже привязан к другому пользователю.",
+                                cancellationToken: cancellationToken);
+                        }
+                        catch (Exception ex)
+                        {
+                                _logger.LogError(ex, $"Ошибка при обновлении Telegram ID для пользователя {userByCode.Id}");
+                            await _botClient.SendMessage(
+                                chatId: chatId,
+                                    text: "Произошла ошибка при попытке связать ваш аккаунт.",
+                                cancellationToken: cancellationToken);
+                        }
+                    }
+                    else
+                    {
                             await _botClient.SendMessage(chatId, "Неверный код. Пожалуйста, проверьте код и попробуйте снова, или нажмите /start для помощи.", cancellationToken: cancellationToken);
                         }
                     }
@@ -207,7 +207,7 @@ namespace CureTracker.TelegramBot
                     }
                     return;
                 }
-                
+
                 _logger.LogInformation($"Получен CallbackQuery от {chatId} с данными: {callbackData}");
 
                 if (callbackData == "history_by_medicine")
@@ -237,16 +237,16 @@ namespace CureTracker.TelegramBot
                     var courseId = Guid.Parse(callbackData.Split('_')[2]);
                     await SendActionLogs(chatId, user, "course", courseId, actionLogService, cancellationToken);
                     await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
-                    return;
-                }
+                        return;
+                    }
 
                 if (callbackData == "how_to_link")
-                {
+                    {
                     await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
                     await SendLinkingInstructions(chatId, cancellationToken);
-                    return;
-                }
-                
+                        return;
+                    }
+                    
                 if (callbackData.StartsWith("intake_taken_"))
                 {
                     var intakeIdStr = callbackData.Split('_').Last();
@@ -351,8 +351,8 @@ namespace CureTracker.TelegramBot
                 }
 
                 await _botClient.SendMessage(chatId, sb.ToString(), ParseMode.Markdown, cancellationToken: cancellationToken);
-            }
-            catch (Exception ex)
+                }
+                catch (Exception ex)
             {
                 _logger.LogError(ex, $"Ошибка при получении приёмов для пользователя {user.Id}");
                 await _botClient.SendMessage(chatId, "Произошла ошибка при получении приёмов. Пожалуйста, попробуйте позже.", cancellationToken: cancellationToken);
@@ -474,4 +474,4 @@ namespace CureTracker.TelegramBot
             return Task.CompletedTask;
         }
     }
-}
+} 

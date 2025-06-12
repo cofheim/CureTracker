@@ -31,7 +31,7 @@ import { useTheme } from '../../lib/ThemeContext';
 import axios from 'axios';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import countryList from 'country-list'; 
-import Head from 'next/head';
+import Head from 'next/head'; 
 
 const { Title, Text } = Typography;
 const { Option } = Select; 
@@ -271,22 +271,22 @@ const ProfilePage: React.FC = () => {
                       name="countryCode"
                       label={<Text style={{ color: textColor }}>Страна</Text>}
                     >
-                      <Select
-                        showSearch
-                        placeholder="Выберите страну"
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
+                    <Select
+                      showSearch
+                      placeholder="Выберите страну"
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
                           option?.children?.toString().toLowerCase().includes(input.toLowerCase()) ?? false
-                        }
+                      }
                         style={{ width: '100%' }}
-                      >
+                    >
                         {countries.map((country: { code: string, name: string }) => (
-                          <Option key={country.code} value={country.code}>
-                            {country.name}
-                          </Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
+                        <Option key={country.code} value={country.code}>
+                          {country.name}
+                        </Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
                   <Form.Item>
                     <Space>
                       <Button type="primary" htmlType="submit" loading={isSubmitting} icon={<SaveOutlined />}>

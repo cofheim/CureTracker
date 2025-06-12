@@ -36,7 +36,10 @@ services:
       - postgres
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://curetracker.ru/api
     restart: always
     logging:
       driver: "json-file"
@@ -45,8 +48,6 @@ services:
         max-file: "3"
     #  ports:
     #    - "3000:3000"
-    environment:
-      NEXT_PUBLIC_API_BASE_URL: http://curetracker.ru
     depends_on:
       - backend
 
