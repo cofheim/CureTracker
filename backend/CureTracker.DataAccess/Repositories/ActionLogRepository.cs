@@ -135,6 +135,19 @@ namespace CureTracker.DataAccess.Repositories
             }
         }
 
+        public async Task DeleteLogsOlderThanAsync(DateTime cutoffDate)
+        {
+            var logsToDelete = await _context.ActionLogs
+                .Where(log => log.Timestamp < cutoffDate)
+                .ToListAsync();
+
+            if (logsToDelete.Any())
+            {
+                _context.ActionLogs.RemoveRange(logsToDelete);
+                await _context.SaveChangesAsync();
+            }
+        }
+
         private ActionLog MapToDomainModel(ActionLogEntity entity)
         {
             var actionLog = new ActionLog(

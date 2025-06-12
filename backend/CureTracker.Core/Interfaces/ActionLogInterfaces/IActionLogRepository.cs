@@ -11,5 +11,6 @@ namespace CureTracker.Core.Interfaces
         Task<bool> DeleteByCourseIdAsync(Guid courseId);
         Task DeleteByMedicineIdAsync(Guid medicineId);
         Task ClearIntakeReferencesAsync(Guid intakeId);
+        Task DeleteLogsOlderThanAsync(DateTime cutoffDate);
     }
 }

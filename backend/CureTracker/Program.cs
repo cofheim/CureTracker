@@ -42,6 +42,7 @@ services.AddApplicationServices();
 services.AddHostedService<CourseStatusUpdateService>();
 services.AddHostedService<IntakeReminderService>();
 services.AddHostedService<TelegramBotHostedService>();
+services.AddHostedService<ActionLogCleanupService>();
 
 services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
 services.AddApiAuthentification(builder.Configuration, services.BuildServiceProvider().GetRequiredService<Microsoft.Extensions.Options.IOptions<JwtOptions>>());
