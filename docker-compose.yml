@@ -39,7 +39,7 @@ services:
     build:
       context: ./frontend
       args:
-        NEXT_PUBLIC_API_BASE_URL: http://curetracker.ru/api
+        NEXT_PUBLIC_API_BASE_URL: https://curetracker.ru/api
     restart: always
     logging:
       driver: "json-file"
