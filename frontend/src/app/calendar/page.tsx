@@ -176,25 +176,20 @@ const CalendarPage: React.FC = () => {
   };
   
   const onSelect = (date: Dayjs) => {
+    if (mode === 'year') {
+      setMode('month');
+    }
     setCurrentDate(date);
   };
   
   const headerRender: CalendarProps<Dayjs>['headerRender'] = ({ value, type, onChange, onTypeChange }) => {
-    const start = 0;
-    const end = 12;
     const monthOptions = [];
 
-    const current = value.clone();
-    const localeData = value.localeData();
-    const months = [];
-    for (let i = 0; i < 12; i++) {
-      current.month(i);
-      months.push(localeData.monthsShort(current));
-    }
+    const months = dayjs.localeData().months();
 
-    for (let i = start; i < end; i++) {
+    for (let i = 0; i < 12; i++) {
       monthOptions.push(
-        <Select.Option key={i} value={i} className="month-item">
+        <Select.Option key={i} value={i} className="month-item" style={{ textTransform: 'capitalize' }}>
           {months[i]}
         </Select.Option>,
       );
