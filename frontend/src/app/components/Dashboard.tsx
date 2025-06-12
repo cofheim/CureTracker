@@ -82,6 +82,8 @@ const Dashboard: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         setTodayIntakes(data);
+      } else if (response.status === 404) {
+        setTodayIntakes([]);
       }
     } catch (error) {
       console.error('Error fetching today intakes:', error);
