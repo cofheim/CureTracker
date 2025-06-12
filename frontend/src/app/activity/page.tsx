@@ -196,7 +196,7 @@ const ActivityPage: React.FC = () => {
     {
       title: 'Связанная сущность',
       key: 'entity',
-      render: (log: ActionLog) => getEntityTag(log),
+      render: (_: any, record: ActionLog) => getEntityTag(record),
       filters: [
         { text: 'Лекарства', value: 'medicine' },
         { text: 'Курсы', value: 'course' },
