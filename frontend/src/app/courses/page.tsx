@@ -8,7 +8,6 @@ import { API_BASE_URL } from '../../lib/apiConfig';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useTheme } from '../../lib/ThemeContext';
-import ThemeWrapper from '../components/ThemeWrapper';
 import ResponsiveTable from '../components/ResponsiveTable';
 import { usePageTitle } from '../../lib/contexts/PageTitleContext';
 
@@ -739,10 +738,4 @@ const CoursesPage: React.FC = () => {
   );
 };
 
-export default function CoursesPageWithTheme() {
-  return (
-    <ThemeWrapper>
-      <CoursesPage />
-    </ThemeWrapper>
-  );
-} 
+export default CoursesPage; 

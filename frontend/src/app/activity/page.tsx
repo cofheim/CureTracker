@@ -8,7 +8,6 @@ import { API_BASE_URL } from '../../lib/apiConfig';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import { useTheme } from '../../lib/ThemeContext';
-import ThemeWrapper from '../components/ThemeWrapper';
 import ResponsiveTable from '../components/ResponsiveTable';
 import { usePageTitle } from '../../lib/contexts/PageTitleContext';
 
@@ -306,10 +305,4 @@ const ActivityPage: React.FC = () => {
   );
 };
 
-export default function ActivityPageWithTheme() {
-  return (
-    <ThemeWrapper>
-      <ActivityPage />
-    </ThemeWrapper>
-  );
-} 
+export default ActivityPage; 

@@ -11,7 +11,6 @@ import utc from 'dayjs/plugin/utc';
 import { API_BASE_URL } from '../../lib/apiConfig';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '../../lib/ThemeContext';
-import ThemeWrapper from '../components/ThemeWrapper';
 import { CheckCircleOutlined, CloseCircleOutlined, MedicineBoxOutlined } from '@ant-design/icons';
 import { usePageTitle } from '../../lib/contexts/PageTitleContext';
 import ruRU from 'antd/es/locale/ru_RU';
@@ -347,10 +346,4 @@ const CalendarPage: React.FC = () => {
   );
 };
 
-export default function CalendarPageWithTheme() {
-  return (
-    <ThemeWrapper>
-      <CalendarPage />
-    </ThemeWrapper>
-  );
-} 
+export default CalendarPage; 

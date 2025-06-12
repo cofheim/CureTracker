@@ -205,16 +205,25 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 };
 
-const RootLayoutContent: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const AppWithTheme: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { theme } = useTheme();
+
   return (
     <ConfigProvider
       theme={{
-        algorithm: antdTheme.darkAlgorithm, // Will be overridden by ThemeProvider
+        algorithm: theme === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+        token: {
+          colorPrimary: theme === 'dark' ? '#177ddc' : '#1890ff',
+        },
       }}
       locale={ru_RU}
     >
       <App>
-        <AppLayout>{children}</AppLayout>
+        <PageTitleProvider>
+          <AppLayout>
+            {children}
+          </AppLayout>
+        </PageTitleProvider>
       </App>
     </ConfigProvider>
   );
@@ -236,11 +245,9 @@ export default function RootLayout({
         <AuthProvider>
           <AntdRegistry>
             <ThemeProvider>
-              <PageTitleProvider>
-                <RootLayoutContent>
-                  {children}
-                </RootLayoutContent>
-              </PageTitleProvider>
+              <AppWithTheme>
+                {children}
+              </AppWithTheme>
             </ThemeProvider>
           </AntdRegistry>
         </AuthProvider>
