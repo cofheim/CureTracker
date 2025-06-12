@@ -57,10 +57,12 @@ const ResponsiveTable = <T extends object>({
 
                                         // Avoid rendering empty/nullish action columns
                                         if (value === null || value === undefined) return null;
+                                        
+                                        const isActionRow = col.key === 'actions';
 
                                         return (
-                                            <div key={col.key?.toString() || (dataIndex as string)} className={styles.cardRow}>
-                                                <strong>{col.title as React.ReactNode}:</strong>
+                                            <div key={col.key?.toString() || (dataIndex as string)} className={`${styles.cardRow} ${isActionRow ? styles.actionRow : ''}`}>
+                                                {!isActionRow && <strong>{col.title as React.ReactNode}:</strong>}
                                                 <span>{value as React.ReactNode}</span>
                                             </div>
                                         );
