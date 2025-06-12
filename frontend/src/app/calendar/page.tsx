@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { Calendar, Badge, Spin, Typography, Row, Col, Select, Button, App, Tooltip, Popconfirm } from 'antd';
-import type { BadgeProps } from 'antd';
+import type { BadgeProps, CalendarProps } from 'antd';
+import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
+import localeData from 'dayjs/plugin/localeData';
 import utc from 'dayjs/plugin/utc';
 import { API_BASE_URL } from '../../lib/apiConfig';
 import { useRouter } from 'next/navigation';
@@ -13,6 +15,7 @@ import ThemeWrapper from '../components/ThemeWrapper';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
 dayjs.locale('ru');
+dayjs.extend(localeData);
 dayjs.extend(utc);
 
 const { Title, Text } = Typography;
@@ -32,6 +35,7 @@ const CalendarPage: React.FC = () => {
   const [intakes, setIntakes] = useState<Intake[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentDate, setCurrentDate] = useState(dayjs());
+  const [mode, setMode] = useState<CalendarProps<Dayjs>['mode']>('month');
   const router = useRouter();
   const { message } = App.useApp();
   const { theme } = useTheme();
@@ -46,7 +50,7 @@ const CalendarPage: React.FC = () => {
     const endDate = dayjs.utc(date).endOf('month').toISOString();
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/Intakes/calendar/range?StartDate=${startDate}&EndDate=${endDate}`, {
+      const response = await fetch(`${API_BASE_URL}/intakes/calendar/range?StartDate=${startDate}&EndDate=${endDate}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -72,7 +76,7 @@ const CalendarPage: React.FC = () => {
 
   const handleMarkAsTaken = async (intakeId: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/Intakes/${intakeId}/take`, {
+      const response = await fetch(`${API_BASE_URL}/intakes/${intakeId}/take`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,7 +99,7 @@ const CalendarPage: React.FC = () => {
 
   const handleMarkAsSkipped = async (intakeId: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/Intakes/${intakeId}/skip`, {
+      const response = await fetch(`${API_BASE_URL}/intakes/${intakeId}/skip`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -162,26 +166,109 @@ const CalendarPage: React.FC = () => {
       </ul>
     );
   };
-  
-  const handlePanelChange = (date: dayjs.Dayjs, mode: string) => {
+
+  const handlePanelChange = (date: Dayjs, newMode: CalendarProps<Dayjs>['mode']) => {
     setCurrentDate(date);
-    if (mode === 'month') {
+    setMode(newMode);
+    if (newMode === 'month') {
         fetchIntakesForMonth(date);
     }
   };
+  
+  const onSelect = (date: Dayjs) => {
+    setCurrentDate(date);
+  };
+  
+  const headerRender: CalendarProps<Dayjs>['headerRender'] = ({ value, type, onChange, onTypeChange }) => {
+    const start = 0;
+    const end = 12;
+    const monthOptions = [];
+
+    const current = value.clone();
+    const localeData = value.localeData();
+    const months = [];
+    for (let i = 0; i < 12; i++) {
+      current.month(i);
+      months.push(localeData.monthsShort(current));
+    }
+
+    for (let i = start; i < end; i++) {
+      monthOptions.push(
+        <Select.Option key={i} value={i} className="month-item">
+          {months[i]}
+        </Select.Option>,
+      );
+    }
+
+    const year = value.year();
+    const month = value.month();
+    const options = [];
+    for (let i = year - 10; i < year + 10; i += 1) {
+      options.push(
+        <Select.Option key={i} value={i} className="year-item">
+          {i}
+        </Select.Option>,
+      );
+    }
+    return (
+      <div style={{ padding: 8 }}>
+        <Row gutter={8} justify="end">
+          <Col>
+            <Select
+              size="small"
+              dropdownMatchSelectWidth={false}
+              className="my-year-select"
+              value={year}
+              onChange={(newYear) => {
+                const now = value.clone().year(newYear);
+                onChange(now);
+              }}
+            >
+              {options}
+            </Select>
+          </Col>
+          <Col>
+            <Select
+              size="small"
+              dropdownMatchSelectWidth={false}
+              value={month}
+              onChange={(newMonth) => {
+                const now = value.clone().month(newMonth);
+                onChange(now);
+              }}
+            >
+              {monthOptions}
+            </Select>
+          </Col>
+          <Col>
+            <Button.Group>
+              <Button size="small" onClick={() => onTypeChange('month')} className={type === 'month' ? 'ant-btn-primary' : ''}>Месяц</Button>
+              <Button size="small" onClick={() => onTypeChange('year')} className={type === 'year' ? 'ant-btn-primary' : ''}>Год</Button>
+            </Button.Group>
+          </Col>
+        </Row>
+      </div>
+    );
+  };
+
 
   const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f8ff';
+  const displayedMonth = currentDate.format('MMMM YYYY');
 
   return (
     <ThemeWrapper>
       <div style={{ padding: '20px', background: backgroundColor, minHeight: '100vh' }}>
-        <Title level={2} style={{ color: 'var(--primary-color)', marginBottom: '20px' }}>Календарь приемов</Title>
+        <Title level={2} style={{ color: 'var(--primary-color)', marginBottom: '0' }}>Календарь приемов</Title>
+        <Text type="secondary" style={{ textTransform: 'capitalize', marginBottom: '20px', display: 'block' }}>{displayedMonth}</Text>
         {loading && <div style={{ textAlign: 'center', padding: '50px' }}><Spin size="large" /></div>}
         {!loading && 
           <Calendar 
+            value={currentDate}
+            mode={mode}
             dateCellRender={dateCellRender} 
+            headerRender={headerRender}
             onPanelChange={handlePanelChange}
-            onSelect={(date) => setCurrentDate(date)}
+            onSelect={onSelect}
           />
         }
       </div>
