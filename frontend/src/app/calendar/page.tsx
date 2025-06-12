@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Badge, Spin, Typography, Row, Col, Select, Button, App, Tooltip, Popconfirm } from 'antd';
+import { Calendar, Badge, Spin, Typography, Row, Col, Select, Button, App, Tooltip, Popconfirm, List, Card, Space } from 'antd';
 import type { BadgeProps, CalendarProps } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
@@ -12,7 +12,8 @@ import { API_BASE_URL } from '../../lib/apiConfig';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '../../lib/ThemeContext';
 import ThemeWrapper from '../components/ThemeWrapper';
-import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, CloseCircleOutlined, MedicineBoxOutlined } from '@ant-design/icons';
+import { usePageTitle } from '../../lib/contexts/PageTitleContext';
 import ruRU from 'antd/es/locale/ru_RU';
 
 dayjs.locale('ru');
@@ -36,11 +37,17 @@ const CalendarPage: React.FC = () => {
   const [intakes, setIntakes] = useState<Intake[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentDate, setCurrentDate] = useState(dayjs());
+  const [selectedDate, setSelectedDate] = useState(dayjs());
   const [mode, setMode] = useState<CalendarProps<Dayjs>['mode']>('month');
   const router = useRouter();
   const { message } = App.useApp();
   const { theme } = useTheme();
   const [isMobile, setIsMobile] = useState(false);
+  const { setTitle } = usePageTitle();
+
+  useEffect(() => {
+    setTitle('Календарь приемов');
+  }, [setTitle]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -134,61 +141,52 @@ const CalendarPage: React.FC = () => {
     }
   };
 
-  const getListData = (value: dayjs.Dayjs) => {
-    return intakes.filter(intake => dayjs.utc(intake.scheduledTime).isSame(value, 'day'));
+  const getListDataForDate = (date: dayjs.Dayjs) => {
+    return intakes.filter(intake => dayjs.utc(intake.scheduledTime).isSame(date, 'day'));
   };
 
-  const dateCellRender = (value: dayjs.Dayjs) => {
-    const listData = getListData(value);
-    return (
-      <ul className="events" style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-        {listData.map((item) => (
-          <li key={item.id} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <Badge status={item.status as BadgeProps['status']} text={`${dayjs.utc(item.scheduledTime).format('HH:mm')} ${item.medicineName}`} />
-            </div>
-            {item.status === 'Scheduled' && (
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <Tooltip title="Принять">
-                  <Button
-                    type="text"
-                    shape="circle"
-                    icon={<CheckCircleOutlined style={{ color: 'green' }} />}
-                    onClick={() => handleMarkAsTaken(item.id)}
-                  />
-                </Tooltip>
-                <Tooltip title="Пропустить">
-                  <Popconfirm
-                    title="Вы уверены, что хотите пропустить этот прием?"
-                    onConfirm={() => handleMarkAsSkipped(item.id)}
-                    okText="Да"
-                    cancelText="Нет"
-                  >
-                    <Button
-                      type="text"
-                      danger
-                      shape="circle"
-                      icon={<CloseCircleOutlined />}
-                    />
-                  </Popconfirm>
-                </Tooltip>
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
-    );
-  };
+  const cellRender: CalendarProps<Dayjs>['cellRender'] = (current, info) => {
+    if (info.type === 'date') {
+      const listData = getListDataForDate(current);
+      const isSelected = selectedDate.isSame(current, 'day');
+      
+      const cellStyle: React.CSSProperties = {
+        border: isSelected ? `2px solid ${theme === 'dark' ? '#177ddc' : '#1890ff'}` : 'none',
+        borderRadius: '8px',
+        padding: '4px',
+        height: '100%',
+        transition: 'border 0.2s',
+      };
 
+      return (
+        <div style={cellStyle}>
+          {listData.length > 0 ? (
+            <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+              {listData.map((item) => (
+                <li key={item.id}>
+                  <Badge status={item.status as BadgeProps['status']} text={isMobile ? '' : item.medicineName} />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div style={{opacity: 0.5}}>{current.date()}</div>
+          )}
+        </div>
+      );
+    }
+    return info.originNode;
+  };
+  
   const handlePanelChange = (date: Dayjs, newMode: CalendarProps<Dayjs>['mode']) => {
-    setCurrentDate(date);
-    setMode(newMode);
+    setSelectedDate(date);
     if (newMode === 'month') {
         fetchIntakesForMonth(date);
     }
+    setCurrentDate(date);
   };
   
   const onSelect = (date: Dayjs) => {
+    setSelectedDate(date);
     if (mode === 'year') {
       setMode('month');
     }
@@ -250,8 +248,8 @@ const CalendarPage: React.FC = () => {
           </Col>
           <Col>
             <Button.Group>
-              <Button size="small" onClick={() => onTypeChange('month')} className={type === 'month' ? 'ant-btn-primary' : ''}>Месяц</Button>
-              <Button size="small" onClick={() => onTypeChange('year')} className={type === 'year' ? 'ant-btn-primary' : ''}>Год</Button>
+              <Button onClick={() => onTypeChange('month')}>Месяц</Button>
+              <Button onClick={() => onTypeChange('year')}>Год</Button>
             </Button.Group>
           </Col>
         </Row>
@@ -259,31 +257,100 @@ const CalendarPage: React.FC = () => {
     );
   };
 
-
-  const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f8ff';
-  const displayedMonth = currentDate.format('MMMM YYYY');
-
+  const selectedDateIntakes = getListDataForDate(selectedDate);
+  const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f2f5';
+  
   return (
-    <ThemeWrapper>
-      <div style={{ padding: '20px', background: backgroundColor, minHeight: '100vh' }}>
-        <Title level={2} style={{ color: 'var(--primary-color)', marginBottom: '0' }}>Календарь приемов</Title>
-        <Text type="secondary" style={{ textTransform: 'capitalize', marginBottom: '20px', display: 'block' }}>{displayedMonth}</Text>
-        {loading && <div style={{ textAlign: 'center', padding: '50px' }}><Spin size="large" /></div>}
-        {!loading && 
-          <Calendar 
-            value={currentDate}
-            mode={mode}
-            dateCellRender={isMobile ? undefined : dateCellRender}
-            monthCellRender={isMobile ? undefined : dateCellRender}
+    <div style={{ background: backgroundColor, padding: isMobile ? 8 : 24, height: '100%' }}>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <Spin size="large" />
+        </div>
+      ) : (
+        <>
+          <Calendar
+            fullscreen={!isMobile}
+            cellRender={cellRender}
             headerRender={headerRender}
+            mode={mode}
             onPanelChange={handlePanelChange}
             onSelect={onSelect}
-            fullscreen={!isMobile}
+            value={currentDate}
           />
-        }
-      </div>
-    </ThemeWrapper>
+          {!isMobile && selectedDateIntakes.length === 0 && (
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+              <Text type="secondary">На выбранную дату приемов не запланировано.</Text>
+            </div>
+          )}
+          {selectedDateIntakes.length > 0 && (
+            <>
+              <Title level={4} style={{ marginTop: '20px', marginBottom: '10px' }}>
+                Приемы на {selectedDate.format('D MMMM YYYY')}
+              </Title>
+              <List
+                grid={{
+                  gutter: 16,
+                  xs: 1,
+                  sm: 1,
+                  md: 2,
+                  lg: 3,
+                  xl: 4,
+                  xxl: 5,
+                }}
+                dataSource={selectedDateIntakes}
+                renderItem={(item) => (
+                  <List.Item>
+                    <Card
+                      title={
+                        <Space>
+                          <MedicineBoxOutlined />
+                          {item.medicineName}
+                        </Space>
+                      }
+                      size="small"
+                      actions={item.status === 'Scheduled' ? [
+                        <Tooltip title="Принять">
+                          <Button
+                            type="text"
+                            icon={<CheckCircleOutlined style={{ color: 'green' }} />}
+                            onClick={() => handleMarkAsTaken(item.id)}
+                          />
+                        </Tooltip>,
+                        <Tooltip title="Пропустить">
+                           <Popconfirm
+                             title="Вы уверены, что хотите пропустить этот прием?"
+                             onConfirm={() => handleMarkAsSkipped(item.id)}
+                             okText="Да"
+                             cancelText="Нет"
+                           >
+                            <Button
+                              type="text"
+                              danger
+                              icon={<CloseCircleOutlined />}
+                            />
+                           </Popconfirm>
+                        </Tooltip>
+                      ] : undefined}
+                    >
+                      <Text strong>Курс:</Text> <Text>{item.courseName}</Text><br/>
+                      <Text strong>Время:</Text> <Text>{dayjs.utc(item.scheduledTime).format('HH:mm')}</Text><br/>
+                      <Text strong>Статус:</Text> <Badge status={item.status as BadgeProps['status']} text={item.status} />
+                    </Card>
+                  </List.Item>
+                )}
+              />
+            </>
+          )}
+        </>
+      )}
+    </div>
   );
 };
 
-export default CalendarPage; 
+export default function CalendarPageWithTheme() {
+  return (
+    <ThemeWrapper>
+      <CalendarPage />
+    </ThemeWrapper>
+  );
+} 

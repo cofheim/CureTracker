@@ -10,6 +10,7 @@ import 'dayjs/locale/ru';
 import { useTheme } from '../../lib/ThemeContext';
 import ThemeWrapper from '../components/ThemeWrapper';
 import ResponsiveTable from '../components/ResponsiveTable';
+import { usePageTitle } from '../../lib/contexts/PageTitleContext';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -43,6 +44,11 @@ const ActivityPage: React.FC = () => {
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null]);
   const [filteredLogs, setFilteredLogs] = useState<ActionLog[]>([]);
   const { theme } = useTheme();
+  const { setTitle } = usePageTitle();
+
+  useEffect(() => {
+    setTitle('История действий');
+  }, [setTitle]);
 
   useEffect(() => {
     fetchLogs();
@@ -218,16 +224,7 @@ const ActivityPage: React.FC = () => {
   return (
     <div style={{ background: backgroundColor, minHeight: '100vh' }}>
       <Space direction="vertical" size="large" style={{ width: '100%', padding: '20px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Button 
-            icon={<ArrowLeftOutlined />} 
-            onClick={() => router.push('/')}
-          >
-            Вернуться на главную
-          </Button>
-          <Title level={2} style={{ margin: 0, color: 'var(--primary-color)' }}>
-            <HistoryOutlined /> История действий
-          </Title>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
           <Button 
             icon={<ReloadOutlined />} 
             onClick={fetchLogs}

@@ -10,10 +10,36 @@ import { ThemeProvider, useTheme } from '../lib/ThemeContext';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 import { Inter } from 'next/font/google';
 import { AuthProvider } from '../lib/contexts/AuthContext';
+import { PageTitleProvider, usePageTitle } from '../lib/contexts/PageTitleContext';
 
 const { Header, Content, Sider } = Layout;
 
 const inter = Inter({ subsets: ['latin'] });
+
+const MobileHeader: React.FC<{ onMenuClick: () => void }> = ({ onMenuClick }) => {
+  const { title } = usePageTitle();
+  const { theme } = useTheme();
+
+  return (
+    <Header style={{ 
+      padding: '0 16px', 
+      background: theme === 'dark' ? '#141414' : '#fff', 
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      borderBottom: `1px solid ${theme === 'dark' ? '#303030' : '#f0f0f0'}`
+    }}>
+      <Button 
+        type="text" 
+        icon={<MenuOutlined />} 
+        onClick={onMenuClick} 
+        style={{ fontSize: '18px' }}
+      />
+      <div style={{ fontSize: '18px', fontWeight: '500' }}>{title}</div>
+      <div style={{ width: '32px' }}></div> 
+    </Header>
+  );
+};
 
 const ThemeToggle: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
@@ -111,83 +137,84 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     },
   ];
 
+  if (isAuthPage) {
+    return (
+      <>
+        {children}
+        <ThemeToggle />
+      </>
+    );
+  }
+
+  return (
+    <Layout style={{ minHeight: '100vh' }}>
+      {isMobile ? (
+        <>
+          <MobileHeader onMenuClick={() => setDrawerVisible(true)} />
+          <Drawer
+            title="Меню"
+            placement="left"
+            onClose={() => setDrawerVisible(false)}
+            open={drawerVisible}
+            bodyStyle={{ padding: 0 }}
+          >
+            <div style={{ fontSize: '18px', fontWeight: 'bold', padding: '16px', borderBottom: '1px solid #f0f0f0' }}>
+              CureTracker
+            </div>
+            <Menu
+              theme={theme === 'dark' ? 'dark' : 'light'}
+              mode="inline"
+              selectedKeys={[pathname]}
+              items={menuItems}
+            />
+          </Drawer>
+        </>
+      ) : (
+        <Sider
+          collapsible
+          collapsed={collapsed}
+          onCollapse={(value) => setCollapsed(value)}
+          theme="dark"
+        >
+          <div style={{ 
+            height: '32px', 
+            margin: '16px', 
+            background: 'rgba(255, 255, 255, 0.2)', 
+            textAlign: 'center', 
+            lineHeight: '32px', 
+            color: 'white',
+            fontWeight: 'bold' 
+          }}>
+            CT
+          </div>
+          <Menu
+            theme="dark"
+            mode="inline"
+            selectedKeys={[pathname]}
+            items={menuItems}
+          />
+        </Sider>
+      )}
+      <Layout>
+        <Content style={{ padding: isMobile ? '8px' : '16px' }}>
+          {children}
+        </Content>
+      </Layout>
+      <ThemeToggle />
+    </Layout>
+  );
+};
+
+const RootLayoutContent: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <ConfigProvider
       theme={{
-        algorithm: theme === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
-        token: {
-          colorPrimary: theme === 'dark' ? '#177ddc' : '#1890ff',
-          fontSize: 14,
-        },
+        algorithm: antdTheme.darkAlgorithm, // Will be overridden by ThemeProvider
       }}
       locale={ru_RU}
     >
       <App>
-        {isAuthPage ? (
-          <>
-            {children}
-            <ThemeToggle />
-          </>
-        ) : (
-          <Layout style={{ minHeight: '100vh' }}>
-            {isMobile ? (
-              <>
-                <Header style={{ 
-                  padding: '0 16px', 
-                  background: theme === 'dark' ? '#1f1f1f' : '#fff', 
-                  boxShadow: '0 1px 4px rgba(0,21,41,.08)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between'
-                }}>
-                  <Button 
-                    type="text" 
-                    icon={<MenuOutlined />} 
-                    onClick={() => setDrawerVisible(true)} 
-                    style={{ fontSize: '18px' }}
-                  />
-                  <div style={{ fontSize: '18px', fontWeight: 'bold' }}>CureTracker</div>
-                  <div style={{ width: '32px' }}></div> 
-                </Header>
-                <Drawer
-                  title="Меню"
-                  placement="left"
-                  onClose={() => setDrawerVisible(false)}
-                  open={drawerVisible}
-                  bodyStyle={{ padding: 0 }}
-                >
-                  <Menu
-                    theme={theme === 'dark' ? 'dark' : 'light'}
-                    mode="inline"
-                    selectedKeys={[pathname]}
-                    items={menuItems}
-                  />
-                </Drawer>
-              </>
-            ) : (
-              <Sider
-                collapsible
-                collapsed={collapsed}
-                onCollapse={(value) => setCollapsed(value)}
-                theme={theme === 'dark' ? 'dark' : 'dark'} 
-              >
-                <Menu
-                  theme={theme === 'dark' ? 'dark' : 'dark'} 
-                  mode="inline"
-                  selectedKeys={[pathname]}
-                  items={menuItems}
-                  style={{ marginTop: '16px' }}
-                />
-              </Sider>
-            )}
-            <Layout>
-              <Content style={{ margin: '0', padding: isMobile ? '8px' : '0 16px' }}>
-                {children}
-              </Content>
-            </Layout>
-            <ThemeToggle />
-          </Layout>
-        )}
+        <AppLayout>{children}</AppLayout>
       </App>
     </ConfigProvider>
   );
@@ -207,13 +234,15 @@ export default function RootLayout({
       </head>
       <body style={{ margin: 0, padding: 0 }} className={inter.className}>
         <AuthProvider>
-        <AntdRegistry>
-          <ThemeProvider>
-            <AppLayout>
-              {children}
-            </AppLayout>
-          </ThemeProvider>
-        </AntdRegistry>
+          <AntdRegistry>
+            <ThemeProvider>
+              <PageTitleProvider>
+                <RootLayoutContent>
+                  {children}
+                </RootLayoutContent>
+              </PageTitleProvider>
+            </ThemeProvider>
+          </AntdRegistry>
         </AuthProvider>
       </body>
     </html>

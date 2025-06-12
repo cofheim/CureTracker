@@ -92,7 +92,7 @@ const Dashboard: React.FC = () => {
 
   const fetchActiveCourses = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/Courses/active`, {
+      const response = await fetch(`${API_BASE_URL}/api/Courses`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -102,7 +102,8 @@ const Dashboard: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setActiveCourses(data);
+        const active = data.filter((course: Course) => course.status === 'Active');
+        setActiveCourses(active);
       }
     } catch (error) {
       console.error('Error fetching active courses:', error);

@@ -4,13 +4,13 @@ import React, { useState, useEffect, Key } from 'react';
 import { Button, Modal, Form, Input, DatePicker, Select, Typography, Space, Spin, Popconfirm, Tag, TimePicker, InputNumber, App, Card, Row, Col } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, CalendarOutlined, MedicineBoxOutlined, ReloadOutlined, FilterOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
-import Head from 'next/head';
 import { API_BASE_URL } from '../../lib/apiConfig';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useTheme } from '../../lib/ThemeContext';
 import ThemeWrapper from '../components/ThemeWrapper';
 import ResponsiveTable from '../components/ResponsiveTable';
+import { usePageTitle } from '../../lib/contexts/PageTitleContext';
 
 dayjs.extend(utc);
 
@@ -66,10 +66,15 @@ const CoursesPage: React.FC = () => {
   const router = useRouter();
   const { message, modal } = App.useApp();
   const { theme } = useTheme();
+  const { setTitle } = usePageTitle();
 
   const [searchText, setSearchText] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<CourseStatus | null>(null);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
+
+  useEffect(() => {
+    setTitle('Курсы лечения');
+  }, [setTitle]);
 
   useEffect(() => {
     fetchCourses();
@@ -466,7 +471,7 @@ const CoursesPage: React.FC = () => {
       title: 'Действия',
       key: 'actions',
       render: (_: any, record: Course) => (
-        <Space size="middle">
+        <Space size="middle" wrap>
           <Button 
             type="primary" 
             icon={<EditOutlined />} 
@@ -518,17 +523,12 @@ const CoursesPage: React.FC = () => {
     },
   ];
 
-  const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f8ff';
+  const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f2f5';
 
   return (
-    <div style={{ background: backgroundColor, minHeight: '100vh' }}>
-      <Head>
-        <title>Курсы лечения - CureTracker</title>
-      </Head>
-      
+    <div style={{ height: '100%' }}>
       <div style={{ padding: '20px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <Title level={2} style={{ color: 'var(--primary-color)', margin: 0 }}>Курсы лечения</Title>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '20px' }}>
           <Space>
             <Button 
               type="primary" 
