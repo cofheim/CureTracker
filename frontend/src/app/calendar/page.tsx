@@ -50,7 +50,7 @@ const CalendarPage: React.FC = () => {
     const endDate = dayjs.utc(date).endOf('month').toISOString();
 
     try {
-      const response = await fetch(`${API_BASE_URL}/intakes/calendar/range?StartDate=${startDate}&EndDate=${endDate}`, {
+      const response = await fetch(`${API_BASE_URL}/Intakes/calendar/range?StartDate=${startDate}&EndDate=${endDate}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ const CalendarPage: React.FC = () => {
 
   const handleMarkAsTaken = async (intakeId: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/intakes/${intakeId}/take`, {
+      const response = await fetch(`${API_BASE_URL}/Intakes/${intakeId}/take`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -99,7 +99,7 @@ const CalendarPage: React.FC = () => {
 
   const handleMarkAsSkipped = async (intakeId: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/intakes/${intakeId}/skip`, {
+      const response = await fetch(`${API_BASE_URL}/Intakes/${intakeId}/skip`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
