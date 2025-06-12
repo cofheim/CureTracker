@@ -50,7 +50,7 @@ services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins("http://localhost:3000", "https://curetracker.ru")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
