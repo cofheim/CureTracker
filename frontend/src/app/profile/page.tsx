@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Card,
@@ -96,10 +96,10 @@ const ProfilePage: React.FC = () => {
     }
   }, [profile, form, editing]);
 
-  const fetchUserProfile = async () => {
-    if (!user?.id) return; 
+  const fetchUserProfile = useCallback(async () => {
+    setPageLoading(true);
     try {
-      const response = await axios.get<UserProfile>(`${API_BASE_URL}/User/me`, {
+      const response = await axios.get<UserProfile>(`${API_BASE_URL}/user/me`, {
         withCredentials: true,
       });
       setProfile(response.data);
@@ -115,13 +115,15 @@ const ProfilePage: React.FC = () => {
       } else {
         message.error('Не удалось загрузить данные профиля');
       }
+    } finally {
+      setPageLoading(false);
     }
-  };
+  }, [user, router, form, message]);
 
   const onFinish = async (values: any) => {
     setIsSubmitting(true);
     try {
-      await axios.put(`${API_BASE_URL}/User/update-profile`, {
+      await axios.put(`${API_BASE_URL}/user/update-profile`, {
         name: values.name,
         email: values.email,
         countryCode: values.countryCode, 
@@ -156,7 +158,7 @@ const ProfilePage: React.FC = () => {
     }
     setIsGeneratingCode(true);
     try {
-      const response = await axios.post<string>(`${API_BASE_URL}/User/generate-connection-code`, {}, { withCredentials: true });
+      const response = await axios.post<string>(`${API_BASE_URL}/user/generate-connection-code`, {}, { withCredentials: true });
       setProfile(prev => prev ? { ...prev, connectionCode: response.data } : null); // Обновляем connectionCode в локальном стейте
       message.success('Код для подключения Telegram сгенерирован');
     } catch (error: any) {

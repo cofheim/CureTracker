@@ -49,7 +49,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const refetchUser = async () => {
     console.log('[AuthContext] Attempting to refetch user details...');
     try {
-      const response = await axios.get(`${API_BASE_URL}/User/me`, { withCredentials: true });
+      const response = await axios.get(`${API_BASE_URL}/user/me`, { withCredentials: true });
       console.log('[AuthContext] Fetched user details:', response.data);
       setUser(response.data);
     } catch (error) {
@@ -69,16 +69,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     console.log('[AuthContext] Attempting login for email:', email);
     try {
-      const response = await axios.post(`${API_BASE_URL}/User/login`, { email, password }, { withCredentials: true });
-      const token = response.data;
-      console.log('[AuthContext] Login successful. Token received.');
-      console.log('[AuthContext] RAW TOKEN:', token);
-      
-      const decodedPayload = decodeJwtPayload(token);
-      console.log('[AuthContext] Decoded JWT payload (attempt):', decodedPayload);
-
-      document.cookie = `cookies=${token}; path=/; secure; samesite=none`;
-      console.log('[AuthContext] Cookie set. Current document.cookie:', document.cookie);
+      await axios.post(`${API_BASE_URL}/user/login`, { email, password }, { withCredentials: true });
+      console.log('[AuthContext] Login successful. Server has set HttpOnly cookie.');
       await refetchUser();
       console.log('[AuthContext] Navigating to /profile after login.');
       router.push('/profile');
@@ -91,9 +83,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     console.log('[AuthContext] Attempting logout.');
     try {
-      await axios.post(`${API_BASE_URL}/User/logout`, {}, { withCredentials: true });
-      document.cookie = 'cookies=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; secure; samesite=none';
-      console.log('[AuthContext] Cookie cleared. Current document.cookie:', document.cookie);
+      await axios.post(`${API_BASE_URL}/user/logout`, {}, { withCredentials: true });
+      console.log('[AuthContext] Logout request sent. Server has cleared HttpOnly cookie.');
       setUser(null);
       console.log('[AuthContext] User state set to null. Navigating to /auth.');
       router.push('/auth');
@@ -106,7 +97,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (name: string, email: string, password: string) => {
     console.log('[AuthContext] Attempting registration for email:', email);
     try {
-      await axios.post(`${API_BASE_URL}/User/register`, { userName: name, email, password });
+      await axios.post(`${API_BASE_URL}/user/register`, { userName: name, email, password });
       console.log('[AuthContext] Registration successful. Proceeding to login.');
       await login(email, password);
     } catch (error) {

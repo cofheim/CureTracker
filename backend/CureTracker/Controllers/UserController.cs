@@ -111,7 +111,7 @@ namespace CureTracker.Controllers
                 Expires = DateTime.Now.AddHours(12)
             });
 
-            return Ok(token);
+            return Ok(new { message = "Login successful" });
         }
 
         [HttpGet]
