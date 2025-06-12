@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { useTheme } from '../../lib/ThemeContext';
 import ThemeWrapper from '../components/ThemeWrapper';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import ruRU from 'antd/es/locale/ru_RU';
 
 dayjs.locale('ru');
 dayjs.extend(localeData);
@@ -39,6 +40,18 @@ const CalendarPage: React.FC = () => {
   const router = useRouter();
   const { message } = App.useApp();
   const { theme } = useTheme();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial check
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     fetchIntakesForMonth(currentDate);
@@ -260,10 +273,12 @@ const CalendarPage: React.FC = () => {
           <Calendar 
             value={currentDate}
             mode={mode}
-            dateCellRender={dateCellRender} 
+            dateCellRender={isMobile ? undefined : dateCellRender}
+            monthCellRender={isMobile ? undefined : dateCellRender}
             headerRender={headerRender}
             onPanelChange={handlePanelChange}
             onSelect={onSelect}
+            fullscreen={!isMobile}
           />
         }
       </div>

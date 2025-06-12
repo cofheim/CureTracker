@@ -357,3 +357,18 @@ body[data-theme='dark'] .ant-tooltip-inner {
     font-size: 16px !important;
   }
 }
+
+/* Responsive adjustments for mobile devices */
+@media (max-width: 768px) {
+  /* Fix for Ant Design titles (h1, h2, etc.) */
+  .ant-typography {
+    word-break: normal !important;
+    white-space: normal !important;
+  }
+
+  h1.ant-typography, .ant-typography h1,
+  h2.ant-typography, .ant-typography h2,
+  h3.ant-typography, .ant-typography h3 {
+    font-size: 1.5rem; /* Adjust title font size for mobile */
+  }
+}
