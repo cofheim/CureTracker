@@ -2,13 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Table, Typography, Card, Space, Tag, Button, Spin, Select, DatePicker, Row, Col, App, Input } from 'antd';
-import { ArrowLeftOutlined, HistoryOutlined, FilterOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Typography, Card, Space, Tag, Button, Spin, Select, DatePicker, Row, Col, App, Input } from 'antd';
+import { ArrowLeftOutlined, HistoryOutlined, FilterOutlined, ReloadOutlined } from '@ant-design/icons';
 import { API_BASE_URL } from '../../lib/apiConfig';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import { useTheme } from '../../lib/ThemeContext';
 import ThemeWrapper from '../components/ThemeWrapper';
+import ResponsiveTable from '../components/ResponsiveTable';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -287,7 +288,7 @@ const ActivityPage: React.FC = () => {
           </div>
         ) : (
           <Card>
-            <Table 
+            <ResponsiveTable<ActionLog>
               columns={columns} 
               dataSource={filteredLogs}
               rowKey="id"

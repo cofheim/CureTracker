@@ -1,0 +1,25 @@
+.card {
+    width: 100%;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+}
+
+.cardRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.cardRow:last-child {
+    border-bottom: none;
+}
+
+.cardRow strong {
+    margin-right: 8px;
+    font-weight: 600;
+}
+
+.cardRow span {
+    text-align: right;
+} 

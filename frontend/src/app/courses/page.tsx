@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, Key } from 'react';
-import { Table, Button, Modal, Form, Input, DatePicker, Select, Typography, Space, Spin, Popconfirm, Tag, TimePicker, InputNumber, App, Card, Row, Col } from 'antd';
+import { Button, Modal, Form, Input, DatePicker, Select, Typography, Space, Spin, Popconfirm, Tag, TimePicker, InputNumber, App, Card, Row, Col } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, CalendarOutlined, MedicineBoxOutlined, ReloadOutlined, FilterOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import Head from 'next/head';
@@ -10,6 +10,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useTheme } from '../../lib/ThemeContext';
 import ThemeWrapper from '../components/ThemeWrapper';
+import ResponsiveTable from '../components/ResponsiveTable';
 
 dayjs.extend(utc);
 
@@ -590,7 +591,7 @@ const CoursesPage: React.FC = () => {
             <Spin size="large" />
           </div>
         ) : (
-          <Table 
+          <ResponsiveTable<Course>
             columns={columns} 
             dataSource={filteredCourses} 
             rowKey="id" 

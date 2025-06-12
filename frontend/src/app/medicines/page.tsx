@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, InputNumber, Select, Typography, Space, Spin, Popconfirm, App } from 'antd';
+import { Button, Modal, Form, Input, InputNumber, Select, Typography, Space, Spin, Popconfirm, App } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
@@ -9,8 +9,9 @@ import Head from 'next/head';
 import { API_BASE_URL } from '../../lib/apiConfig';
 import { useTheme } from '../../lib/ThemeContext';
 import ThemeWrapper from '../components/ThemeWrapper';
+import ResponsiveTable from '../components/ResponsiveTable';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 const { Option } = Select;
 
 interface Medicine {
@@ -38,23 +39,8 @@ const MedicinesPage: React.FC = () => {
   const [editingMedicine, setEditingMedicine] = useState<Medicine | null>(null);
   const [form] = Form.useForm();
   const router = useRouter();
-  const { message, modal } = App.useApp();
+  const { message } = App.useApp();
   const { theme } = useTheme();
-  const [isMobile, setIsMobile] = useState<boolean>(false);
-
-  useEffect(() => {
-    const checkIfMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
-    checkIfMobile();
-    
-    window.addEventListener('resize', checkIfMobile);
-    
-    return () => {
-      window.removeEventListener('resize', checkIfMobile);
-    };
-  }, []);
 
   useEffect(() => {
     fetchMedicines();
@@ -184,7 +170,6 @@ const MedicinesPage: React.FC = () => {
       dataIndex: 'description',
       key: 'description',
       ellipsis: true,
-      className: isMobile ? 'hidden-column' : '',
     },
     {
       title: 'Дозировка',
@@ -196,7 +181,6 @@ const MedicinesPage: React.FC = () => {
       title: 'Условия хранения',
       dataIndex: 'storageConditions',
       key: 'storageConditions',
-      className: isMobile ? 'hidden-column' : '',
     },
     {
       title: 'Тип',
@@ -220,18 +204,16 @@ const MedicinesPage: React.FC = () => {
       render: (_: any, record: Medicine) => (
         <Space size="small" wrap>
           <Button 
-            size={isMobile ? "small" : "middle"}
             onClick={() => router.push(`/medicines/${record.id}`)}
           >
             Подробнее
           </Button>
           <Button 
             type="primary" 
-            size={isMobile ? "small" : "middle"}
             icon={<EditOutlined />} 
             onClick={() => handleEdit(record)}
           >
-            {!isMobile && "Редактировать"}
+            Редактировать
           </Button>
           <Popconfirm
             title="Удалить лекарство?"
@@ -240,8 +222,8 @@ const MedicinesPage: React.FC = () => {
             okText="Да"
             cancelText="Нет"
           >
-            <Button type="primary" danger size={isMobile ? "small" : "middle"} icon={<DeleteOutlined />}>
-              {!isMobile && "Удалить"}
+            <Button type="primary" danger icon={<DeleteOutlined />}>
+              Удалить
             </Button>
           </Popconfirm>
         </Space>
@@ -274,20 +256,12 @@ const MedicinesPage: React.FC = () => {
             <Spin size="large" />
           </div>
         ) : (
-          <>
-            <style jsx global>{`
-              .hidden-column {
-                display: none;
-              }
-            `}</style>
-            <Table 
-              columns={columns} 
-              dataSource={medicines} 
-              rowKey="id" 
-              pagination={{ pageSize: 10 }}
-              scroll={{ x: 'max-content' }}
-            />
-          </>
+          <ResponsiveTable<Medicine>
+            columns={columns} 
+            dataSource={medicines} 
+            rowKey="id" 
+            pagination={{ pageSize: 10 }}
+          />
         )}
       </div>
 
