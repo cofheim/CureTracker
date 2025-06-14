@@ -38,6 +38,22 @@ const intakeStatusMap: Record<Intake['status'], string> = {
   Skipped: 'Пропущен',
 };
 
+const getAggregatedStatusForDay = (intakes: Intake[]): NonNullable<BadgeProps['status']> => {
+  if (intakes.some(i => i.status === 'Missed')) return 'error';
+  if (intakes.some(i => i.status === 'Scheduled')) return 'processing';
+  if (intakes.some(i => i.status === 'Skipped')) return 'warning';
+  if (intakes.every(i => i.status === 'Taken')) return 'success';
+  return 'default';
+};
+
+const statusToColorMap: Record<NonNullable<BadgeProps['status']>, string> = {
+  success: '#52c41a',
+  processing: '#1677ff',
+  default: '#d9d9d9',
+  error: '#f5222d',
+  warning: '#faad14',
+};
+
 const CalendarPage: React.FC = () => {
   const [intakes, setIntakes] = useState<Intake[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -162,10 +178,12 @@ const CalendarPage: React.FC = () => {
         <div style={cellStyle}>
           {listData.length > 0 ? (
             isMobile ? (
-              <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
-                {listData.slice(0, 3).map((item) => (
-                  <Badge key={item.id} status={item.status as BadgeProps['status']} />
-                ))}
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                <Badge 
+                  count={listData.length} 
+                  color={statusToColorMap[getAggregatedStatusForDay(listData)]} 
+                  size="small" 
+                />
               </div>
             ) : (
               <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
