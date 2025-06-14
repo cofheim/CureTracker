@@ -10,14 +10,12 @@ import { ThemeProvider, useTheme } from '../lib/ThemeContext';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 import { Inter } from 'next/font/google';
 import { AuthProvider } from '../lib/contexts/AuthContext';
-import { PageTitleProvider, usePageTitle } from '../lib/contexts/PageTitleContext';
 
 const { Header, Content, Sider } = Layout;
 
 const inter = Inter({ subsets: ['latin'] });
 
-const MobileHeader: React.FC<{ onMenuClick: () => void }> = ({ onMenuClick }) => {
-  const { title } = usePageTitle();
+const MobileHeader: React.FC<{ onMenuClick: () => void, title: string }> = ({ onMenuClick, title }) => {
   const { theme } = useTheme();
 
   return (
@@ -137,6 +135,9 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     },
   ];
 
+  const currentPage = menuItems.find(item => pathname.startsWith(item.key));
+  const pageTitle = currentPage ? currentPage.label : 'CureTracker';
+
   if (isAuthPage) {
     return (
       <>
@@ -150,7 +151,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <Layout style={{ minHeight: '100vh' }}>
       {isMobile ? (
         <>
-          <MobileHeader onMenuClick={() => setDrawerVisible(true)} />
+          <MobileHeader onMenuClick={() => setDrawerVisible(true)} title={pageTitle} />
           <Drawer
             title="Меню"
             placement="left"
@@ -219,11 +220,9 @@ const AppWithTheme: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       locale={ru_RU}
     >
       <App>
-        <PageTitleProvider>
-          <AppLayout>
-            {children}
-          </AppLayout>
-        </PageTitleProvider>
+        <AppLayout>
+          {children}
+        </AppLayout>
       </App>
     </ConfigProvider>
   );
@@ -242,15 +241,15 @@ export default function RootLayout({
         <title>CureTracker</title>
       </head>
       <body style={{ margin: 0, padding: 0 }} className={inter.className}>
-        <AuthProvider>
-          <AntdRegistry>
-            <ThemeProvider>
-              <AppWithTheme>
+        <AntdRegistry>
+          <ThemeProvider>
+            <AppWithTheme>
+              <AuthProvider>
                 {children}
-              </AppWithTheme>
-            </ThemeProvider>
-          </AntdRegistry>
-        </AuthProvider>
+              </AuthProvider>
+            </AppWithTheme>
+          </ThemeProvider>
+        </AntdRegistry>
       </body>
     </html>
   );
