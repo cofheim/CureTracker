@@ -31,6 +31,13 @@ interface Intake {
   medicineName: string;
 }
 
+const intakeStatusMap: Record<Intake['status'], string> = {
+  Scheduled: 'Запланирован',
+  Taken: 'Принят',
+  Missed: 'Пропущен',
+  Skipped: 'Пропущен',
+};
+
 const CalendarPage: React.FC = () => {
   const [intakes, setIntakes] = useState<Intake[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -157,12 +164,12 @@ const CalendarPage: React.FC = () => {
             <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
               {listData.map((item) => (
                 <li key={item.id}>
-                  <Badge status={item.status as BadgeProps['status']} text={isMobile ? '' : item.medicineName} />
+                  <Badge status={item.status as BadgeProps['status']} text={item.medicineName} />
                 </li>
               ))}
             </ul>
           ) : (
-            <div style={{opacity: 0.5}}>{current.date()}</div>
+            <div style={{opacity: 0.5}}></div>
           )}
         </div>
       );
@@ -332,7 +339,7 @@ const CalendarPage: React.FC = () => {
                     >
                       <Text strong>Курс:</Text> <Text>{item.courseName}</Text><br/>
                       <Text strong>Время:</Text> <Text>{dayjs.utc(item.scheduledTime).format('HH:mm')}</Text><br/>
-                      <Text strong>Статус:</Text> <Badge status={item.status as BadgeProps['status']} text={item.status} />
+                      <Text strong>Статус:</Text> <Badge status={item.status as BadgeProps['status']} text={intakeStatusMap[item.status]} />
                     </Card>
                   </List.Item>
                 )}
