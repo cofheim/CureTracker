@@ -161,13 +161,21 @@ const CalendarPage: React.FC = () => {
       return (
         <div style={cellStyle}>
           {listData.length > 0 ? (
-            <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-              {listData.map((item) => (
-                <li key={item.id}>
-                  <Badge status={item.status as BadgeProps['status']} text={item.medicineName} />
-                </li>
-              ))}
-            </ul>
+            isMobile ? (
+              <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
+                {listData.slice(0, 3).map((item) => (
+                  <Badge key={item.id} status={item.status as BadgeProps['status']} />
+                ))}
+              </div>
+            ) : (
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                {listData.map((item) => (
+                  <li key={item.id}>
+                    <Badge status={item.status as BadgeProps['status']} text={item.medicineName} />
+                  </li>
+                ))}
+              </ul>
+            )
           ) : (
             <div style={{opacity: 0.5}}></div>
           )}
