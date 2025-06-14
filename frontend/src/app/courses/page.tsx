@@ -516,10 +516,11 @@ const CoursesPage: React.FC = () => {
     },
   ];
 
-  const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f2f5';
+  const backgroundColor = theme === 'dark' ? 'var(--secondary-color)' : '#f0f8ff';
 
   return (
-    <div style={{ height: '100%' }}>
+    <div style={{ background: backgroundColor, minHeight: '100vh', padding: '20px' }}>
+      <Title level={2} style={{ marginBottom: '20px' }}>Курсы лечения</Title>
       <div style={{ padding: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '20px' }}>
           <Space>

@@ -216,6 +216,7 @@ const ActivityPage: React.FC = () => {
 
   return (
     <div style={{ background: backgroundColor, minHeight: '100vh' }}>
+      <Title level={2} style={{ padding: '20px 20px 0' }}>История действий</Title>
       <Space direction="vertical" size="large" style={{ width: '100%', padding: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
           <Button 

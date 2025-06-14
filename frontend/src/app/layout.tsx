@@ -135,8 +135,31 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     },
   ];
 
-  const currentPage = menuItems.find(item => pathname.startsWith(item.key));
-  const pageTitle = currentPage ? currentPage.label : 'CureTracker';
+  const getPageTitle = () => {
+    if (pathname === '/') {
+      return 'Главная';
+    }
+    // Находим все пункты меню, которым соответствует текущий путь (кроме главной страницы)
+    const matchingItems = menuItems.filter(item => item.key !== '/' && pathname.startsWith(item.key));
+
+    if (matchingItems.length > 0) {
+      // Из всех совпадений выбираем самое длинное (наиболее точное)
+      const bestMatch = matchingItems.reduce((best, current) => 
+        current.key.length > best.key.length ? current : best
+      );
+      return bestMatch.label;
+    }
+    
+    // Если не нашлось совпадений по части пути, ищем точное совпадение
+    const exactMatch = menuItems.find(item => item.key === pathname);
+    if (exactMatch) {
+      return exactMatch.label;
+    }
+
+    return 'CureTracker'; // Общий запасной заголовок
+  };
+
+  const pageTitle = getPageTitle();
 
   if (isAuthPage) {
     return (
