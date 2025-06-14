@@ -35,7 +35,7 @@ const intakeStatusMap: Record<Intake['status'], string> = {
   Scheduled: 'Запланирован',
   Taken: 'Принят',
   Missed: 'Пропущен',
-  Skipped: 'Пропущен',
+  Skipped: 'Отменён',
 };
 
 const getAggregatedStatusForDay = (intakes: Intake[]): NonNullable<BadgeProps['status']> => {
