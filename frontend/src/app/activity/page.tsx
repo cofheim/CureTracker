@@ -9,7 +9,6 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import { useTheme } from '../../lib/ThemeContext';
 import ResponsiveTable from '../components/ResponsiveTable';
-import { usePageTitle } from '../../lib/contexts/PageTitleContext';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -43,11 +42,6 @@ const ActivityPage: React.FC = () => {
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null]);
   const [filteredLogs, setFilteredLogs] = useState<ActionLog[]>([]);
   const { theme } = useTheme();
-  const { setTitle } = usePageTitle();
-
-  useEffect(() => {
-    setTitle('История действий');
-  }, [setTitle]);
 
   useEffect(() => {
     fetchLogs();

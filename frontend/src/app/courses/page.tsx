@@ -9,7 +9,6 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useTheme } from '../../lib/ThemeContext';
 import ResponsiveTable from '../components/ResponsiveTable';
-import { usePageTitle } from '../../lib/contexts/PageTitleContext';
 
 dayjs.extend(utc);
 
@@ -65,15 +64,10 @@ const CoursesPage: React.FC = () => {
   const router = useRouter();
   const { message, modal } = App.useApp();
   const { theme } = useTheme();
-  const { setTitle } = usePageTitle();
 
   const [searchText, setSearchText] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<CourseStatus | null>(null);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
-
-  useEffect(() => {
-    setTitle('Курсы лечения');
-  }, [setTitle]);
 
   useEffect(() => {
     fetchCourses();
