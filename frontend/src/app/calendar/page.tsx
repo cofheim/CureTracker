@@ -177,6 +177,7 @@ const CalendarPage: React.FC = () => {
   };
   
   const handlePanelChange = (date: Dayjs, newMode: CalendarProps<Dayjs>['mode']) => {
+    setMode(newMode);
     setSelectedDate(date);
     if (newMode === 'month') {
         fetchIntakesForMonth(date);

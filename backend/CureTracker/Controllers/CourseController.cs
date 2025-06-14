@@ -251,7 +251,7 @@ namespace CureTracker.Controllers
                 }
                 catch (TimeZoneNotFoundException)
                 {
-                    // Fallback to UTC if timezone is not found
+
                 }
             }
             return TimeZoneInfo.Utc;

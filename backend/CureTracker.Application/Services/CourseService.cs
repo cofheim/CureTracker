@@ -161,7 +161,7 @@ namespace CureTracker.Application.Services
                 }
                 catch (TimeZoneNotFoundException)
                 {
-                    // Log warning: TimeZoneId from user profile is invalid. Falling back to UTC.
+
                 }
             }
 
