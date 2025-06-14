@@ -12,7 +12,6 @@ import { API_BASE_URL } from '../../lib/apiConfig';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '../../lib/ThemeContext';
 import { CheckCircleOutlined, CloseCircleOutlined, MedicineBoxOutlined } from '@ant-design/icons';
-import { usePageTitle } from '../../lib/contexts/PageTitleContext';
 import ruRU from 'antd/es/locale/ru_RU';
 
 dayjs.locale('ru');
@@ -42,11 +41,6 @@ const CalendarPage: React.FC = () => {
   const { message } = App.useApp();
   const { theme } = useTheme();
   const [isMobile, setIsMobile] = useState(false);
-  const { setTitle } = usePageTitle();
-
-  useEffect(() => {
-    setTitle('Календарь приемов');
-  }, [setTitle]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -268,6 +262,10 @@ const CalendarPage: React.FC = () => {
         </div>
       ) : (
         <>
+          <div style={{ marginBottom: 16, textAlign: isMobile ? 'center' : 'left' }}>
+            <Title level={3} style={{ margin: 0 }}>Календарь приёмов</Title>
+            <Text type="secondary">{selectedDate.format('D MMMM YYYY')}</Text>
+          </div>
           <Calendar
             fullscreen={!isMobile}
             cellRender={cellRender}
