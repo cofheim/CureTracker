@@ -9,7 +9,7 @@ namespace CureTracker.TelegramBot
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<IntakeReminderService> _logger;
-        private readonly TimeSpan _checkInterval = TimeSpan.FromMinutes(1);
+        private readonly TimeSpan _checkInterval = TimeSpan.FromMinutes(5);
 
         public IntakeReminderService(
             IServiceProvider serviceProvider,
